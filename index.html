@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <!-- ── Primary Meta ── -->
+  <title>Aloura — Your Personal Style Intelligence</title>
+  <meta name="description" content="Upload your photos and receive a personalized style report — your best colors, accessories, silhouettes, and curated outfit mood boards. Fashion that actually works for you.">
+  <meta name="keywords" content="personal style, outfit recommendations, color analysis, fashion AI, style profile, what to wear, outfit ideas">
+  <meta name="author" content="Aloura">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://alouraui.web.app/">
+
+  <!-- ── Open Graph ── -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alouraui.web.app/">
+  <meta property="og:title" content="Aloura — Your Personal Style Intelligence">
+  <meta property="og:description" content="Upload your photos. Get a personalized style report — colors, accessories, fits, and outfit mood boards curated for you.">
+  <meta property="og:image" content="https://alouraui.web.app/assets/trendy_glasses.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="Aloura">
+  <meta property="og:locale" content="en_US">
+
+  <!-- ── Twitter Card ── -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@aloura">
+  <meta name="twitter:title" content="Aloura — Your Personal Style Intelligence">
+  <meta name="twitter:description" content="Upload your photos. Get a personalized style report — colors, accessories, fits, and outfit mood boards curated for you.">
+  <meta name="twitter:image" content="https://alouraui.web.app/assets/trendy_glasses.jpg">
+
+  <!-- ── Favicon / PWA ── -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#FDFBF8">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- ── Structured Data ── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Aloura",
+    "description": "Personalized style intelligence — colors, accessories, silhouettes, and outfit mood boards curated from your photos.",
+    "url": "https://www.aloura.co",
+    "applicationCategory": "LifestyleApplication",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Organization", "name": "Aloura" }
+  }
+  </script>
+
+  <!-- ── Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <!-- ── Icons ── -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+
+  <!-- ── Shared Design System ── -->
+  <link rel="stylesheet" href="index.css">
+
+  <!-- ── Page-specific styles ── -->
+  <style>
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100svh;
+      padding-top: var(--nav-h);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero__bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, var(--clr-cream) 0%, var(--clr-beige) 55%, #EDE0D0 100%);
+      z-index: 0;
+    }
+
+    /* Decorative floating shapes */
+    .hero__shape {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: floatSoft 16s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    .hero__shape--1 {
+      width: 340px;
+      height: 340px;
+      top: -80px;
+      right: -60px;
+      background: radial-gradient(circle, rgba(196, 144, 106, 0.18) 0%, transparent 70%);
+      animation-delay: 0s;
+    }
+
+    .hero__shape--2 {
+      width: 200px;
+      height: 200px;
+      bottom: 15%;
+      left: -40px;
+      background: radial-gradient(circle, rgba(107, 79, 58, 0.1) 0%, transparent 70%);
+      animation-delay: -5s;
+    }
+
+    .hero__shape--3 {
+      width: 120px;
+      height: 120px;
+      top: 40%;
+      right: 20%;
+      border: 1px solid rgba(196, 144, 106, 0.2);
+      animation-delay: -9s;
+      display: none;
+    }
+
+    .hero__inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+      padding-block: var(--space-12);
+    }
+
+    .hero__content { max-width: 600px; }
+
+    .hero__eyebrow { margin-bottom: var(--space-5); }
+
+    .hero__headline {
+      font-family: var(--font-display);
+      font-size: clamp(38px, 9vw, 64px);
+      font-weight: 500;
+      line-height: 1.04;
+      letter-spacing: -1.8px;
+      margin-bottom: var(--space-5);
+      animation: fadeUp 0.8s var(--ease) both;
+    }
+
+    .hero__headline em {
+      font-style: italic;
+      color: var(--clr-accent-deep);
+    }
+
+    .hero__lead {
+      font-size: clamp(15px, 3vw, 17px);
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--clr-text-muted);
+      max-width: 480px;
+      margin-bottom: var(--space-8);
+      animation: fadeUp 0.8s 0.1s var(--ease) both;
+    }
+
+    .hero__cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      animation: fadeUp 0.8s 0.2s var(--ease) both;
+    }
+
+    .hero__social-proof {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      animation: fadeUp 0.8s 0.3s var(--ease) both;
+    }
+
+    .hero__avatars {
+      display: flex;
+    }
+
+    .hero__avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--clr-cream);
+      background: var(--clr-light-taupe);
+      margin-left: -8px;
+      overflow: hidden;
+      font-size: 10px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* color: var(--clr-taupe); */
+    }
+
+    .hero__avatar:first-child { margin-left: 0; }
+
+    .hero__avatar--a { background: #C4A888; }
+    .hero__avatar--b { background: #8B7355; }
+    .hero__avatar--c { background: #D4C9BE; }
+    .hero__avatar--d { background: #9E8C7E; }
+
+    .hero__proof-text {
+      font-size: var(--text-xs);
+      font-weight: 400;
+      color: var(--clr-text-muted);
+      line-height: 1.5;
+    }
+
+    .hero__proof-text strong {
+      display: block;
+      color: var(--clr-text-primary);
+      font-weight: 500;
+    }
+
+
+    /* Collage — compact on mobile, full height on desktop */
+    .hero__collage {
+      display: block;
+      position: relative;
+    }
+
+    .hero__collage-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 8px;
+      height: 220px;
+    }
+
+    .hero__collage-cell {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--clr-light-taupe);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .hero__collage-cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero__collage-cell--main { grid-row: span 2; }
+
+    .hero__collage-badge {
+      position: absolute;
+      bottom: -12px;
+      left: -12px;
+      background: var(--clr-off-white);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      z-index: 2;
+    }
+
+    .hero__collage-badge-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--clr-beige);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--clr-brown);
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .hero__collage-badge-text {
+      font-size: var(--text-xs);
+      line-height: 1.4;
+    }
+
+    .hero__collage-badge-text strong {
+      display: block;
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    .hero__collage-badge-text span {
+      color: var(--clr-text-muted);
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    .hiw { background: var(--clr-surface); }
+
+    .hiw__header { text-align: center; margin-bottom: var(--space-10); }
+
+    .hiw__steps {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      position: relative;
+    }
+
+    .hiw__step {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-5);
+      padding: var(--space-6);
+      border-radius: var(--radius-lg);
+      background: var(--clr-bg);
+      border: 1px solid var(--clr-border);
+      transition: box-shadow var(--dur-base) var(--ease), transform var(--dur-base) var(--ease);
+    }
+
+    .hiw__step:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .hiw__step-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--clr-beige);
+      border: 1px solid var(--clr-border-strong);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--clr-brown);
+      flex-shrink: 0;
+    }
+
+    .hiw__step-content { flex: 1; }
+
+    .hiw__step-title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 500;
+      margin-bottom: var(--space-2);
+    }
+
+    .hiw__step-desc {
+      font-size: var(--text-sm);
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--clr-text-muted);
+    }
+
+    .hiw__step-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--clr-beige);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--clr-terracotta);
+      flex-shrink: 0;
+    }
+
+    /* ─── WHAT YOU GET ─── */
+    .wyg__header { margin-bottom: var(--space-8); }
+
+    .wyg__grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+
+    .wyg__item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-4);
+      padding: var(--space-5);
+      background: var(--clr-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--clr-border);
+    }
+
+    .wyg__item-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .wyg__item-icon--warm   { background: rgba(196, 144, 106, 0.15); color: var(--clr-terracotta); }
+    .wyg__item-icon--earth  { background: rgba(107, 79, 58, 0.12);  color: var(--clr-brown); }
+    .wyg__item-icon--stone  { background: rgba(158, 140, 126, 0.18); color: var(--clr-taupe); }
+    .wyg__item-icon--dark   { background: rgba(44, 44, 44, 0.08);    color: var(--clr-charcoal); }
+
+    .wyg__item-title {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 500;
+      margin-bottom: var(--space-1);
+    }
+
+    .wyg__item-desc {
+      font-size: var(--text-sm);
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--clr-text-muted);
+    }
+
+    /* ─── FIT CHECK TEASER ─── */
+    .fit-check {
+      background: linear-gradient(160deg, var(--clr-beige) 0%, #EDE0D0 100%);
+      border-radius: var(--radius-xl);
+      padding: var(--space-10) var(--space-6);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      margin-block: var(--space-12);
+    }
+
+    .fit-check::before {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      top: -80px;
+      right: -80px;
+      background: radial-gradient(circle, rgba(196, 144, 106, 0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .fit-check__icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--clr-off-white);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: var(--clr-brown);
+      margin: 0 auto var(--space-5);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    .fit-check__coming-soon {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      background: rgba(196, 144, 106, 0.2);
+      color: var(--clr-brown);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      margin-bottom: var(--space-4);
+    }
+
+    .fit-check__title { margin-bottom: var(--space-3); }
+
+    .fit-check__desc {
+      max-width: 380px;
+      margin: 0 auto var(--space-6);
+    }
+
+    /* ─── FINAL CTA BAND ─── */
+    .cta-band {
+      background: var(--clr-charcoal);
+      color: var(--clr-off-white);
+      text-align: center;
+      padding-block: var(--space-16);
+    }
+
+    .cta-band__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--clr-terracotta);
+      margin-bottom: var(--space-5);
+    }
+
+    .cta-band__headline {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 6vw, 46px);
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin-bottom: var(--space-4);
+    }
+
+    .cta-band__headline em {
+      font-style: italic;
+      color: var(--clr-terracotta);
+    }
+
+    .cta-band__lead {
+      font-size: var(--text-sm);
+      font-weight: 300;
+      line-height: 1.75;
+      color: rgba(253, 251, 248, 0.6);
+      max-width: 400px;
+      margin: 0 auto var(--space-8);
+    }
+    .hero__collage-badge { display: none; }
+    .hero__lead { font-size: 14px; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (min-width: 640px) {
+      .hero__cta-group { flex-direction: row; }
+      .hero__collage-grid { height: 280px; }
+      .hero__collage-badge { display: flex; }
+      .hero__lead { font-size: clamp(15px, 3vw, 17px); }
+      .wyg__grid { grid-template-columns: 1fr 1fr; }
+      .hiw__steps { gap: var(--space-3); }
+    }
+
+    @media (min-width: 1024px) {
+      .hero__inner {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-16);
+      }
+
+      .hero__content { flex: 1; }
+
+  
+      .hero__collage { flex: 1; }
+      .hero__collage-grid { height: 400px; gap: 10px;}
+
+      .hero__shape--3 { display: block; }
+
+      .hiw__steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-4);
+      }
+
+      .hiw__step { flex-direction: column; }
+
+      .wyg__grid { grid-template-columns: repeat(2, 1fr); }
+
+      .fit-check { padding: var(--space-16) var(--space-12); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ════════════════════════════════
+       NAV
+  ════════════════════════════════ -->
+  <header role="banner">
+    <nav class="nav" id="main-nav" aria-label="Main navigation">
+      <div class="nav__inner">
+        <a href="/" class="nav__logo" aria-label="Aloura home">Aloura<span>.</span></a>
+
+        <ul class="nav__links" role="list">
+          <li><a href="#how-it-works" class="nav__link">How it works</a></li>
+          <li><a href="#what-you-get" class="nav__link">What you get</a></li>
+        </ul>
+
+        <a href="/signup" class="btn btn--primary" style="font-size: var(--text-xs); padding: 10px 20px; letter-spacing: 0.04em;">
+          Get your profile
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+
+    <!-- ════════════════════════════════
+         HERO
+    ════════════════════════════════ -->
+    <section class="hero" aria-label="Hero">
+      <div class="hero__bg" aria-hidden="true"></div>
+      <div class="hero__shape hero__shape--1" aria-hidden="true"></div>
+      <div class="hero__shape hero__shape--2" aria-hidden="true"></div>
+      <div class="hero__shape hero__shape--3" aria-hidden="true"></div>
+
+      <div class="container">
+        <div class="hero__inner">
+
+          <!-- Left: Copy -->
+          <div class="hero__content">
+            <div class="eyebrow hero__eyebrow">Style intelligence</div>
+
+            <h1 class="hero__headline">
+              Fashion that<br>actually <em>works</em><br>for you.
+            </h1>
+
+            <p class="hero__lead">
+              Upload your photos, tell us your goals, and receive a personalized style report. No more guessing.
+            </p>
+
+            <div class="hero__cta-group">
+              <a href="/signup" class="btn btn--accent btn--lg">
+                Check my style profile
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+              </a>
+              <a href="#how-it-works" class="btn btn--ghost btn--lg">
+                See how it works
+              </a>
+            </div>
+
+            <div class="hero__social-proof" style="margin-top: var(--space-6);">
+              <div class="hero__avatars" aria-hidden="true">
+                <div class="hero__avatar hero__avatar--a">MK</div>
+                <div class="hero__avatar hero__avatar--b">NS</div>
+                <div class="hero__avatar hero__avatar--c">JR</div>
+                <div class="hero__avatar hero__avatar--d">AL</div>
+              </div>
+              <div class="hero__proof-text">
+                <strong>600+ style profiles to go</strong>
+                Join! it's free
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Collage (desktop only) -->
+          <div class="hero__collage" aria-hidden="true">
+            <div class="hero__collage-grid">
+              <div class="hero__collage-cell hero__collage-cell--main">
+                <img
+                  src="assets/trendy_glasses.jpg"
+                  alt="Fashion editorial"
+                  loading="eager"
+                >
+              </div>
+              <div class="hero__collage-cell">
+                <img
+                  src="assets/jacket_sat.jpg"
+                  alt="Style inspiration"
+                  loading="eager"
+                >
+              </div>
+              <div class="hero__collage-cell">
+                <img
+                  src="assets/jack_hanged.jpg"
+                  alt="Curated outfit"
+                  loading="eager"
+                >
+              </div>
+            </div>
+
+            <!-- Floating badge -->
+            <div class="hero__collage-badge">
+              <div class="hero__collage-badge-icon">
+                <i class="fa-solid fa-sparkles"></i>
+              </div>
+              <div class="hero__collage-badge-text">
+                <strong>Style report ready</strong>
+                <span>Personalized in under a minute</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════
+         HOW IT WORKS
+    ════════════════════════════════ -->
+    <section class="section hiw" id="how-it-works" aria-labelledby="hiw-heading">
+      <div class="container">
+
+        <div class="hiw__header animate-fade-up">
+          <div class="eyebrow" style="justify-content: center; margin-bottom: var(--space-3);">The process</div>
+          <h2 class="heading-lg" id="hiw-heading" style="text-align: center;">
+            Three steps to your<br><em class="text-italic">style profile</em>
+          </h2>
+        </div>
+
+        <div class="hiw__steps">
+
+          <div class="hiw__step animate-fade-up">
+            <div class="hiw__step-icon" aria-hidden="true">
+              <i class="fa-solid fa-camera"></i>
+            </div>
+            <div class="hiw__step-content">
+              <div class="hiw__step-num">01</div>
+              <h3 class="hiw__step-title">Upload your photos</h3>
+              <p class="hiw__step-desc">Share one to three photos of yourself — face visible. That's everything we need to begin your personal analysis.</p>
+            </div>
+          </div>
+
+          <div class="hiw__step animate-fade-up" style="transition-delay: 0.1s;">
+            <div class="hiw__step-icon" aria-hidden="true">
+              <i class="fa-solid fa-sliders"></i>
+            </div>
+            <div class="hiw__step-content">
+              <div class="hiw__step-num">02</div>
+              <h3 class="hiw__step-title">Tell us your goals</h3>
+              <p class="hiw__step-desc">Improving confidence? Dressing more professionally? Looking better on dates? Pick three goals and we'll tailor everything to what matters to you.</p>
+            </div>
+          </div>
+
+          <div class="hiw__step animate-fade-up" style="transition-delay: 0.2s;">
+            <div class="hiw__step-icon" aria-hidden="true">
+              <i class="fa-solid fa-sparkles"></i>
+            </div>
+            <div class="hiw__step-content">
+              <div class="hiw__step-num">03</div>
+              <h3 class="hiw__step-title">Get your style report</h3>
+              <p class="hiw__step-desc">Receive a full personalized report — your best colors, accessories, frame shapes, silhouettes, and curated outfit mood boards.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════
+         WHAT YOU GET
+    ════════════════════════════════ -->
+    <section class="section" id="what-you-get" aria-labelledby="wyg-heading">
+      <div class="container">
+
+        <div class="wyg__header animate-fade-up">
+          <div class="eyebrow" style="margin-bottom: var(--space-3);">Your report includes</div>
+          <h2 class="heading-lg" id="wyg-heading" style="max-width: 440px;">
+            Everything you need to<br><em class="text-italic">dress with intention</em>
+          </h2>
+          <p class="lead" style="margin-top: var(--space-4); max-width: 480px;">
+            No more guessing what works. Your report is specific to your appearance and goals — not generic advice.
+          </p>
+        </div>
+
+        <div class="wyg__grid">
+
+          <div class="wyg__item animate-fade-up">
+            <div class="wyg__item-icon wyg__item-icon--warm" aria-hidden="true">
+              <i class="fa-solid fa-palette"></i>
+            </div>
+            <div>
+              <h3 class="wyg__item-title">Color intelligence</h3>
+              <p class="wyg__item-desc">Your best colors, accent shades, colors to avoid, and high-contrast pairings — based on your skin tone and undertone.</p>
+            </div>
+          </div>
+
+          <div class="wyg__item animate-fade-up" style="transition-delay: 0.05s;">
+            <div class="wyg__item-icon wyg__item-icon--earth" aria-hidden="true">
+              <i class="fa-solid fa-gem"></i>
+            </div>
+            <div>
+              <h3 class="wyg__item-title">Jewelry & accessories</h3>
+              <p class="wyg__item-desc">Metals, chain styles, watch recommendations, and leather tones that complement your features and aesthetic.</p>
+            </div>
+          </div>
+
+          <div class="wyg__item animate-fade-up" style="transition-delay: 0.1s;">
+            <div class="wyg__item-icon wyg__item-icon--stone" aria-hidden="true">
+              <i class="fa-solid fa-glasses"></i>
+            </div>
+            <div>
+              <h3 class="wyg__item-title">Eyewear & frames</h3>
+              <p class="wyg__item-desc">Frame shapes, proportions, and materials that suit your face structure — for glasses and sunglasses alike.</p>
+            </div>
+          </div>
+
+          <div class="wyg__item animate-fade-up" style="transition-delay: 0.15s;">
+            <div class="wyg__item-icon wyg__item-icon--dark" aria-hidden="true">
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div>
+              <h3 class="wyg__item-title">Outfit mood boards</h3>
+              <p class="wyg__item-desc">Scenario-based curated looks you can swipe through — styled for your goals, proportions, and palette. Real outfits, not abstract inspiration.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════
+         FIT CHECK TEASER
+    ════════════════════════════════ -->
+    <section aria-labelledby="fitcheck-heading">
+      <div class="container">
+
+        <div class="fit-check animate-fade-up">
+          <div class="fit-check__icon" aria-hidden="true">
+            <i class="fa-solid fa-camera-retro"></i>
+          </div>
+
+          <div class="fit-check__coming-soon" aria-label="Coming soon">
+            <i class="fa-regular fa-clock" aria-hidden="true"></i>
+            Coming soon
+          </div>
+
+          <h2 class="heading-md fit-check__title" id="fitcheck-heading">
+            Try <em class="text-italic">Fit Check</em>
+          </h2>
+
+          <p class="lead fit-check__desc">
+            Scan any outfit — yours or one you've spotted online — and get instant feedback on fit, color harmony, and proportion against your style profile.
+          </p>
+
+          <button
+            type="button"
+            class="btn btn--ghost btn--lg"
+            id="fit-check-btn"
+            aria-label="Notify me when Fit Check launches"
+          >
+            <i class="fa-regular fa-bell" aria-hidden="true"></i>
+            Notify me when it's ready
+          </button>
+
+          <p class="text-faint" style="margin-top: var(--space-4); font-size: var(--text-xs);">
+            We're measuring interest — no commitment required.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════
+         FINAL CTA BAND
+    ════════════════════════════════ -->
+    <section class="cta-band" aria-labelledby="cta-heading">
+      <div class="container" style="max-width: 640px;">
+
+        <div class="cta-band__eyebrow animate-fade-up">
+          <i class="fa-solid fa-sparkles" aria-hidden="true"></i>
+          Free to start
+        </div>
+
+        <h2 class="cta-band__headline animate-fade-up" id="cta-heading">
+          Your style,<br><em>finally</em> decoded.
+        </h2>
+
+        <p class="cta-band__lead animate-fade-up">
+          Upload your photos, pick your goals, and receive a personalized report in under a minute. No subscription. No guesswork.
+        </p>
+
+        <a href="/signup" class="btn btn--accent btn--lg animate-fade-up">
+          Check my style profile
+          <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        </a>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ════════════════════════════════
+       FOOTER
+  ════════════════════════════════ -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer__inner">
+
+      <div>
+        <div class="footer__logo">Aloura<span>.</span></div>
+        <p class="footer__tagline">Your personal style intelligence.</p>
+      </div>
+
+      <nav aria-label="Footer navigation">
+        <ul class="footer__links" role="list">
+          <li><a href="/privacy" class="footer__link">Privacy Policy</a></li>
+          <li><a href="/terms" class="footer__link">Terms & Conditions</a></li>
+          <li><a href="/contact" class="footer__link">Contact</a></li>
+        </ul>
+      </nav>
+
+    </div>
+
+    <div class="container">
+      <div class="footer__bottom">
+        &copy; <span id="footer-year"></span> Aloura. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <!-- ════════════════════════════════
+       FIT CHECK MODAL
+  ════════════════════════════════ -->
+  <div
+    class="modal-overlay"
+    id="modal-fit-check"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+    tabindex="-1"
+  >
+    <div class="modal">
+      <div class="modal__icon" aria-hidden="true">
+        <i class="fa-solid fa-camera-retro"></i>
+      </div>
+      <h3 class="modal__title" id="modal-title">Fit Check is coming</h3>
+      <p class="modal__body">
+        We're actively building it. By clicking Notify Me, you've registered your interest — we'll let you know the moment it's live. Thank you for being here early.
+      </p>
+      <button type="button" class="btn btn--primary btn--full" id="modal-close" aria-label="Close">
+        Got it
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SCRIPTS
+  ════════════════════════════════ -->
+  <script>
+    /* ── Footer year ── */
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+    /* ── Nav scroll shadow ── */
+    const nav = document.getElementById('main-nav');
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 16);
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    /* ── Scroll-triggered animations ── */
+    const observer = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); }),
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+    document.querySelectorAll('.animate-fade-up').forEach(el => observer.observe(el));
+
+    /* ── Fit check modal ── */
+    const modal    = document.getElementById('modal-fit-check');
+    const fitBtn   = document.getElementById('fit-check-btn');
+    const closeBtn = document.getElementById('modal-close');
+
+    function openModal() {
+      modal.classList.add('open');
+      modal.focus();
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+      fitBtn.focus();
+    }
+
+    fitBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+    /* ── Smooth scroll for hash links ── */
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (!target) return;
+        e.preventDefault();
+        const top = target.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top, behavior: 'smooth' });
+      });
+    });
+  </script>
+
+</body>
+</html>
