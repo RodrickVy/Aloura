@@ -313,6 +313,94 @@ export class AuthService {
   }
 
   /**
+   * Signs up a new user with email and password.
+   *
+   * @param {{ name: string, email: string, password: string }} params
+   * @returns {Promise<Result>}
+   */
+  async signUpWithPassword({ name, email, password }) {
+    if (!name?.trim())     return err('Please enter your name.');
+    if (!email?.trim())    return err('Please enter your email address.');
+    if (!password)         return err('Please enter a password.');
+    if (password.length < 8) return err('Password must be at least 8 characters.');
+
+    const { data, error: supabaseError } = await this.#client.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: {
+        data: { full_name: name.trim(), display_name: name.trim() },
+      },
+    });
+
+    if (supabaseError) return err(this.#mapSupabaseError(supabaseError));
+    return ok({ session: data.session, user: data.user });
+  }
+
+  /**
+   * Signs in an existing user with email and password.
+   *
+   * @param {{ email: string, password: string }} params
+   * @returns {Promise<Result>}
+   */
+  async signInWithPassword({ email, password }) {
+    if (!email?.trim()) return err('Please enter your email address.');
+    if (!password)      return err('Please enter your password.');
+
+    const { data, error: supabaseError } = await this.#client.auth.signInWithPassword({
+      email:    email.trim().toLowerCase(),
+      password,
+    });
+
+    if (supabaseError) return err(this.#mapSupabaseError(supabaseError));
+    return ok({ session: data.session, user: data.user });
+  }
+
+  /**
+   * Creates an account row in public.accounts after OTP verification.
+   * If the row already exists (returning user), fetches and returns it.
+   * Call this immediately after verifyCode succeeds.
+   *
+   * @param {{ authId: string, name: string, email: string }} params
+   * @returns {Promise<Result>} data: { id, auth_id, name, email, ... }
+   */
+  async createOrFetchAccount({ authId, name, email }) {
+    if (!authId) return err('Auth ID is required.');
+    if (!email)  return err('Email is required.');
+
+    // 1. First try to fetch existing row — avoids insert conflict entirely
+    const { data: existing } = await this.#client
+      .from('accounts')
+      .select('*')
+      .eq('auth_id', authId)
+      .maybeSingle();
+
+    if (existing) {
+      // Returning user — update last sign in
+      await this.#client
+        .from('accounts')
+        .update({ last_sign_in_at: new Date().toISOString() })
+        .eq('auth_id', authId);
+      return ok(existing);
+    }
+
+    // 2. No row found — new user, insert
+    const { data: inserted, error: insertError } = await this.#client
+      .from('accounts')
+      .insert({
+        auth_id: authId,
+        name:    name?.trim() || null,
+        email:   email.trim().toLowerCase(),
+      })
+      .select()
+      .single();
+
+    if (inserted) return ok(inserted);
+
+    console.error('[createOrFetchAccount] Insert error:', JSON.stringify(insertError));
+    return err('Account setup failed. Please try again.');
+  }
+
+  /**
    * Resends the verification code to the same email.
    * Respects the resend cooldown window.
    *
@@ -477,7 +565,3 @@ export class AuthService {
     return 'Something went wrong. Please try again.';
   }
 }
-
-
-
-

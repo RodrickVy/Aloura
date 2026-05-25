@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Aloura — Create Your Style Profile</title>
+  <meta name="description" content="Sign up for Aloura and get your personalized style profile in under 2 minutes.">
+  <meta name="robots" content="noindex">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+
+  <!-- Shared design system -->
+  <link rel="stylesheet" href="index.css">
+
+  <style>
+
+    /* PAGE BASE */
+    body {
+      font-family: var(--font-body);
+      background: var(--clr-off-white);
+      color: var(--clr-charcoal);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* SCREEN SYSTEM */
+    .screen {
+      display: none;
+      min-height: 100vh;
+      width: 100%;
+      flex-direction: column;
+      opacity: 0;
+      transition: opacity 0.45s var(--ease);
+    }
+    .screen.active  { display: flex; }
+    .screen.visible { opacity: 1; }
+
+    /* FIXED NAV */
+    .su-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-inline: var(--page-px);
+      background: rgba(253, 251, 248, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--clr-border);
+    }
+
+    /* PROGRESS BAR */
+    .su-progress {
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      z-index: 199;
+      padding: 12px var(--page-px);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      background: rgba(253, 251, 248, 0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--clr-border);
+    }
+    .su-progress__steps {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex: 1;
+    }
+    .su-progress__step {
+      flex: 1;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--clr-light-taupe);
+      overflow: hidden;
+      transition: background var(--dur-slow) var(--ease);
+    }
+    .su-progress__step.is-done   { background: var(--clr-charcoal); }
+    .su-progress__step.is-active { background: var(--clr-terracotta); }
+    .su-progress__label {
+      font-size: var(--text-xs);
+      font-weight: 400;
+      color: var(--clr-text-muted);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    /* BODY OFFSET */
+    .su-body {
+      padding-top: 120px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: var(--space-16);
+      padding-inline: var(--page-px);
+    }
+
+    /* BACK BUTTON */
+    .su-back {
+      font-size: var(--text-sm);
+      font-weight: 400;
+      color: var(--clr-text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 0;
+      transition: color var(--dur-fast);
+    }
+    .su-back:hover { color: var(--clr-charcoal); }
+    .su-back[hidden] { visibility: hidden; pointer-events: none; }
+
+    /* SHARED FORM ELEMENTS */
+    .su-eyebrow {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--clr-terracotta);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-5);
+    }
+    .su-eyebrow::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 1px;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+    .su-headline {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 7vw, 48px);
+      font-weight: 500;
+      line-height: 1.08;
+      letter-spacing: -1px;
+      margin-bottom: var(--space-3);
+    }
+    .su-headline em { font-style: italic; color: var(--clr-brown); }
+    .su-subtext {
+      font-size: var(--text-base);
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--clr-text-muted);
+      margin-bottom: var(--space-10);
+      max-width: 380px;
+    }
+    .su-field { display: flex; flex-direction: column; gap: var(--space-2); }
+    .su-label {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--clr-text-muted);
+    }
+    .su-input {
+      width: 100%;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      font-weight: 300;
+      color: var(--clr-charcoal);
+      background: var(--clr-off-white);
+      border: 1.5px solid var(--clr-light-taupe);
+      border-radius: var(--radius-md);
+      padding: 15px 18px;
+      outline: none;
+      transition: border-color var(--dur-base) var(--ease),
+                  box-shadow var(--dur-base) var(--ease);
+    }
+    .su-input::placeholder { color: rgba(158, 140, 126, 0.55); }
+    .su-input:hover { border-color: #BFB0A5; }
+    .su-input:focus {
+      border-color: var(--clr-brown);
+      box-shadow: 0 0 0 3px rgba(107, 79, 58, 0.1);
+    }
+    .su-input.is-error {
+      border-color: rgba(196, 80, 60, 0.6);
+      box-shadow: 0 0 0 3px rgba(196, 80, 60, 0.08);
+    }
+    .su-field-error {
+      font-size: var(--text-xs);
+      font-weight: 400;
+      color: #A33020;
+      min-height: 16px;
+      transition: opacity var(--dur-fast);
+    }
+    .su-field-error:empty { opacity: 0; }
+    .su-reassurance {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--clr-text-faint);
+      flex-wrap: wrap;
+      text-align: center;
+    }
+    .su-reassurance i { font-size: 10px; color: var(--clr-terracotta); }
+
+    /* SCREEN 1 — ACCOUNT */
+    #screen-account { background: var(--clr-off-white); }
+    #screen-account::before {
+      content: '';
+      position: fixed;
+      top: -10%;
+      right: -8%;
+      width: min(520px, 70vw);
+      height: min(620px, 80vw);
+      background: linear-gradient(140deg, #EDD8C4 0%, #D4B896 40%, #C4A07A 100%);
+      border-radius: 55% 45% 60% 40% / 50% 55% 45% 50%;
+      opacity: 0.2;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .account-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+    .account-form-col {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding-top: 120px;
+      padding-bottom: var(--space-12);
+      padding-inline: var(--page-px);
+      position: relative;
+      z-index: 1;
+    }
+    .account-form-inner {
+      width: 100%;
+      max-width: 440px;
+    }
+    .account-fields {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      margin-bottom: var(--space-8);
+    }
+    .account-panel {
+      display: none;
+      width: 42%;
+      position: fixed;
+      right: 0; top: 0; bottom: 0;
+      background: #4A3828;
+      clip-path: polygon(10% 0%, 100% 0%, 100% 100%, 0% 100%);
+      overflow: hidden;
+      z-index: 0;
+    }
+    .account-panel__img { position: absolute; inset: 0; }
+    .account-panel__img img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; }
+    .account-panel__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(44, 44, 44, 0.6) 100%);
+      z-index: 1;
+    }
+    .account-panel__card {
+      position: absolute;
+      bottom: 48px; left: 40px; right: 40px;
+      z-index: 2;
+      background: rgba(253, 251, 248, 0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6) var(--space-8);
+    }
+    .account-panel__quote {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-style: italic;
+      color: rgba(253, 251, 248, 0.92);
+      line-height: 1.55;
+      margin-bottom: var(--space-3);
+    }
+    .account-panel__author {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(253, 251, 248, 0.45);
+    }
+
+    /* SCREEN 2 — VERIFY */
+    #screen-verify { background: var(--clr-cream); }
+    .verify-wrap { width: 100%; max-width: 420px; text-align: center; }
+    .verify-icon {
+      width: 72px; height: 72px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, var(--clr-beige), #EDD8C4);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto var(--space-6);
+      font-size: 28px; color: var(--clr-brown);
+      box-shadow: var(--shadow-md);
+    }
+    .verify-email-ref {
+      font-size: var(--text-base); font-weight: 500;
+      color: var(--clr-brown); margin-bottom: var(--space-8);
+    }
+    .otp-row {
+      display: flex; gap: var(--space-2);
+      justify-content: center; margin-bottom: var(--space-8);
+    }
+    .otp-box {
+      width: 48px; height: 60px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--clr-light-taupe);
+      background: var(--clr-off-white);
+      font-family: var(--font-display);
+      font-size: 26px; font-weight: 500;
+      color: var(--clr-charcoal);
+      text-align: center; outline: none;
+      transition: border-color var(--dur-base) var(--ease),
+                  box-shadow var(--dur-base) var(--ease),
+                  background var(--dur-base) var(--ease);
+      caret-color: var(--clr-brown);
+    }
+    .otp-box:focus { border-color: var(--clr-brown); box-shadow: 0 0 0 3px rgba(107, 79, 58, 0.1); }
+    .otp-box.is-filled { border-color: #BFB0A5; background: var(--clr-beige); }
+    .otp-box.is-error  { border-color: rgba(196, 80, 60, 0.6); background: rgba(196, 80, 60, 0.04); }
+    .verify-error { font-size: var(--text-sm); color: #A33020; margin-bottom: var(--space-4); min-height: 20px; }
+    .verify-helpers { display: flex; flex-direction: column; gap: var(--space-2); align-items: center; }
+    .verify-resend {
+      font-size: var(--text-sm); font-weight: 400; color: var(--clr-brown);
+      background: none; border: none; cursor: pointer;
+      padding: var(--space-1) 0; transition: color var(--dur-fast);
+    }
+    .verify-resend:hover { color: var(--clr-charcoal); }
+    .verify-resend:disabled { color: var(--clr-text-faint); cursor: not-allowed; }
+    .verify-edit-email {
+      font-size: 12px; font-weight: 300; color: var(--clr-text-muted);
+      background: none; border: none; cursor: pointer;
+      padding: var(--space-1) 0; transition: color var(--dur-fast);
+    }
+    .verify-edit-email:hover { color: var(--clr-charcoal); }
+
+    /* SCREEN 3 — PURPOSE */
+    #screen-purpose { background: var(--clr-off-white); }
+    .purpose-wrap { width: 100%; max-width: 800px; }
+    .purpose-header { text-align: center; margin-bottom: var(--space-8); }
+    .purpose-header .su-eyebrow { justify-content: center; }
+    .purpose-header .su-eyebrow::before { display: none; }
+    .purpose-header .su-subtext { max-width: 400px; margin-inline: auto; margin-bottom: 0; }
+    .purpose-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-8);
+    }
+    .purpose-card {
+      background: var(--clr-off-white);
+      border: 1.5px solid var(--clr-light-taupe);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-4);
+      cursor: pointer;
+      display: flex; align-items: center; gap: var(--space-3);
+      position: relative; overflow: hidden; user-select: none;
+      transition: border-color var(--dur-base) var(--ease),
+                  box-shadow var(--dur-base) var(--ease),
+                  transform var(--dur-base) var(--ease),
+                  background var(--dur-base) var(--ease);
+    }
+    .purpose-card:hover { border-color: #BFB0A5; box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+    .purpose-card.is-selected { border-color: var(--clr-brown); background: var(--clr-beige); box-shadow: 0 4px 20px rgba(107, 79, 58, 0.12); }
+    .purpose-card__icon { font-size: 22px; flex-shrink: 0; line-height: 1; }
+    .purpose-card__label { font-size: var(--text-sm); font-weight: 400; color: var(--clr-charcoal); line-height: 1.4; flex: 1; }
+    .purpose-card.is-selected .purpose-card__label { font-weight: 500; }
+    .purpose-card__check {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 1.5px solid var(--clr-light-taupe);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      transition: background var(--dur-base) var(--ease), border-color var(--dur-base) var(--ease);
+    }
+    .purpose-card__check i { font-size: 8px; color: white; opacity: 0; transition: opacity var(--dur-fast); }
+    .purpose-card.is-selected .purpose-card__check { background: var(--clr-brown); border-color: var(--clr-brown); }
+    .purpose-card.is-selected .purpose-card__check i { opacity: 1; }
+    .purpose-footer { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
+    .purpose-helper { font-size: var(--text-xs); font-weight: 300; color: var(--clr-text-muted); letter-spacing: 0.02em; }
+    .btn-wide {
+      min-width: 220px; opacity: 0.38; pointer-events: none;
+      transition: opacity var(--dur-base) var(--ease),
+                  background var(--dur-base) var(--ease),
+                  transform var(--dur-fast) var(--ease),
+                  box-shadow var(--dur-base) var(--ease);
+    }
+    .btn-wide.is-active { opacity: 1; pointer-events: auto; }
+    .btn-wide.is-active:hover { background: var(--clr-brown); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(107, 79, 58, 0.28); }
+
+    /* ─────────────────────────────────────────
+       SCREEN 4 — UPLOAD PHOTOS
+    ───────────────────────────────────────── */
+    #screen-upload { background: var(--clr-off-white); position: relative; }
+
+    /* Blurred bg hint */
+    .upload-bg-hint {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .upload-bg-hint img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.06;
+      filter: blur(28px) saturate(0.3);
+      transform: scale(1.06);
+    }
+
+    .upload-body {
+      padding-top: 120px;
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-bottom: var(--space-16);
+      padding-inline: var(--page-px);
+      position: relative;
+      z-index: 1;
+    }
+
+    .upload-wrap {
+      width: 100%;
+      max-width: 520px;
+      padding-top: var(--space-4);
+    }
+
+    .upload-header {
+      text-align: center;
+      margin-bottom: var(--space-8);
+    }
+    .upload-header .su-eyebrow { justify-content: center; }
+    .upload-header .su-eyebrow::before { display: none; }
+    .upload-header .su-subtext { max-width: 360px; margin-inline: auto; margin-bottom: 0; }
+
+    /* Slot grid */
+    .upload-slots {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+
+    .upload-slot {
+      aspect-ratio: 3 / 4;
+      border-radius: var(--radius-lg);
+      border: 1.5px dashed var(--clr-light-taupe);
+      background: var(--clr-cream);
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--dur-base) var(--ease),
+                  background var(--dur-base) var(--ease);
+      cursor: pointer;
+    }
+    .upload-slot:hover:not(.is-filled):not(.is-loading) {
+      border-color: var(--clr-taupe);
+      background: var(--clr-beige);
+    }
+
+    /* Empty state */
+    .slot-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      pointer-events: none;
+    }
+    .slot-empty__icon {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--clr-beige);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; color: var(--clr-taupe);
+      transition: background var(--dur-base), color var(--dur-base);
+    }
+    .upload-slot:hover:not(.is-filled) .slot-empty__icon {
+      background: rgba(107, 79, 58, 0.12);
+      color: var(--clr-brown);
+    }
+    .slot-empty__label {
+      font-size: 10px; font-weight: 400;
+      color: var(--clr-text-faint); letter-spacing: 0.04em;
+    }
+
+    /* Slot number badge */
+    .slot-num {
+      position: absolute;
+      top: 8px; left: 8px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(253, 251, 248, 0.85);
+      border: 1px solid var(--clr-border);
+      font-size: 10px; font-weight: 500;
+      color: var(--clr-taupe);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 3;
+    }
+
+    /* Remove button */
+    .slot-remove {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(44, 44, 44, 0.65);
+      backdrop-filter: blur(4px);
+      border: none; cursor: pointer;
+      display: none;
+      align-items: center; justify-content: center;
+      font-size: 10px; color: white;
+      z-index: 12;       /* above slot-image */
+      transition: background var(--dur-fast);
+    }
+    .slot-remove:hover { background: rgba(163, 48, 32, 0.85); }
+
+    /* Filled state */
+    .upload-slot.is-filled { border-style: solid; border-color: var(--clr-border); cursor: default; }
+    .upload-slot.is-filled .slot-remove { display: flex; }
+    .upload-slot.is-filled .slot-num    { display: none; }
+    .upload-slot.is-filled .slot-empty  { display: none; }
+
+    /* Loading state */
+    .upload-slot.is-loading { cursor: default; border-style: solid; border-color: var(--clr-border); }
+    .upload-slot.is-loading .slot-empty { display: none; }
+    .upload-slot.is-loading .slot-num   { display: none; }
+
+    /* Uploaded image */
+    .slot-image {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: none;
+      border-radius: inherit;
+      z-index: 2;        /* sits above .slot-uploading overlay */
+    }
+    .upload-slot.is-filled .slot-image { display: block; }
+
+    /* ── Upload animation styles ── */
+    .slot-uploading {
+      position: absolute; inset: 0;
+      border-radius: inherit; overflow: hidden;
+    }
+    .slot-preview {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: blur(8px) brightness(0.78);
+      transform: scale(1.09);
+      transition: filter 0.6s var(--ease), transform 0.6s var(--ease);
+    }
+    .slot-done .slot-preview { filter: none; transform: scale(1); }
+
+    .slot-shimmer {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.2) 50%,
+        transparent 70%
+      );
+      background-size: 200% 100%;
+      animation: slot-shimmer-sweep 1.5s ease-in-out infinite;
+    }
+    @keyframes slot-shimmer-sweep {
+      0%   { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+
+    .slot-uploading-bar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .slot-uploading-bar-fill {
+      height: 100%; width: 0%;
+      background: var(--clr-terracotta);
+      animation: slot-bar-grow 3s ease-out forwards;
+    }
+    @keyframes slot-bar-grow {
+      0%   { width: 0%; }
+      60%  { width: 72%; }
+      90%  { width: 88%; }
+      100% { width: 88%; }
+    }
+
+    .slot-uploading-label {
+      position: absolute;
+      bottom: 10px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(44, 44, 44, 0.55);
+      backdrop-filter: blur(6px);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
+      padding: 4px 10px; border-radius: 20px; white-space: nowrap;
+    }
+    .slot-uploading-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--clr-terracotta);
+      animation: dot-pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes dot-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.35; transform: scale(0.65); }
+    }
+    .slot-error .slot-uploading-label { background: rgba(163, 48, 32, 0.75); }
+
+    /* Add photo button */
+    .upload-add-btn {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      border: 1.5px dashed var(--clr-light-taupe);
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: var(--text-sm); font-weight: 400;
+      color: var(--clr-text-muted);
+      cursor: pointer;
+      transition: border-color var(--dur-base), color var(--dur-base), background var(--dur-base);
+      margin-bottom: var(--space-5);
+    }
+    .upload-add-btn:hover {
+      border-color: var(--clr-taupe);
+      color: var(--clr-charcoal);
+      background: var(--clr-cream);
+    }
+    .upload-add-btn:disabled {
+      opacity: 0.35; cursor: not-allowed; pointer-events: none;
+    }
+
+    .upload-hint {
+      text-align: center;
+      font-size: var(--text-xs); font-weight: 300;
+      color: var(--clr-text-faint);
+      margin-bottom: var(--space-6); line-height: 1.65;
+    }
+
+    .upload-footer {
+      display: flex; flex-direction: column;
+      align-items: center; gap: var(--space-3);
+    }
+
+    .upload-req-note {
+      font-size: var(--text-xs); font-weight: 300;
+      color: var(--clr-text-muted);
+    }
+
+    /* AUTH TABS */
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: var(--space-8);
+      border-bottom: 1.5px solid var(--clr-light-taupe);
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 10px 8px;
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--clr-text-muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1.5px;
+      cursor: pointer;
+      transition: color var(--dur-base), border-color var(--dur-base);
+      text-align: center;
+    }
+
+    .auth-tab:hover { color: var(--clr-charcoal); }
+
+    .auth-tab.is-active {
+      color: var(--clr-charcoal);
+      border-bottom-color: var(--clr-charcoal);
+    }
+
+    /* Password form */
+    .auth-panel { display: none; }
+    .auth-panel.is-active { display: block; }
+
+    .su-input-password-wrap {
+      position: relative;
+    }
+
+    .su-input-password-wrap .su-input {
+      padding-right: 48px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--clr-text-faint);
+      font-size: 14px;
+      padding: 4px;
+      transition: color var(--dur-fast);
+    }
+
+    .toggle-password:hover { color: var(--clr-taupe); }
+
+    .auth-switch-mode {
+      text-align: center;
+      font-size: var(--text-xs);
+      color: var(--clr-text-muted);
+      margin-top: var(--space-3);
+    }
+
+    .auth-switch-mode button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--clr-brown);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      padding: 0;
+      transition: color var(--dur-fast);
+    }
+
+    .auth-switch-mode button:hover { color: var(--clr-charcoal); }
+
+    /* SCREEN — EXISTING REPORTS PICKER */
+    #screen-reports { background: var(--clr-cream); }
+
+    .reports-wrap {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .reports-header {
+      text-align: center;
+      margin-bottom: var(--space-8);
+    }
+
+    .reports-header .su-eyebrow { justify-content: center; }
+    .reports-header .su-eyebrow::before { display: none; }
+
+    .reports-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+
+    .report-card {
+      background: var(--clr-off-white);
+      border: 1.5px solid var(--clr-light-taupe);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      transition: border-color var(--dur-base), box-shadow var(--dur-base), transform var(--dur-base);
+      user-select: none;
+    }
+
+    .report-card:hover {
+      border-color: var(--clr-taupe);
+      box-shadow: var(--shadow-sm);
+      transform: translateY(-1px);
+    }
+
+    .report-card.is-selected {
+      border-color: var(--clr-brown);
+      background: var(--clr-beige);
+      box-shadow: 0 4px 20px rgba(107,79,58,0.12);
+    }
+
+    .report-card__thumb {
+      width: 52px;
+      height: 64px;
+      border-radius: var(--radius-md);
+      background: var(--clr-light-taupe);
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--clr-taupe);
+      font-size: 18px;
+    }
+
+    .report-card__thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .report-card__body { flex: 1; min-width: 0; }
+
+    .report-card__title {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 500;
+      color: var(--clr-charcoal);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .report-card__meta {
+      font-size: var(--text-xs);
+      color: var(--clr-text-muted);
+      font-weight: 300;
+    }
+
+    .report-card__status {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .report-card__status--done {
+      background: rgba(107,79,58,0.1);
+      color: var(--clr-brown);
+    }
+
+    .report-card__status--progress {
+      background: rgba(196,144,106,0.15);
+      color: var(--clr-terracotta);
+    }
+
+    .reports-divider {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+      color: var(--clr-text-faint);
+      font-size: var(--text-xs);
+    }
+
+    .reports-divider::before,
+    .reports-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--clr-border);
+    }
+
+    .reports-loading {
+      text-align: center;
+      padding: var(--space-8);
+      color: var(--clr-text-muted);
+      font-size: var(--text-sm);
+      font-weight: 300;
+    }
+
+    /* UPLOAD — existing image gallery */
+    .existing-images-section {
+      margin-bottom: var(--space-5);
+    }
+
+    .existing-images-label {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--clr-text-muted);
+      margin-bottom: var(--space-3);
+      display: block;
+    }
+
+    .existing-images-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+
+    .existing-img-thumb {
+      aspect-ratio: 3/4;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      position: relative;
+      transition: border-color var(--dur-base), transform var(--dur-base);
+      background: var(--clr-light-taupe);
+    }
+
+    .existing-img-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .existing-img-thumb:hover { transform: scale(1.03); }
+
+    .existing-img-thumb.is-selected {
+      border-color: var(--clr-brown);
+    }
+
+    .existing-img-thumb__check {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--clr-brown);
+      color: white;
+      font-size: 9px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .existing-img-thumb.is-selected .existing-img-thumb__check { display: flex; }
+
+    /* GRAIN OVERLAY */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      z-index: 9999; pointer-events: none;
+      opacity: 0.022;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    /* RESPONSIVE */
+    @media (min-width: 640px) {
+      .purpose-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .account-panel { display: block; }
+      .account-form-col { max-width: 58%; padding-left: var(--page-px-lg); }
+      .purpose-grid { grid-template-columns: repeat(4, 1fr); }
+      .otp-box { width: 54px; height: 68px; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- FIXED NAV -->
+  <nav class="su-nav" aria-label="Sign up navigation">
+    <a href="index.html" class="nav-logo" aria-label="Aloura home">Aloura<span>.</span></a>
+    <button class="su-back" id="btn-back" aria-label="Go back" hidden>
+      <i class="fas fa-arrow-left" style="font-size: 10px;" aria-hidden="true"></i>
+      Back
+    </button>
+  </nav>
+
+  <!-- PROGRESS BAR -->
+  <div class="su-progress" role="progressbar" aria-label="Sign up progress">
+    <div class="su-progress__steps">
+      <div class="su-progress__step is-active" id="prog-1"></div>
+      <div class="su-progress__step"            id="prog-2"></div>
+      <div class="su-progress__step"            id="prog-3"></div>
+      <div class="su-progress__step"            id="prog-4"></div>
+      <div class="su-progress__step"            id="prog-5"></div>
+    </div>
+    <span class="su-progress__label" id="prog-label">Step 1 of 5</span>
+  </div>
+
+
+  <!-- SCREEN 1 — ACCOUNT CREATION -->
+  <div class="screen active" id="screen-account" aria-label="Create your account">
+    <div class="account-layout">
+      <div class="account-form-col">
+        <div class="account-form-inner">
+          <div class="su-eyebrow">Style Intelligence</div>
+          <h1 class="su-headline">Start Your<br><em>Style Journey.</em></h1>
+          <p class="su-subtext">We'll personalise your recommendations based on your features and goals — no guesswork.</p>
+
+          <!-- Auth mode tabs -->
+          <div class="auth-tabs" role="tablist">
+            <button class="auth-tab is-active" id="tab-otp" role="tab" aria-selected="true" aria-controls="panel-otp">
+              Passwordless code
+            </button>
+            <button class="auth-tab" id="tab-password" role="tab" aria-selected="false" aria-controls="panel-password">
+              Email &amp; password
+            </button>
+          </div>
+
+          <!-- Panel: OTP -->
+          <div class="auth-panel is-active" id="panel-otp" role="tabpanel">
+            <div class="account-fields">
+              <div class="su-field">
+                <label class="su-label" for="input-name">Full Name</label>
+                <input class="su-input" type="text" id="input-name" name="name" placeholder="Your name" autocomplete="name" autocapitalize="words" aria-describedby="err-name">
+                <span class="su-field-error" id="err-name" role="alert" aria-live="polite"></span>
+              </div>
+              <div class="su-field">
+                <label class="su-label" for="input-email">Email Address</label>
+                <input class="su-input" type="email" id="input-email" name="email" placeholder="you@example.com" autocomplete="email" inputmode="email" aria-describedby="err-email">
+                <span class="su-field-error" id="err-email" role="alert" aria-live="polite"></span>
+              </div>
+            </div>
+            <button class="btn btn--primary btn--lg btn--full" id="btn-send-code" type="button">
+              Send me a code <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </button>
+            <div class="su-reassurance" style="margin-top: var(--space-4);">
+              <i class="fas fa-lock" aria-hidden="true"></i> We'll email you a 6-digit code — no password needed
+            </div>
+          </div>
+
+          <!-- Panel: Email & password -->
+          <div class="auth-panel" id="panel-password" role="tabpanel">
+            <div class="account-fields">
+              <div class="su-field">
+                <label class="su-label" for="pw-name">Full Name</label>
+                <input class="su-input" type="text" id="pw-name" name="name" placeholder="Your name" autocomplete="name" autocapitalize="words" aria-describedby="err-pw-name">
+                <span class="su-field-error" id="err-pw-name" role="alert" aria-live="polite"></span>
+              </div>
+              <div class="su-field">
+                <label class="su-label" for="pw-email">Email Address</label>
+                <input class="su-input" type="email" id="pw-email" name="email" placeholder="you@example.com" autocomplete="email" inputmode="email" aria-describedby="err-pw-email">
+                <span class="su-field-error" id="err-pw-email" role="alert" aria-live="polite"></span>
+              </div>
+              <div class="su-field">
+                <label class="su-label" for="pw-password">Password</label>
+                <div class="su-input-password-wrap">
+                  <input class="su-input" type="password" id="pw-password" name="password" placeholder="Min. 8 characters" autocomplete="new-password" aria-describedby="err-pw-password">
+                  <button type="button" class="toggle-password" id="toggle-pw" aria-label="Show password">
+                    <i class="fas fa-eye" aria-hidden="true"></i>
+                  </button>
+                </div>
+                <span class="su-field-error" id="err-pw-password" role="alert" aria-live="polite"></span>
+              </div>
+            </div>
+            <button class="btn btn--primary btn--lg btn--full" id="btn-pw-submit" type="button">
+              Create account <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </button>
+            <div class="auth-switch-mode" style="margin-top: var(--space-4);">
+              Already have an account?
+              <button type="button" id="btn-switch-signin">Sign in instead</button>
+            </div>
+            <div class="su-reassurance" style="margin-top: var(--space-3);">
+              <i class="fas fa-lock" aria-hidden="true"></i> Private &amp; secure
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="account-panel" aria-hidden="true">
+        <div class="account-panel__img">
+          <img src="assets/woman_sitting.jpg" alt="">
+        </div>
+        <div class="account-panel__overlay"></div>
+        <div class="account-panel__card">
+          <p class="account-panel__quote">"Style is a way to say who you are without having to speak."</p>
+          <span class="account-panel__author">Rachel Zoe</span>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+
+  <!-- SCREEN 2 — EMAIL VERIFICATION -->
+  <div class="screen" id="screen-verify" aria-label="Verify your email">
+    <div class="su-body">
+      <div class="verify-wrap">
+        <div class="verify-icon" aria-hidden="true">
+          <i class="fas fa-envelope-open-text"></i>
+        </div>
+        <h2 class="su-headline" style="margin-bottom: var(--space-3);">Check Your<br><em>Email.</em></h2>
+        <p class="su-subtext" style="text-align: center; margin-inline: auto; margin-bottom: var(--space-2);">
+          We sent a 6-digit code to
+        </p>
+        <p class="verify-email-ref" id="verify-email-display" aria-live="polite">—</p>
+        <div class="otp-row" id="otp-row" role="group" aria-label="Enter your 6-digit verification code">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="0" aria-label="Digit 1">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="1" aria-label="Digit 2">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="2" aria-label="Digit 3">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="3" aria-label="Digit 4">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="4" aria-label="Digit 5">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="5" aria-label="Digit 6">
+        </div>
+        <p class="verify-error" id="verify-error" role="alert" aria-live="polite"></p>
+        <div class="verify-helpers">
+          <button class="verify-resend" id="btn-resend" type="button">
+            Didn't get it? <strong>Resend Code</strong>
+          </button>
+          <button class="verify-edit-email" id="btn-edit-email" type="button">
+            Edit email address
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SCREEN 3 — EXISTING REPORTS PICKER -->
+  <div class="screen" id="screen-reports" aria-label="Your existing style reports">
+    <div class="su-body" style="align-items: flex-start; padding-top: 136px;">
+      <div class="reports-wrap">
+
+        <div class="reports-header">
+          <div class="su-eyebrow">Welcome back</div>
+          <h2 class="su-headline" style="margin-bottom: var(--space-3);">Your Style<br><em>Profiles.</em></h2>
+          <p class="su-subtext" style="margin-inline: auto; text-align: center; margin-bottom: 0;">
+            Pick up where you left off, or start a fresh profile.
+          </p>
+        </div>
+
+        <div class="reports-list" id="reports-list">
+          <div class="reports-loading">
+            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading your profiles…
+          </div>
+        </div>
+
+        <div class="reports-divider">or</div>
+
+        <button class="btn btn--ghost btn--lg btn--full" id="btn-start-fresh" type="button">
+          <i class="fas fa-plus" aria-hidden="true"></i>
+          Start a new style profile
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SCREEN 4 — PURPOSE SELECTION -->
+  <div class="screen" id="screen-purpose" aria-label="Select your style goals">
+    <div class="su-body" style="align-items: flex-start; padding-top: 136px;">
+      <div class="purpose-wrap">
+        <div class="purpose-header">
+          <div class="su-eyebrow">Your Goals</div>
+          <h2 class="su-headline" style="margin-bottom: var(--space-3);">What Brings<br><em>You Here?</em></h2>
+          <p class="su-subtext">We'll personalise your report around what matters most. Pick up to 3.</p>
+        </div>
+        <div class="purpose-grid" id="purpose-grid" role="group" aria-label="Style goals">
+          <div class="purpose-card" id="goal-attractive" role="checkbox" aria-checked="false" tabindex="0" data-goal="Look More Attractive">
+            <span class="purpose-card__icon" aria-hidden="true">✨</span>
+            <span class="purpose-card__label">Look More Attractive</span>
+            <span class="purpose-card__check" aria-hidden="true"><i class="fas fa-check"></i></span>
+          </div>
+          <div class="purpose-card" id="goal-confidence" role="checkbox" aria-checked="false" tabindex="0" data-goal="Improve Confidence">
+            <span class="purpose-card__icon" aria-hidden="true">💪</span>
+            <span class="purpose-card__label">Improve Confidence</span>
+            <span class="purpose-card__check" aria-hidden="true"><i class="fas fa-check"></i></span>
+          </div>
+          <div class="purpose-card" id="goal-casual" role="checkbox" aria-checked="false" tabindex="0" data-goal="Dress Better Casually">
+            <span class="purpose-card__icon" aria-hidden="true">👕</span>
+            <span class="purpose-card__label">Dress Better Casually</span>
+            <span class="purpose-card__check" aria-hidden="true"><i class="fas fa-check"></i></span>
+          </div>
+          <div class="purpose-card" id="goal-professional" role="checkbox" aria-checked="false" tabindex="0" data-goal="Professional / Work Style">
+            <span class="purpose-card__icon" aria-hidden="true">💼</span>
+            <span class="purpose-card__label">Professional / Work Style</span>
+            <span class="purpose-card__check" aria-hidden="true"><i class="fas fa-check"></i></span>
+          </div>
+          <div class="purpose-card" id="goal-dating" role="checkbox" aria-checked="false" tabindex="0" data-goal="Dating & Social Events">
+            <span class="purpose-card__icon" aria-hidden="true">🌹</span>
+            <span class="purpose-card__label">Dating &amp; Social Events</span>
+            <span class="purpose-card__check" aria-hidden="true"><i class="fas fa-check"></i></span>
+          </div>
+          <div class="purpose-card" id="goal-suits-me" role="checkbox" aria-checked="false" tabindex="0" data-goal="Learn What Suits Me">
+            <span class="purpose-card__icon" aria-hidden="true">🪞</span>
+            <span class="purpose-card__label">Learn What Suits Me</span>
+            <span class="purpose-card__check" aria-hidden="true"><i class="fas fa-check"></i></span>
+          </div>
+          <div class="purpose-card" id="goal-signature" role="checkbox" aria-checked="false" tabindex="0" data-goal="Build a Signature Look">
+            <span class="purpose-card__icon" aria-hidden="true">⭐</span>
+            <span class="purpose-card__label">Build a Signature Look</span>
+            <span class="purpose-card__check" aria-hidden="true"><i class="fas fa-check"></i></span>
+          </div>
+          <div class="purpose-card" id="goal-wardrobe" role="checkbox" aria-checked="false" tabindex="0" data-goal="Upgrade My Wardrobe">
+            <span class="purpose-card__icon" aria-hidden="true">🛍️</span>
+            <span class="purpose-card__label">Upgrade My Wardrobe</span>
+            <span class="purpose-card__check" aria-hidden="true"><i class="fas fa-check"></i></span>
+          </div>
+          <div class="purpose-card" id="goal-athletic" role="checkbox" aria-checked="false" tabindex="0" data-goal="Gym & Athletic Fashion">
+            <span class="purpose-card__icon" aria-hidden="true">🏋️</span>
+            <span class="purpose-card__label">Gym &amp; Athletic Fashion</span>
+            <span class="purpose-card__check" aria-hidden="true"><i class="fas fa-check"></i></span>
+          </div>
+          <div class="purpose-card" id="goal-outdoor" role="checkbox" aria-checked="false" tabindex="0" data-goal="Outdoor / Adventure Style">
+            <span class="purpose-card__icon" aria-hidden="true">🏔️</span>
+            <span class="purpose-card__label">Outdoor / Adventure Style</span>
+            <span class="purpose-card__check" aria-hidden="true"><i class="fas fa-check"></i></span>
+          </div>
+        </div>
+        <div class="purpose-footer">
+          <p class="purpose-helper" id="purpose-helper">Select all that apply</p>
+          <button class="btn btn--primary btn--lg btn-wide" id="btn-purpose-next" type="button" aria-disabled="true">
+            Continue <i class="fas fa-arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SCREEN 5 — UPLOAD PHOTOS -->
+  <div class="screen" id="screen-upload" aria-label="Upload your photos">
+
+    <!-- Blurred bg hint — unrecognisable -->
+    <div class="upload-bg-hint" aria-hidden="true">
+      <img src="assets/woman_sitting.jpg" alt="">
+    </div>
+
+    <div class="upload-body">
+      <div class="upload-wrap">
+
+        <div class="upload-header">
+          <div class="su-eyebrow">Your Photos</div>
+          <h2 class="su-headline" style="margin-bottom: var(--space-3);">Add Your<br><em>Photos.</em></h2>
+          <p class="su-subtext">
+            We use these to personalise your color, accessory, and style recommendations. Your face must be visible in at least one photo.
+          </p>
+        </div>
+
+        <!-- Previously uploaded images (shown if any exist) -->
+        <div class="existing-images-section" id="existing-images-section" style="display:none;">
+          <span class="existing-images-label">Your uploaded photos — tap to add</span>
+          <div class="existing-images-grid" id="existing-images-grid"></div>
+        </div>
+
+        <!-- Three image slots -->
+        <div class="upload-slots" id="upload-slots">
+
+          <div class="upload-slot" id="slot-0" data-slot="0" role="button" aria-label="Upload photo 1">
+            <span class="slot-num">1</span>
+            <div class="slot-empty">
+              <div class="slot-empty__icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
+              <span class="slot-empty__label">Add photo</span>
+            </div>
+            <img class="slot-image" id="slot-img-0" alt="Uploaded photo 1">
+            <button class="slot-remove" id="slot-remove-0" type="button" aria-label="Remove photo 1">
+              <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div class="upload-slot" id="slot-1" data-slot="1" role="button" aria-label="Upload photo 2">
+            <span class="slot-num">2</span>
+            <div class="slot-empty">
+              <div class="slot-empty__icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
+              <span class="slot-empty__label">Add photo</span>
+            </div>
+            <img class="slot-image" id="slot-img-1" alt="Uploaded photo 2">
+            <button class="slot-remove" id="slot-remove-1" type="button" aria-label="Remove photo 2">
+              <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div class="upload-slot" id="slot-2" data-slot="2" role="button" aria-label="Upload photo 3">
+            <span class="slot-num">3</span>
+            <div class="slot-empty">
+              <div class="slot-empty__icon"><i class="fas fa-plus" aria-hidden="true"></i></div>
+              <span class="slot-empty__label">Add photo</span>
+            </div>
+            <img class="slot-image" id="slot-img-2" alt="Uploaded photo 3">
+            <button class="slot-remove" id="slot-remove-2" type="button" aria-label="Remove photo 3">
+              <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Camera / add photo button -->
+        <button class="upload-add-btn" id="btn-add-photo" type="button" aria-label="Add a photo from camera or gallery">
+          <i class="fas fa-camera" aria-hidden="true"></i>
+          Add a photo &nbsp;·&nbsp; camera or gallery
+        </button>
+
+        <!-- Hidden file input — accepts camera capture too -->
+        <input
+          type="file"
+          id="file-input"
+          accept="image/jpeg,image/png,image/webp,image/heic"
+          style="display: none;"
+          aria-hidden="true"
+        >
+
+        <p class="upload-hint">
+          JPEG, PNG or WebP · Max 10 MB per photo<br>
+          Your photos are private and never shared.
+        </p>
+
+        <div class="upload-footer">
+          <p class="upload-req-note" id="upload-req-note">Upload at least 1 photo to continue</p>
+          <button class="btn btn--primary btn--lg btn-wide" id="btn-upload-finish" type="button" aria-disabled="true">
+            Generate My Style Report
+            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SUPABASE CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- SIGNUP CONTROLLER -->
+  <script type="module">
+    import { AuthService, AuthValidators } from './auth.service.js';
+    import { UserMediaService, startUploadAnimation } from './user-media.service.js';
+    import { ReportService } from './report.service.js';
+
+    /* ── Supabase init ─────────────────────────── */
+    const { createClient } = supabase;
+    const SUPABASE_URL  = 'https://uaydumvwlatbwcqdtluv.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVheWR1bXZ3bGF0YndjcWR0bHV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzM0NTUsImV4cCI6MjA5NTAwOTQ1NX0.nolSdxlP-esK3x8-oEq_e9Ruk8QY-DfULA2BJySd3UY';
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON);
+    const auth = new AuthService(supabaseClient);
+
+    /* ── State ─────────────────────────────────── */
+    let _name        = '';
+    let _email       = '';
+    let _goals       = new Set();
+    let _screenStack = ['account'];
+    let _accountId   = null;   // set after OTP verify
+    let _media       = null;   // UserMediaService — init after verify
+    let _reports     = null;   // ReportService — init after verify
+
+    // Upload slot state: { imageId, objectUrl } or null per slot
+    const _slots = [null, null, null];
+    let _activeSlotIndex  = null;  // which slot the file-input will fill
+    let _pendingReportId  = null;  // report row created after goal selection
+    let _existingReports  = [];    // existing report rows fetched after auth
+    let _selectedReport   = null;  // report chosen from picker (null = new)
+    let _existingImages   = [];    // all profile_images rows for this account
+
+    /* ── Helpers ───────────────────────────────── */
+    const $  = id => document.getElementById(id);
+    const el = sel => document.querySelector(sel);
+
+    function showScreen(id, pushHistory = true) {
+      document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('active', 'visible');
+        s.style.display = 'none';
+      });
+      const target = $('screen-' + id);
+      target.style.display = 'flex';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        target.classList.add('active', 'visible');
+      }));
+      if (pushHistory) _screenStack.push(id);
+      updateProgress(id);
+      updateBackBtn();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    function updateProgress(screenId) {
+      const map   = { account: 1, verify: 2, reports: 3, purpose: 4, upload: 5 };
+      const step  = map[screenId] ?? 1;
+      const total = 5;
+      ['prog-1','prog-2','prog-3','prog-4','prog-5'].forEach((pid, i) => {
+        const el = $(pid);
+        el.classList.remove('is-done','is-active');
+        if (i + 1 < step)       el.classList.add('is-done');
+        else if (i + 1 === step) el.classList.add('is-active');
+      });
+      $('prog-label').textContent = `Step ${step} of ${total}`;
+    }
+
+    function updateBackBtn() {
+      const btn = $('btn-back');
+      btn.hidden = _screenStack.length <= 1;
+    }
+
+    function setFieldError(inputId, errorId, message) {
+      $(inputId).classList.toggle('is-error', !!message);
+      $(errorId).textContent = message ?? '';
+    }
+
+    function clearFieldErrors() {
+      setFieldError('input-name',  'err-name',  '');
+      setFieldError('input-email', 'err-email', '');
+    }
+
+    function setLoading(btn, isLoading, label = '') {
+      btn.disabled = isLoading;
+      btn.style.opacity = isLoading ? '0.65' : '';
+      btn.style.pointerEvents = isLoading ? 'none' : '';
+      if (label) btn.innerHTML = label;
+    }
+
+    function shakeEl(id) {
+      $(id).animate([
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-6px)' },
+        { transform: 'translateX(6px)' },
+        { transform: 'translateX(-3px)' },
+        { transform: 'translateX(0)' },
+      ], { duration: 320, easing: 'ease' });
+    }
+
+    /* ── Back button ───────────────────────────── */
+    $('btn-back').addEventListener('click', () => {
+      if (_screenStack.length > 1) {
+        _screenStack.pop();
+        showScreen(_screenStack[_screenStack.length - 1], false);
+      }
+    });
+
+    /* ────────────────────────────────────────────
+       AUTH TABS — switch between OTP and password
+    ──────────────────────────────────────────── */
+    let _authMode = 'otp'; // 'otp' | 'password'
+    let _pwMode   = 'signup'; // 'signup' | 'signin'
+
+    $('tab-otp').addEventListener('click', () => switchTab('otp'));
+    $('tab-password').addEventListener('click', () => switchTab('password'));
+
+    function switchTab(mode) {
+      _authMode = mode;
+      ['otp', 'password'].forEach(m => {
+        $('tab-' + m).classList.toggle('is-active', m === mode);
+        $('tab-' + m).setAttribute('aria-selected', m === mode);
+        $('panel-' + m).classList.toggle('is-active', m === mode);
+      });
+    }
+
+    // Toggle password visibility
+    $('toggle-pw').addEventListener('click', () => {
+      const input = $('pw-password');
+      const icon  = $('toggle-pw').querySelector('i');
+      const show  = input.type === 'password';
+      input.type  = show ? 'text' : 'password';
+      icon.classList.toggle('fa-eye',      !show);
+      icon.classList.toggle('fa-eye-slash', show);
+      $('toggle-pw').setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    });
+
+    // Switch between sign-up and sign-in within the password panel
+    $('btn-switch-signin').addEventListener('click', () => {
+      _pwMode = _pwMode === 'signup' ? 'signin' : 'signup';
+      const isSignup = _pwMode === 'signup';
+      // Show/hide name field
+      $('pw-name').closest('.su-field').style.display = isSignup ? '' : 'none';
+      $('pw-password').setAttribute('autocomplete', isSignup ? 'new-password' : 'current-password');
+      $('pw-password').placeholder = isSignup ? 'Min. 8 characters' : 'Your password';
+      $('btn-pw-submit').innerHTML = isSignup
+        ? 'Create account <i class="fas fa-arrow-right" aria-hidden="true"></i>'
+        : 'Sign in <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+      $('btn-switch-signin').textContent = isSignup ? 'Sign in instead' : 'Create an account instead';
+      $('btn-switch-signin').previousSibling.textContent = isSignup
+        ? 'Already have an account? '
+        : "Don't have an account? ";
+      // Clear errors
+      ['pw-name','pw-email','pw-password'].forEach(id => {
+        $(id).classList.remove('is-error');
+      });
+      ['err-pw-name','err-pw-email','err-pw-password'].forEach(id => {
+        $(id).textContent = '';
+      });
+    });
+
+    // Password form submit
+    $('btn-pw-submit').addEventListener('click', handlePasswordSubmit);
+    ['pw-name','pw-email','pw-password'].forEach(id => {
+      $(id).addEventListener('keydown', e => { if (e.key === 'Enter') handlePasswordSubmit(); });
+    });
+
+    async function handlePasswordSubmit() {
+      // Clear errors
+      ['pw-name','pw-email','pw-password'].forEach(id => $(id).classList.remove('is-error'));
+      ['err-pw-name','err-pw-email','err-pw-password'].forEach(id => $(id).textContent = '');
+
+      const name     = $('pw-name').value.trim();
+      const email    = $('pw-email').value.trim();
+      const password = $('pw-password').value;
+
+      // Basic validation
+      let hasError = false;
+      if (_pwMode === 'signup' && !name) {
+        $('pw-name').classList.add('is-error');
+        $('err-pw-name').textContent = 'Please enter your name.';
+        hasError = true;
+      }
+      if (!email) {
+        $('pw-email').classList.add('is-error');
+        $('err-pw-email').textContent = 'Please enter your email address.';
+        hasError = true;
+      }
+      if (!password) {
+        $('pw-password').classList.add('is-error');
+        $('err-pw-password').textContent = 'Please enter your password.';
+        hasError = true;
+      }
+      if (hasError) return;
+
+      const btn = $('btn-pw-submit');
+      setLoading(btn, true, 'Please wait…');
+
+      let authResult;
+
+      if (_pwMode === 'signup') {
+        authResult = await auth.signUpWithPassword({ name, email, password });
+      } else {
+        authResult = await auth.signInWithPassword({ email, password });
+      }
+
+      setLoading(btn, false);
+      btn.innerHTML = _pwMode === 'signup'
+        ? 'Create account <i class="fas fa-arrow-right" aria-hidden="true"></i>'
+        : 'Sign in <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+
+      if (!authResult.ok) {
+        $('pw-password').classList.add('is-error');
+        $('err-pw-password').textContent = authResult.error;
+        return;
+      }
+
+      const authUser = authResult.data.user;
+
+      // Store name/email for later screens
+      _name  = (_pwMode === 'signup' ? name : (authUser.user_metadata?.full_name || email.split('@')[0]));
+      _email = email.toLowerCase();
+
+      // Create or fetch account row
+      const accountResult = await auth.createOrFetchAccount({
+        authId: authUser.id,
+        name:   _name,
+        email:  _email,
+      });
+
+      if (!accountResult.ok) {
+        $('err-pw-password').textContent = accountResult.error;
+        return;
+      }
+
+      _accountId = accountResult.data.id;
+      _media     = new UserMediaService(supabaseClient, _accountId);
+      _reports   = new ReportService(supabaseClient);
+
+      await goToReportsOrPurpose();
+    }
+
+    /* ────────────────────────────────────────────
+       POST-AUTH ROUTING
+       After sign-in/sign-up, check for existing
+       reports. If any exist go to picker, else
+       go straight to purpose selection.
+    ──────────────────────────────────────────── */
+    async function goToReportsOrPurpose() {
+      // Fetch all existing style reports for this account
+      const { data: reports } = await supabaseClient
+        .from('style_reports')
+        .select('id, title, goal_1, goal_2, goal_3, generated_at, profile_image_1_id, profile_image_2_id, profile_image_3_id')
+        .eq('account_id', _accountId)
+        .order('generated_at', { ascending: false });
+
+      _existingReports = reports ?? [];
+
+      if (_existingReports.length === 0) {
+        // No reports — skip picker, go straight to goals
+        showScreen('purpose');
+        return;
+      }
+
+      // Has reports — show picker
+      renderReportsList(_existingReports);
+      showScreen('reports');
+    }
+
+    async function renderReportsList(reports) {
+      const list = $('reports-list');
+
+      const reportIds = reports.map(r => r.id);
+
+      // Fetch thumbnails and mood board counts in parallel
+      const imageIds = reports.map(r => r.profile_image_1_id).filter(Boolean);
+
+      const [imagesRes, moodBoardsRes] = await Promise.all([
+        imageIds.length > 0
+          ? supabaseClient.from('profile_images').select('id, image_url').in('id', imageIds)
+          : Promise.resolve({ data: [] }),
+        supabaseClient
+          .from('mood_boards')
+          .select('style_report_id')
+          .in('style_report_id', reportIds),
+      ]);
+
+      // Build lookup maps
+      const imageMap = {};
+      (imagesRes.data ?? []).forEach(img => { imageMap[img.id] = img.image_url; });
+
+      // Set of report IDs that have at least one mood board
+      const reportsWithBoards = new Set(
+        (moodBoardsRes.data ?? []).map(mb => mb.style_report_id)
+      );
+
+      list.innerHTML = reports.map(r => {
+        const date     = new Date(r.generated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const goals    = [r.goal_1, r.goal_2, r.goal_3].filter(Boolean).join(' · ');
+        const thumbUrl = r.profile_image_1_id ? imageMap[r.profile_image_1_id] : null;
+        const title    = r.title || 'Style Profile';
+
+        // Complete = has mood boards, Draft = no mood boards yet
+        const isComplete = reportsWithBoards.has(r.id);
+
+        return `
+          <div class="report-card" data-report-id="${r.id}" role="button" tabindex="0" aria-label="Select ${title}">
+            <div class="report-card__thumb">
+              ${thumbUrl
+                ? `<img src="${thumbUrl}" alt="">`
+                : `<i class="fas fa-user" aria-hidden="true"></i>`}
+            </div>
+            <div class="report-card__body">
+              <div class="report-card__title">${title}</div>
+              <div class="report-card__meta">${date}${goals ? ' · ' + goals : ''}</div>
+            </div>
+            <span class="report-card__status report-card__status--${isComplete ? 'done' : 'progress'}">
+              ${isComplete ? 'Complete' : 'Draft'}
+            </span>
+          </div>`;
+      }).join('');
+
+      list.querySelectorAll('.report-card').forEach(card => {
+        const handler = () => selectExistingReport(card.dataset.reportId);
+        card.addEventListener('click', handler);
+        card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } });
+      });
+    }
+
+    async function selectExistingReport(reportId) {
+      _selectedReport  = _existingReports.find(r => r.id === reportId);
+      _pendingReportId = reportId;
+
+      if (!_selectedReport) return;
+
+      // Pre-fill goals from the existing report
+      _goals.clear();
+      [_selectedReport.goal_1, _selectedReport.goal_2, _selectedReport.goal_3]
+        .filter(Boolean)
+        .forEach(g => _goals.add(g));
+
+      // Pre-select goal cards in the UI
+      document.querySelectorAll('.purpose-card').forEach(card => {
+        const isSelected = _goals.has(card.dataset.goal);
+        card.classList.toggle('is-selected', isSelected);
+        card.setAttribute('aria-checked', isSelected);
+      });
+      const hasEnough = _goals.size === MAX_GOALS;
+      $('btn-purpose-next').classList.toggle('is-active', hasEnough);
+      $('btn-purpose-next').setAttribute('aria-disabled', !hasEnough);
+      updatePurposeHelper();
+
+      // Go to purpose screen so user can review/edit goals
+      showScreen('purpose');
+    }
+
+    // Start fresh — clear any selected report and go to purpose
+    $('btn-start-fresh').addEventListener('click', () => {
+      _selectedReport  = null;
+      _pendingReportId = null;
+      _goals.clear();
+      document.querySelectorAll('.purpose-card').forEach(c => {
+        c.classList.remove('is-selected');
+        c.setAttribute('aria-checked', 'false');
+      });
+      $('btn-purpose-next').classList.remove('is-active');
+      $('btn-purpose-next').setAttribute('aria-disabled', 'true');
+      updatePurposeHelper();
+      showScreen('purpose');
+    });
+
+    /* ────────────────────────────────────────────
+       SCREEN 1 — Send code
+    ──────────────────────────────────────────── */
+    $('btn-send-code').addEventListener('click', handleSendCode);
+    ['input-name','input-email'].forEach(id => {
+      $(id).addEventListener('keydown', e => { if (e.key === 'Enter') handleSendCode(); });
+    });
+    $('input-name').addEventListener('blur', () => {
+      const r = AuthValidators.validateName($('input-name').value);
+      setFieldError('input-name','err-name', r.valid ? '' : r.message);
+    });
+    $('input-email').addEventListener('blur', () => {
+      const r = AuthValidators.validateEmail($('input-email').value);
+      setFieldError('input-email','err-email', r.valid ? '' : r.message);
+    });
+
+    async function handleSendCode() {
+      clearFieldErrors();
+      const name  = $('input-name').value;
+      const email = $('input-email').value;
+      const formErrors = AuthValidators.validateSignUpForm({ name, email });
+      if (formErrors) {
+        if (formErrors.name)  setFieldError('input-name',  'err-name',  formErrors.name);
+        if (formErrors.email) setFieldError('input-email', 'err-email', formErrors.email);
+        Object.keys(formErrors).forEach(f => shakeEl(f === 'name' ? 'input-name' : 'input-email'));
+        return;
+      }
+      const btn = $('btn-send-code');
+      setLoading(btn, true, 'Sending…');
+      const result = await auth.sendCode({ name, email });
+      setLoading(btn, false);
+      btn.innerHTML = 'Continue <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+      if (!result.ok) { setFieldError('input-email','err-email', result.error); shakeEl('input-email'); return; }
+      _name  = name.trim();
+      _email = email.trim().toLowerCase();
+      $('verify-email-display').textContent = _email;
+      showScreen('verify');
+      setTimeout(() => el('.otp-box[data-idx="0"]')?.focus(), 520);
+    }
+
+    /* ────────────────────────────────────────────
+       SCREEN 2 — OTP
+    ──────────────────────────────────────────── */
+    function initOTP() {
+      const boxes = document.querySelectorAll('.otp-box');
+      boxes.forEach((box, idx) => {
+        box.addEventListener('keydown', e => {
+          if (e.key === 'Backspace' && !box.value && idx > 0) {
+            boxes[idx - 1].focus();
+            boxes[idx - 1].value = '';
+            boxes[idx - 1].classList.remove('is-filled');
+          }
+        });
+        box.addEventListener('input', e => {
+          const val = e.target.value.replace(/\D/g, '');
+          box.value = val ? val[0] : '';
+          box.classList.toggle('is-filled', !!box.value);
+          box.classList.remove('is-error');
+          $('verify-error').textContent = '';
+          if (box.value && idx < 5) boxes[idx + 1].focus();
+          if ([...boxes].every(b => b.value.length === 1)) setTimeout(handleVerifyCode, 280);
+        });
+        box.addEventListener('paste', e => {
+          e.preventDefault();
+          const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+          [...pasted.slice(0, 6)].forEach((char, i) => {
+            if (boxes[i]) { boxes[i].value = char; boxes[i].classList.add('is-filled'); }
+          });
+          const nextEmpty = [...boxes].findIndex(b => !b.value);
+          (nextEmpty !== -1 ? boxes[nextEmpty] : boxes[5]).focus();
+          if ([...boxes].every(b => b.value.length === 1)) setTimeout(handleVerifyCode, 280);
+        });
+      });
+    }
+
+    async function handleVerifyCode() {
+      const boxes = document.querySelectorAll('.otp-box');
+      const code  = [...boxes].map(b => b.value).join('');
+
+      // 1. Verify the OTP
+      const verifyResult = await auth.verifyCode({ email: _email, code });
+
+      if (!verifyResult.ok) {
+        boxes.forEach(b => b.classList.add('is-error'));
+        $('verify-error').textContent = verifyResult.error;
+        setTimeout(() => {
+          boxes.forEach(b => { b.value = ''; b.classList.remove('is-filled','is-error'); });
+          boxes[0].focus();
+        }, 900);
+        return;
+      }
+
+      const authUser = verifyResult.data.user;
+
+      // 2. Create or fetch the accounts row client-side
+      const accountResult = await auth.createOrFetchAccount({
+        authId: authUser.id,
+        name:   _name,
+        email:  _email,
+      });
+
+      if (!accountResult.ok) {
+        $('verify-error').textContent = accountResult.error;
+        return;
+      }
+
+      // 3. Init services with the confirmed account ID
+      _accountId = accountResult.data.id;
+      _media     = new UserMediaService(supabaseClient, _accountId);
+      _reports   = new ReportService(supabaseClient);
+
+      await goToReportsOrPurpose();
+    }
+
+    /* Resend */
+    $('btn-resend').addEventListener('click', async () => {
+      const btn = $('btn-resend');
+      btn.disabled = true;
+      const result = await auth.resendCode({ name: _name, email: _email });
+      if (!result.ok) { $('verify-error').textContent = result.error; btn.disabled = false; return; }
+      btn.textContent = 'Code sent!';
+      btn.style.color = 'var(--clr-terracotta)';
+      const interval = setInterval(() => {
+        const remaining = auth.getResendCooldownSeconds();
+        if (remaining > 0) { btn.textContent = `Resend in ${remaining}s`; }
+        else {
+          clearInterval(interval);
+          btn.disabled = false;
+          btn.style.color = '';
+          btn.innerHTML = "Didn't get it? <strong>Resend Code</strong>";
+        }
+      }, 1000);
+    });
+
+    /* Edit email */
+    $('btn-edit-email').addEventListener('click', () => {
+      _screenStack.pop();
+      showScreen('account', false);
+    });
+
+    /* ────────────────────────────────────────────
+       SCREEN 3 — Purpose
+    ──────────────────────────────────────────── */
+    document.querySelectorAll('.purpose-card').forEach(card => {
+      card.addEventListener('click', () => toggleGoal(card));
+      card.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleGoal(card); } });
+    });
+
+    const MAX_GOALS = 3;
+
+    function toggleGoal(card) {
+      const alreadySelected = card.classList.contains('is-selected');
+
+      // If not selected and already at max — block and shake
+      if (!alreadySelected && _goals.size >= MAX_GOALS) {
+        shakeEl(card.id || 'purpose-grid');
+        $('purpose-helper').textContent = `Max ${MAX_GOALS} goals — remove one first`;
+        $('purpose-helper').style.color = '#A33020';
+        setTimeout(() => {
+          $('purpose-helper').style.color = '';
+          updatePurposeHelper();
+        }, 2000);
+        return;
+      }
+
+      card.classList.toggle('is-selected');
+      card.setAttribute('aria-checked', !alreadySelected);
+      alreadySelected ? _goals.delete(card.dataset.goal) : _goals.add(card.dataset.goal);
+
+      const hasEnough = _goals.size === MAX_GOALS;
+      $('btn-purpose-next').classList.toggle('is-active', hasEnough);
+      $('btn-purpose-next').setAttribute('aria-disabled', !hasEnough);
+      updatePurposeHelper();
+    }
+
+    function updatePurposeHelper() {
+      const count     = _goals.size;
+      const remaining = MAX_GOALS - count;
+      if (count === 0) {
+        $('purpose-helper').textContent = `Choose exactly ${MAX_GOALS} goals to continue`;
+      } else if (count === MAX_GOALS) {
+        $('purpose-helper').textContent = `${count} of ${MAX_GOALS} selected — tap Continue`;
+        $('purpose-helper').style.color = '';
+      } else {
+        $('purpose-helper').textContent = `${count} of ${MAX_GOALS} — pick ${remaining} more`;
+        $('purpose-helper').style.color = '';
+      }
+    }
+
+    $('btn-purpose-next').addEventListener('click', () => {
+      if (_goals.size < MAX_GOALS) return;
+
+      // Build goals array — pad to 3 with nulls for the DB row
+      const goalsArr = [..._goals];
+
+      // Background-push the skeleton report row with goals filled in
+      if (_reports && _accountId) {
+        _reports.createReport({
+          accountId: _accountId,
+          imageIds:  [],          // images come in the next step
+          goals:     goalsArr,
+        }).then(result => {
+          if (result.ok) {
+            _pendingReportId = result.data.id;
+          }
+        });
+      }
+
+      showScreen('upload');
+      // Load existing profile images for this account
+      loadExistingImages();
+    });
+
+    /* ────────────────────────────────────────────
+       SCREEN 5 — Upload photos
+    ──────────────────────────────────────────── */
+
+    async function loadExistingImages() {
+      if (!_media) return;
+      const result = await _media.getProfileImages();
+      _existingImages = result.ok ? result.data : [];
+
+      const section = $('existing-images-section');
+      const grid    = $('existing-images-grid');
+
+      if (_existingImages.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+      grid.innerHTML = _existingImages.map(img => `
+        <div
+          class="existing-img-thumb"
+          data-image-id="${img.id}"
+          data-image-url="${img.image_url}"
+          role="checkbox"
+          aria-checked="false"
+          tabindex="0"
+          aria-label="Select previously uploaded photo"
+        >
+          <img src="${img.image_url}" alt="Previously uploaded photo" loading="lazy">
+          <span class="existing-img-thumb__check" aria-hidden="true">
+            <i class="fas fa-check"></i>
+          </span>
+        </div>
+      `).join('');
+
+      grid.querySelectorAll('.existing-img-thumb').forEach(thumb => {
+        const handler = () => toggleExistingImage(thumb);
+        thumb.addEventListener('click', handler);
+        thumb.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handler(); } });
+      });
+    }
+
+    function toggleExistingImage(thumb) {
+      const imageId  = thumb.dataset.imageId;
+      const imageUrl = thumb.dataset.imageUrl;
+
+      // Find first empty slot
+      const emptyIdx = _slots.findIndex(s => s === null);
+
+      // If already selected — deselect and free its slot
+      const existingSlotIdx = _slots.findIndex(s => s?.imageId === imageId);
+      if (existingSlotIdx !== -1) {
+        thumb.classList.remove('is-selected');
+        thumb.setAttribute('aria-checked', 'false');
+        const slotEl = $('slot-' + existingSlotIdx);
+        const imgEl  = $('slot-img-' + existingSlotIdx);
+        _slots[existingSlotIdx] = null;
+        slotEl.classList.remove('is-filled');
+        if (imgEl) imgEl.src = '';
+        refreshUploadUI();
+        return;
+      }
+
+      if (emptyIdx === -1) return; // all slots full
+
+      // Select — fill the empty slot
+      thumb.classList.add('is-selected');
+      thumb.setAttribute('aria-checked', 'true');
+
+      const slotEl = $('slot-' + emptyIdx);
+      const imgEl  = $('slot-img-' + emptyIdx);
+      imgEl.src    = imageUrl;
+      slotEl.classList.add('is-filled');
+      _slots[emptyIdx] = { imageId, imageUrl };
+      refreshUploadUI();
+    }
+
+    // Click empty slot → open file picker for that slot
+    document.querySelectorAll('.upload-slot').forEach(slot => {
+      slot.addEventListener('click', () => {
+        const idx = parseInt(slot.dataset.slot, 10);
+        if (slot.classList.contains('is-filled') || slot.classList.contains('is-loading')) return;
+        _activeSlotIndex = idx;
+        // Remove capture attribute for gallery; add it for camera btn
+        $('file-input').removeAttribute('capture');
+        $('file-input').click();
+      });
+    });
+
+    // Camera / add photo button → open picker with camera capture
+    $('btn-add-photo').addEventListener('click', () => {
+      const firstEmpty = _slots.findIndex(s => s === null);
+      if (firstEmpty === -1) return;
+      _activeSlotIndex = firstEmpty;
+      $('file-input').setAttribute('capture', 'user');
+      $('file-input').click();
+    });
+
+    // Remove buttons
+    document.querySelectorAll('.slot-remove').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        const idx    = parseInt(btn.id.replace('slot-remove-', ''), 10);
+        const slotEl = $('slot-' + idx);
+        const entry  = _slots[idx];
+        if (!entry) return;
+
+        btn.disabled = true;
+
+        if (_media && entry.imageId) {
+          await _media.removeProfileImage(entry.imageId);
+        }
+
+        // Reset slot
+        _slots[idx] = null;
+        slotEl.classList.remove('is-filled');
+        $('slot-img-' + idx).src = '';
+        btn.disabled = false;
+
+        // Clear the style_report image reference for this slot
+        clearReportImageRef(idx);
+
+        refreshUploadUI();
+      });
+    });
+
+    // File input change — handles both gallery and camera
+    $('file-input').addEventListener('change', async e => {
+      const file = e.target.files?.[0];
+      e.target.value = ''; // reset so same file can be re-selected
+      if (!file || _activeSlotIndex === null) return;
+
+      // Capture all references synchronously before any await
+      const idx      = _activeSlotIndex;
+      const slotEl   = $('slot-' + idx);
+      const imgEl    = $('slot-img-' + idx);
+      _activeSlotIndex = null;
+
+      if (!slotEl || !imgEl) {
+        console.error('[Upload] Slot elements not found for index', idx);
+        return;
+      }
+
+      // Show loading animation immediately
+      slotEl.classList.add('is-loading');
+      const anim = startUploadAnimation(slotEl, file);
+
+      function applySuccess(imageUrl, imageId) {
+        // 1. Remove animation overlay immediately — before adding is-filled
+        const uploadingEl = slotEl.querySelector('.slot-uploading');
+        if (uploadingEl) uploadingEl.remove();
+
+        // 2. Set the real image src
+        imgEl.src = imageUrl;
+
+        // 3. Mark slot as filled — this triggers .slot-image { display: block }
+        slotEl.classList.remove('is-loading');
+        slotEl.classList.add('is-filled');
+
+        // 4. Store state
+        _slots[idx] = { imageId, imageUrl };
+
+        // 5. Update the style_report image reference columns immediately
+        updateReportImageRef(idx, imageId);
+
+        refreshUploadUI();
+      }
+
+      function applyError() {
+        anim.stop(false);
+        slotEl.classList.remove('is-loading');
+        setTimeout(() => {
+          const uploadingEl = slotEl.querySelector('.slot-uploading');
+          if (uploadingEl) uploadingEl.remove();
+        }, 2000);
+        refreshUploadUI();
+      }
+
+      if (_media) {
+        const result = await _media.uploadProfileImage(file);
+        if (result.ok) {
+          applySuccess(result.data.image_url, result.data.id);
+        } else {
+          applyError();
+        }
+      } else {
+        // No media service — local preview only
+        const objectUrl = URL.createObjectURL(file);
+        applySuccess(objectUrl, null);
+      }
+    });
+
+    function refreshUploadUI() {
+      const uploadedCount = _slots.filter(s => s !== null).length;
+      const allFull       = uploadedCount === 3;
+
+      // Add button disabled when all 3 slots filled
+      $('btn-add-photo').disabled = allFull;
+
+      // CTA button
+      const cta = $('btn-upload-finish');
+      const hasAtLeastOne = uploadedCount >= 1;
+      cta.classList.toggle('is-active', hasAtLeastOne);
+      cta.setAttribute('aria-disabled', !hasAtLeastOne);
+
+      // Req note
+      $('upload-req-note').textContent = uploadedCount === 0
+        ? 'Upload at least 1 photo to continue'
+        : uploadedCount === 1
+          ? '1 photo added — you can add up to 2 more'
+          : uploadedCount === 2
+            ? '2 photos added — you can add 1 more'
+            : 'All 3 photos added';
+    }
+
+    // Update style_report profile_image_N_id column immediately after each upload
+    async function updateReportImageRef(slotIdx, imageId) {
+      if (!_pendingReportId || !_reports) return;
+      const col = `profile_image_${slotIdx + 1}_id`;
+      await supabaseClient
+        .from('style_reports')
+        .update({ [col]: imageId })
+        .eq('id', _pendingReportId);
+    }
+
+    // Also update when a slot is cleared (set to null)
+    async function clearReportImageRef(slotIdx) {
+      if (!_pendingReportId) return;
+      const col = `profile_image_${slotIdx + 1}_id`;
+      await supabaseClient
+        .from('style_reports')
+        .update({ [col]: null })
+        .eq('id', _pendingReportId);
+    }
+
+    $('btn-upload-finish').addEventListener('click', handleUploadFinish);
+
+    async function handleUploadFinish() {
+      const filled = _slots.filter(s => s !== null);
+      if (filled.length === 0) return;
+
+      const btn = $('btn-upload-finish');
+      setLoading(btn, true, 'Creating your report… <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>');
+
+      const imageIds = filled.map(s => s.imageId).filter(Boolean);
+
+      // Ensure we have a report row — use pending one or create fresh
+      let reportId = _pendingReportId;
+
+      if (reportId) {
+        // Update existing row with image references
+        if (_reports) await _reports.updateReportImages({ reportId, imageIds });
+      } else {
+        // Background create hadn't resolved — create now and wait for it
+        if (!_reports) {
+          setLoading(btn, false);
+          btn.innerHTML = 'Generate My Style Report <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+          $('upload-req-note').textContent = 'Report service not ready. Please try again.';
+          $('upload-req-note').style.color = '#A33020';
+          return;
+        }
+        const result = await _reports.createReport({
+          accountId: _accountId,
+          imageIds,
+          goals: [..._goals],
+        });
+        if (!result.ok) {
+          setLoading(btn, false);
+          btn.innerHTML = 'Generate My Style Report <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+          $('upload-req-note').textContent = result.error;
+          $('upload-req-note').style.color = '#A33020';
+          return;
+        }
+        reportId = result.data.id;
+      }
+
+      console.log('[Signup] Navigating to report:', reportId);
+      const firstName = _name.split(/\s+/)[0] || 'You';
+
+      // Store everything in localStorage so it survives navigation
+      try {
+        localStorage.setItem('aloura_report_id', reportId);
+        localStorage.setItem('alouraProfile', JSON.stringify({
+          firstName,
+          fullName:  _name,
+          email:     _email,
+          goals:     [..._goals],
+          accountId: _accountId,
+          reportId,
+          imageIds,
+        }));
+      } catch (_) {}
+
+      window.location.href = 'report.html';
+    }
+
+    /* ── Init ──────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+      const first = $('screen-account');
+      first.style.display = 'flex';
+      requestAnimationFrame(() => requestAnimationFrame(() => first.classList.add('visible')));
+      updateProgress('account');
+      updateBackBtn();
+      initOTP();
+      refreshUploadUI();
+    });
+  </script>
+
+</body>
+</html>
