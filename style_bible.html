@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aloura — Style Bible Vault</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .material-tile { transition: transform 0.2s, box-shadow 0.2s; }
+        .material-tile:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        /* Ensure hidden works regardless of Tailwind specificity */
+        [data-hidden] { display: none !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased">
+
+    <!-- AUTH OVERLAY -->
+    <div id="authOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full mx-4 border border-slate-100">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 mb-3">
+                    <span class="material-icons text-2xl">auto_stories</span>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900">Aloura Vault</h1>
+                <p class="text-sm text-slate-500 mt-1" id="authSubtitle">Sign in to access the Style Bible</p>
+            </div>
+
+            <div id="authError" class="hidden bg-rose-50 border border-rose-100 text-rose-600 px-4 py-3 rounded-xl text-sm mb-4"></div>
+
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Email Address</label>
+                    <input type="email" id="authEmail" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Password</label>
+                    <input type="password" id="authPassword" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm">
+                </div>
+                <button type="submit" id="loginSubmitBtn" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium py-3 px-4 rounded-xl transition shadow-sm cursor-pointer mt-2">
+                    Verify Identity
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div class="min-h-screen flex-col" id="appMain" data-hidden>
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="material-icons text-indigo-600">menu_book</span>
+                    <span class="font-bold text-lg tracking-tight text-slate-900">Aloura Style Bible</span>
+                </div>
+                <button id="logoutBtn" class="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition cursor-pointer">
+                    <span class="material-icons text-sm">logout</span> Sign Out
+                </button>
+            </div>
+        </header>
+
+        <section class="bg-white border-b border-slate-100 py-4 shadow-xs">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row gap-4 justify-between items-center">
+                <div class="relative w-full sm:max-w-md">
+                    <span class="material-icons absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                    <input type="text" id="searchInput" placeholder="Search profile keywords..." class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition">
+                </div>
+                <button id="addProfileBtn" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-xs transition cursor-pointer">
+                    <span class="material-icons text-sm">add</span> New Style Profile
+                </button>
+            </div>
+        </section>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div id="loadingState" class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-indigo-600 mb-2"></div>
+                <p class="text-sm text-slate-500">Loading bible entries...</p>
+            </div>
+            <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200 p-8">
+                <span class="material-icons text-4xl text-slate-300 mb-2">search_off</span>
+                <h3 class="text-sm font-medium text-slate-900">No entries found</h3>
+                <p class="text-xs text-slate-500 mt-1">Try a different search or add a new profile.</p>
+            </div>
+            <div id="tilesContainer" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </main>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modalOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full flex flex-col max-h-[90vh] border border-slate-100">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h2 id="modalTitle" class="text-lg font-bold text-slate-900">Edit Style Profile</h2>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 cursor-pointer"><span class="material-icons">close</span></button>
+            </div>
+            <form id="profileForm" class="flex-1 overflow-y-auto p-6 space-y-4">
+                <input type="hidden" id="recordId">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Style Profile Keywords (comma-separated)</label>
+                    <textarea id="formProfile" required rows="3" placeholder="e.g., short hair, oval face, glasses" class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"></textarea>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-emerald-600 mb-1">Thou Shalt (Dos)</label>
+                        <textarea id="formDos" rows="4" placeholder="Actionable recommendations..." class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-rose-600 mb-1">Thou Shalt Not (Don'ts)</label>
+                        <textarea id="formDonts" rows="4" placeholder="Style boundaries..." class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition"></textarea>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Exceptions & Notes</label>
+                    <textarea id="formNotes" rows="3" placeholder="Situational exceptions or context notes..." class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Context Sources</label>
+                    <input type="text" id="formSources" placeholder="e.g., Lookbooks, internal docs" class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
+                </div>
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+                    <button type="button" id="deleteBtn" class="hidden text-xs font-medium text-rose-600 hover:text-rose-800 border border-rose-100 hover:bg-rose-50 px-3 py-2 rounded-xl transition cursor-pointer">Delete Entry</button>
+                    <div class="flex items-center gap-3 ml-auto">
+                        <button type="button" id="cancelModalBtn" class="px-4 py-2 text-sm text-slate-500 hover:text-slate-700 font-medium cursor-pointer">Cancel</button>
+                        <button type="submit" class="px-5 py-2 text-sm text-white font-medium bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-xs cursor-pointer">Save Entry</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        const SUPABASE_URL      = "https://uaydumvwlatbwcqdtluv.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVheWR1bXZ3bGF0YndjcWR0bHV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzM0NTUsImV4cCI6MjA5NTAwOTQ1NX0.nolSdxlP-esK3x8-oEq_e9Ruk8QY-DfULA2BJySd3UY";
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let localData    = [];
+        let searchTimer  = null;
+        let _appReady    = false; // prevent double-init
+
+        // ── DOM refs ──────────────────────────────────────────
+        const authOverlay    = document.getElementById('authOverlay');
+        const appMain        = document.getElementById('appMain');
+        const loginForm      = document.getElementById('loginForm');
+        const authError      = document.getElementById('authError');
+        const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+        const tilesContainer = document.getElementById('tilesContainer');
+        const loadingState   = document.getElementById('loadingState');
+        const emptyState     = document.getElementById('emptyState');
+        const searchInput    = document.getElementById('searchInput');
+        const modalOverlay   = document.getElementById('modalOverlay');
+        const profileForm    = document.getElementById('profileForm');
+
+        // ── Show / hide app vs auth ───────────────────────────
+        function showApp() {
+            authOverlay.style.display   = 'none';
+            appMain.removeAttribute('data-hidden');
+            appMain.style.display       = 'flex';
+            appMain.style.flexDirection = 'column';
+            if (!_appReady) {
+                _appReady = true;
+                fetchRecords();
+            }
+        }
+
+        function showAuth() {
+            authOverlay.style.display = 'flex';
+            appMain.setAttribute('data-hidden', '');
+            _appReady = false;
+        }
+
+        // ── Error display ────────────────────────────────────
+        function showError(msg) {
+            authError.textContent = msg;
+            authError.classList.remove('hidden');
+        }
+        function clearError() { authError.classList.add('hidden'); }
+
+        function mapError(e) {
+            const msg = (e?.message ?? '').toLowerCase();
+            if (msg.includes('invalid login') || msg.includes('invalid credentials')) return 'Incorrect email or password.';
+            if (msg.includes('rate limit') || e?.status === 429) return 'Too many attempts. Please wait.';
+            if (!navigator.onLine) return 'You appear to be offline.';
+            return e?.message || 'Something went wrong.';
+        }
+
+        // ── Session check on page load ────────────────────────
+        // Do this BEFORE setting up onAuthStateChange so returning
+        // users never see the auth screen flash
+        async function initSession() {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                showApp();
+            } else {
+                showAuth();
+            }
+        }
+
+        // ── Auth state listener — keeps session alive across tabs ──
+        sb.auth.onAuthStateChange((event, session) => {
+            console.log('[Auth]', event, session ? 'session active' : 'no session');
+            if (event === 'SIGNED_IN')  showApp();
+            if (event === 'SIGNED_OUT') showAuth();
+            // TOKEN_REFRESHED — do nothing, session stays active
+        });
+
+        // ── Login form ───────────────────────────────────────
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearError();
+
+            const email    = document.getElementById('authEmail').value.trim().toLowerCase();
+            const password = document.getElementById('authPassword').value;
+
+            if (!email) { showError('Please enter your email.'); return; }
+            if (!password) { showError('Please enter your password.'); return; }
+
+            loginSubmitBtn.disabled     = true;
+            loginSubmitBtn.textContent  = 'Verifying…';
+
+            const { error } = await sb.auth.signInWithPassword({ email, password });
+
+            loginSubmitBtn.disabled    = false;
+            loginSubmitBtn.textContent = 'Verify Identity';
+
+            if (error) {
+                showError(mapError(error));
+            }
+            // On success, onAuthStateChange fires SIGNED_IN → showApp() automatically
+        });
+
+        // ── Logout ───────────────────────────────────────────
+        document.getElementById('logoutBtn').addEventListener('click', () => sb.auth.signOut());
+
+        // ── Fetch & render ───────────────────────────────────
+        async function fetchRecords(searchTerm = '') {
+            loadingState.classList.remove('hidden');
+            tilesContainer.classList.add('hidden');
+            emptyState.classList.add('hidden');
+
+            try {
+                let q = sb.from('style_bible').select('*');
+                if (searchTerm.trim()) q = q.ilike('style_profile', `%${searchTerm.trim()}%`);
+                const { data, error } = await q.order('date_updated', { ascending: false });
+                if (error) throw error;
+                localData = data ?? [];
+                renderTiles(localData);
+            } catch (err) {
+                console.error('[fetch]', err);
+                emptyState.classList.remove('hidden');
+            } finally {
+                loadingState.classList.add('hidden');
+            }
+        }
+
+        function renderTiles(items) {
+            tilesContainer.innerHTML = '';
+            if (items.length === 0) { emptyState.classList.remove('hidden'); return; }
+
+            items.forEach(item => {
+                const tags = (item.style_profile ?? '').split(',').map(t => t.trim()).filter(Boolean);
+                const tagsHtml = tags.map(t =>
+                    `<span class="bg-indigo-50 text-indigo-700 text-xs px-2 py-0.5 rounded-md font-medium border border-indigo-100">${t}</span>`
+                ).join(' ');
+
+                const date = new Date(item.date_updated).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+                const tile = document.createElement('div');
+                tile.className = "material-tile bg-white p-5 rounded-2xl border border-slate-200/80 flex flex-col justify-between cursor-pointer shadow-xs";
+                tile.innerHTML = `
+                    <div>
+                        <div class="flex flex-wrap gap-1.5 mb-4">${tagsHtml || '<span class="text-xs text-slate-400 italic">No keywords</span>'}</div>
+                        <div class="space-y-3 text-xs">
+                            ${item.dos   ? `<div><span class="font-bold text-emerald-600 block uppercase tracking-wider text-[10px]">Thou Shalt:</span><p class="text-slate-600 line-clamp-2 mt-0.5">${item.dos}</p></div>` : ''}
+                            ${item.donts ? `<div><span class="font-bold text-rose-600 block uppercase tracking-wider text-[10px]">Thou Shalt Not:</span><p class="text-slate-600 line-clamp-2 mt-0.5">${item.donts}</p></div>` : ''}
+                        </div>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                        <span class="truncate max-w-[150px]"><strong class="text-slate-500">Source:</strong> ${item.sources || 'Internal'}</span>
+                        <span>${date}</span>
+                    </div>`;
+                tile.addEventListener('click', () => openModal(item));
+                tilesContainer.appendChild(tile);
+            });
+            tilesContainer.classList.remove('hidden');
+        }
+
+        searchInput.addEventListener('input', e => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => fetchRecords(e.target.value), 350);
+        });
+
+        // ── Modal ────────────────────────────────────────────
+        function openModal(record = null) {
+            profileForm.reset();
+            modalOverlay.classList.remove('hidden');
+            modalOverlay.classList.add('flex');
+
+            const isEdit = !!record;
+            document.getElementById('modalTitle').textContent = isEdit ? 'Edit Style Profile' : 'New Style Profile';
+            document.getElementById('recordId').value         = isEdit ? record.id : '';
+            document.getElementById('formProfile').value      = isEdit ? (record.style_profile ?? '') : '';
+            document.getElementById('formDos').value          = isEdit ? (record.dos ?? '') : '';
+            document.getElementById('formDonts').value        = isEdit ? (record.donts ?? '') : '';
+            document.getElementById('formNotes').value        = isEdit ? (record.notes ?? '') : '';
+            document.getElementById('formSources').value      = isEdit ? (record.sources ?? '') : '';
+            document.getElementById('deleteBtn').classList.toggle('hidden', !isEdit);
+        }
+
+        function closeModal() {
+            modalOverlay.classList.add('hidden');
+            modalOverlay.classList.remove('flex');
+        }
+
+        document.getElementById('addProfileBtn').addEventListener('click',   () => openModal(null));
+        document.getElementById('closeModalBtn').addEventListener('click',   closeModal);
+        document.getElementById('cancelModalBtn').addEventListener('click',  closeModal);
+
+        profileForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const id = document.getElementById('recordId').value;
+            const payload = {
+                style_profile: document.getElementById('formProfile').value,
+                dos:           document.getElementById('formDos').value,
+                donts:         document.getElementById('formDonts').value,
+                notes:         document.getElementById('formNotes').value,
+                sources:       document.getElementById('formSources').value,
+            };
+            try {
+                if (id) {
+                    const { error } = await sb.from('style_bible').update(payload).eq('id', id);
+                    if (error) throw error;
+                } else {
+                    const { error } = await sb.from('style_bible').insert([payload]);
+                    if (error) throw error;
+                }
+                closeModal();
+                fetchRecords(searchInput.value);
+            } catch (err) {
+                alert(`Error saving: ${err.message}`);
+            }
+        });
+
+        document.getElementById('deleteBtn').addEventListener('click', async () => {
+            const id = document.getElementById('recordId').value;
+            if (!id || !confirm('Delete this entry permanently?')) return;
+            try {
+                const { error } = await sb.from('style_bible').delete().eq('id', id);
+                if (error) throw error;
+                closeModal();
+                fetchRecords(searchInput.value);
+            } catch (err) {
+                alert(`Error deleting: ${err.message}`);
+            }
+        });
+
+        // ── Boot ─────────────────────────────────────────────
+        initSession();
+    </script>
+</body>
+</html>

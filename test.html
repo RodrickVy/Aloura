@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aloura — Face Analysis Test</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0E0D0C;
+      --surface:  #1A1916;
+      --border:   rgba(255,255,255,0.08);
+      --text:     #F0EDE8;
+      --muted:    #7A776F;
+      --accent:   #C4906A;
+      --green:    #6AAF8A;
+      --mono:     'DM Mono', monospace;
+      --sans:     'DM Sans', sans-serif;
+      --display:  'Playfair Display', serif;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 48px 24px 80px;
+    }
+
+    header {
+      max-width: 960px;
+      margin: 0 auto 48px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+
+    .logo {
+      font-family: var(--display);
+      font-size: 28px;
+      color: var(--text);
+    }
+    .logo span { color: var(--accent); }
+
+    .badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .wrap { max-width: 960px; margin: 0 auto; }
+
+    /* API key input */
+    .api-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .api-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .api-input:focus { border-color: var(--accent); }
+    .api-input::placeholder { color: var(--muted); }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 1.5px dashed var(--border);
+      border-radius: 12px;
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 32px;
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(196,144,106,0.04);
+    }
+    .upload-zone input {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .upload-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .upload-label {
+      font-size: 15px; font-weight: 300; color: var(--muted);
+    }
+    .upload-label strong { color: var(--text); font-weight: 500; }
+
+    /* Image preview row */
+    .image-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      min-height: 0;
+    }
+    .image-thumb {
+      width: 80px; height: 80px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .image-filename {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 80px;
+      text-align: center;
+    }
+
+    /* Run button */
+    .run-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: #0E0D0C;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 48px;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .run-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+    .run-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* Progress */
+    .progress-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .progress-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .progress-item.done  { color: var(--green); }
+    .progress-item.error { color: #E05C5C; }
+    .progress-item.active { color: var(--accent); }
+    .progress-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0;
+    }
+    .progress-item.active .progress-dot {
+      animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* Result panels */
+    .results-section { margin-bottom: 48px; }
+
+    .results-title {
+      font-family: var(--display);
+      font-size: 22px;
+      font-style: italic;
+      color: var(--accent);
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .result-card-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-card-thumb {
+      width: 36px; height: 36px;
+      border-radius: 6px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .result-card-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .result-card-body {
+      padding: 16px;
+    }
+
+    /* JSON tree */
+    .json-key   { color: #9ECBF5; }
+    .json-str   { color: #B8E08A; }
+    .json-num   { color: #F5C97A; }
+    .json-bool  { color: #C9A0F5; }
+    .json-null  { color: var(--muted); }
+    .json-label { color: var(--accent); font-weight: 500; }
+
+    pre {
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Merged manifest */
+    .manifest-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .manifest-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .manifest-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .copy-btn {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: rgba(196,144,106,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(196,144,106,0.3);
+      border-radius: 6px;
+      padding: 4px 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: rgba(196,144,106,0.25); }
+
+    .manifest-body {
+      padding: 20px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Aloura<span>.</span></div>
+  <span class="badge">FACE ANALYSIS TEST</span>
+</header>
+
+<div class="wrap">
+
+  <!-- API Key -->
+  <div class="api-row">
+    <input
+      class="api-input"
+      id="api-key"
+      type="password",
+      value="",
+      placeholder="AILab API key — ailabapi-api-key"
+      autocomplete="off"
+    >
+  </div>
+
+  <!-- Upload zone -->
+  <div class="upload-zone" id="upload-zone">
+    <input type="file" id="file-input" accept="image/jpeg,image/png,image/bmp" multiple>
+    <span class="upload-icon">⬆</span>
+    <p class="upload-label">
+      <strong>Drop images here</strong> or click to browse<br>
+      Up to 3 images · JPG, PNG, BMP · Max 5 MB each
+    </p>
+  </div>
+
+  <!-- Image previews -->
+  <div class="image-row" id="image-row"></div>
+
+  <!-- Run -->
+  <button class="run-btn" id="run-btn" disabled>
+    Analyse Faces
+  </button>
+
+  <!-- Progress -->
+  <div class="progress-row" id="progress-row"></div>
+
+  <!-- Per-image results -->
+  <div id="results-container"></div>
+
+  <!-- Merged manifest -->
+  <div id="manifest-container"></div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  TYPE → LABEL MAPS
+//  Every numeric type code from the API mapped to a readable value.
+// ─────────────────────────────────────────────────────────────
+
+const MAPS = {
+  emotion: {
+    0: 'Neutral', 1: 'Happy', 2: 'Surprised',
+    3: 'Angry', 4: 'Sad', 5: 'Disgusted', 6: 'Fearful',
+  },
+  glasses: {
+    0: 'No glasses', 1: 'Regular glasses', 2: 'Sunglasses',
+  },
+  eye_open: {
+    0: 'Closed', 1: 'Open',
+  },
+  eyelid: {
+    0: 'Single eyelid', 1: 'Double eyelid',
+  },
+  eye_size: {
+    0: 'Small', 1: 'Regular', 2: 'Large',
+  },
+  eyebrow_density: {
+    0: 'Sparse', 1: 'Thick',
+  },
+  eyebrow_curve: {
+    0: 'Straight', 1: 'Curved',
+  },
+  eyebrow_length: {
+    0: 'Short', 1: 'Long',
+  },
+  gender: {
+    0: 'Male', 1: 'Female',
+  },
+  hair_length: {
+    0: 'Bald', 1: 'Short', 2: 'Medium', 3: 'Long', 4: 'Tied',
+  },
+  hair_bang: {
+    0: 'No fringe', 1: 'Has fringe',
+  },
+  hair_color: {
+    0: 'Black', 1: 'Blonde', 2: 'Brown', 3: 'Gray / White',
+  },
+  hat_style: {
+    0: 'No hat', 1: 'Regular hat', 2: 'Helmet', 3: 'Security hat',
+  },
+  hat_color: {
+    0: 'No hat', 1: 'Red', 2: 'Yellow', 3: 'Blue',
+    4: 'Black', 5: 'Gray / White', 6: 'Mixed',
+  },
+  mask: {
+    0: 'No mask', 1: 'Mask not covering face', 2: 'Mask on chin',
+    3: 'Mask on mouth', 4: 'Correctly worn mask',
+  },
+  mouth_open: {
+    0: 'Closed', 1: 'Open',
+  },
+  moustache: {
+    0: 'No facial hair', 1: 'Has facial hair',
+  },
+  nose: {
+    0: 'Upturned', 1: 'Hooked', 2: 'Normal', 3: 'Round-tipped',
+  },
+  face_shape: {
+    0: 'Square', 1: 'Triangle', 2: 'Oval', 3: 'Heart', 4: 'Round',
+  },
+  skin_type: {
+    0: 'Yellow / Olive',
+    1: 'Brown / Tan',
+    2: 'Dark / Deep',
+    3: 'Fair / Light',
+  },
+};
+
+function pct(p) { return Math.round(p * 100) + '%'; }
+function label(map, type, prob) {
+  return { value: map[type] ?? `Unknown (${type})`, confidence: pct(prob) };
+}
+
+// ─────────────────────────────────────────────────────────────
+//  MAP API RESPONSE → READABLE OBJECT
+// ─────────────────────────────────────────────────────────────
+
+function mapFaceData(face) {
+  const a = face.face_detail_attributes_info;
+  const r = face.face_rect;
+
+  return {
+    face_position: { x: r.x, y: r.y, width: r.width, height: r.height },
+
+    // Skin — most important for Aloura
+    skin: {
+      type:       label(MAPS.skin_type, a.skin.type, a.skin.probability),
+      // Note: undertone is NOT provided by this API — we derive it from Claude
+      // using this skin type + image as input
+      raw_type_id: a.skin.type,
+    },
+
+    face_shape: label(MAPS.face_shape, a.shape.type, a.shape.probability),
+
+    gender:  label(MAPS.gender,  a.gender.type, a.gender.probability),
+    age:     a.age,
+
+    eyes: {
+      glasses:      label(MAPS.glasses,   a.eye.glass.type,      a.eye.glass.probability),
+      open:         label(MAPS.eye_open,  a.eye.eye_open.type,   a.eye.eye_open.probability),
+      eyelid:       label(MAPS.eyelid,    a.eye.eyelid_type.type, a.eye.eyelid_type.probability),
+      size:         label(MAPS.eye_size,  a.eye.eye_size.type,   a.eye.eye_size.probability),
+    },
+
+    eyebrows: {
+      density: label(MAPS.eyebrow_density, a.eyebrow.eyebrow_density.type, a.eyebrow.eyebrow_density.probability),
+      curve:   label(MAPS.eyebrow_curve,   a.eyebrow.eyebrow_curve.type,   a.eyebrow.eyebrow_curve.probability),
+      length:  label(MAPS.eyebrow_length,  a.eyebrow.eyebrow_length.type,  a.eyebrow.eyebrow_length.probability),
+    },
+
+    hair: {
+      length: label(MAPS.hair_length, a.hair.length.type, a.hair.length.probability),
+      fringe: label(MAPS.hair_bang,   a.hair.bang.type,   a.hair.bang.probability),
+      color:  label(MAPS.hair_color,  a.hair.color.type,  a.hair.color.probability),
+    },
+
+    nose:      label(MAPS.nose,       a.nose.type,              a.nose.probability),
+    moustache: label(MAPS.moustache,  a.moustache.type,         a.moustache.probability),
+    mask:      label(MAPS.mask,       a.mask.type,              a.mask.probability),
+    mouth:     label(MAPS.mouth_open, a.mouth.mouth_open.type,  a.mouth.mouth_open.probability),
+    emotion:   label(MAPS.emotion,    a.emotion.type,           a.emotion.probability),
+    smile:     a.smile + ' / 100',
+    beauty:    a.beauty + ' / 100',
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+//  MERGE 3 FACE OBJECTS → ONE PERSON MANIFEST
+//  Strategy: for each field, take the highest-confidence value
+//  across all 3 images. Skin and face_shape are most important.
+// ─────────────────────────────────────────────────────────────
+
+function mergePersonManifest(results) {
+  if (results.length === 0) return {};
+  if (results.length === 1) return { ...results[0], _source: 'single_image' };
+
+  // For labeled fields with confidence, pick highest confidence across images
+  function bestLabel(key, subkey) {
+    let best = null;
+    let bestConf = -1;
+    for (const r of results) {
+      const obj = subkey ? r[key]?.[subkey] : r[key];
+      if (!obj || !obj.confidence) continue;
+      const conf = parseInt(obj.confidence);
+      if (conf > bestConf) { bestConf = conf; best = obj; }
+    }
+    return best;
+  }
+
+  // For numbers, average them
+  function avg(key) {
+    const vals = results.map(r => parseInt(r[key])).filter(v => !isNaN(v));
+    return vals.length ? Math.round(vals.reduce((a,b) => a+b, 0) / vals.length) : null;
+  }
+
+  return {
+    _source:     `${results.length}_images_merged`,
+    _image_count: results.length,
+
+    skin: {
+      type:        bestLabel('skin', 'type'),
+      raw_type_id: results[0].skin.raw_type_id, // from first image as reference
+    },
+
+    face_shape: bestLabel('face_shape'),
+    gender:     bestLabel('gender'),
+    age:        avg('age'),
+
+    eyes: {
+      glasses: bestLabel('eyes', 'glasses'),
+      open:    bestLabel('eyes', 'open'),
+      eyelid:  bestLabel('eyes', 'eyelid'),
+      size:    bestLabel('eyes', 'size'),
+    },
+
+    eyebrows: {
+      density: bestLabel('eyebrows', 'density'),
+      curve:   bestLabel('eyebrows', 'curve'),
+      length:  bestLabel('eyebrows', 'length'),
+    },
+
+    hair: {
+      length: bestLabel('hair', 'length'),
+      fringe: bestLabel('hair', 'fringe'),
+      color:  bestLabel('hair', 'color'),
+    },
+
+    nose:      bestLabel('nose'),
+    moustache: bestLabel('moustache'),
+    mask:      bestLabel('mask'),
+    mouth:     bestLabel('mouth'),
+    emotion:   bestLabel('emotion'),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+//  IMAGE COMPRESSION — canvas-based, client-side, no API needed
+//  Resizes to max 1600px on longest side and compresses to JPEG.
+//  Guarantees output under 4MB before sending to AILab.
+// ─────────────────────────────────────────────────────────────
+
+async function compressImage(file) {
+  return new Promise((resolve) => {
+    const MAX_DIM  = 1600;   // max width or height in px
+    const MAX_SIZE = 4 * 1024 * 1024; // 4MB hard limit
+    let   quality  = 0.85;
+
+    // If already small enough, skip compression
+    if (file.size <= MAX_SIZE) {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        if (img.width <= MAX_DIM && img.height <= MAX_DIM) {
+          console.log(`[compress] ${file.name} already within limits (${(file.size/1024).toFixed(0)}KB), skipping`);
+          return resolve(file);
+        }
+        doResize(img);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+      return;
+    }
+
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => { URL.revokeObjectURL(url); doResize(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+
+    function doResize(img) {
+      // Calculate new dimensions keeping aspect ratio
+      let w = img.width;
+      let h = img.height;
+      if (w > MAX_DIM || h > MAX_DIM) {
+        if (w > h) { h = Math.round(h * MAX_DIM / w); w = MAX_DIM; }
+        else        { w = Math.round(w * MAX_DIM / h); h = MAX_DIM; }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width  = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+
+      // Try progressively lower quality until under MAX_SIZE
+      function tryQuality(q) {
+        canvas.toBlob(blob => {
+          if (!blob) return resolve(file);
+
+          if (blob.size > MAX_SIZE && q > 0.3) {
+            return tryQuality(q - 0.1);
+          }
+
+          const compressed = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+          console.log(`[compress] ${file.name}: ${(file.size/1024).toFixed(0)}KB → ${(compressed.size/1024).toFixed(0)}KB @ ${Math.round(q*100)}% quality, ${w}×${h}px`);
+          resolve(compressed);
+        }, 'image/jpeg', q);
+      }
+
+      tryQuality(quality);
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  API CALL
+// ─────────────────────────────────────────────────────────────
+
+async function analyseImage(file, apiKey) {
+  // Compress first to avoid 413 — reSmush.it handles this for free
+  const compressedFile = await compressImage(file);
+
+  const form = new FormData();
+  form.append('image', compressedFile);
+  form.append('max_face_num', '1');
+  form.append('face_attributes_type', 'Age,Beauty,Emotion,Eye,Eyebrow,Gender,Hair,Hat,Mask,Mouth,Moustache,Nose,Shape,Skin,Smile');
+
+  // Encode key to ASCII-safe string for headers
+  const safeKey = encodeURIComponent(apiKey).replace(/%20/g, '+');
+
+  const res = await fetch('https://www.ailabapi.com/api/portrait/analysis/face-analyzer', {
+    method: 'POST',
+    headers: { 'ailabapi-api-key': safeKey },
+    body: form,
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+
+  if (data.error_code !== 0) {
+    throw new Error(`API error ${data.error_code}: ${data.error_msg}`);
+  }
+
+  const face = data.face_detail_infos?.[0];
+  if (!face) throw new Error('No face detected in this image');
+
+  return mapFaceData(face);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  SYNTAX-HIGHLIGHTED JSON RENDER
+// ─────────────────────────────────────────────────────────────
+
+function colorJSON(obj) {
+  const json = JSON.stringify(obj, null, 2);
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+    if (/^"/.test(match)) {
+      if (/:$/.test(match)) return `<span class="json-key">${match}</span>`;
+      return `<span class="json-str">${match}</span>`;
+    }
+    if (/true|false/.test(match)) return `<span class="json-bool">${match}</span>`;
+    if (/null/.test(match)) return `<span class="json-null">${match}</span>`;
+    return `<span class="json-num">${match}</span>`;
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  UI STATE
+// ─────────────────────────────────────────────────────────────
+
+let _files = [];
+
+const fileInput   = document.getElementById('file-input');
+const uploadZone  = document.getElementById('upload-zone');
+const imageRow    = document.getElementById('image-row');
+const runBtn      = document.getElementById('run-btn');
+const progressRow = document.getElementById('progress-row');
+const resultsEl   = document.getElementById('results-container');
+const manifestEl  = document.getElementById('manifest-container');
+
+fileInput.addEventListener('change', handleFiles);
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  handleFiles({ target: { files: e.dataTransfer.files } });
+});
+
+function handleFiles(e) {
+  const newFiles = [...e.target.files].slice(0, 3 - _files.length);
+  _files = [..._files, ...newFiles].slice(0, 3);
+  renderPreviews();
+  runBtn.disabled = _files.length === 0 || !document.getElementById('api-key').value.trim();
+}
+
+document.getElementById('api-key').addEventListener('input', () => {
+  runBtn.disabled = _files.length === 0 || !document.getElementById('api-key').value.trim();
+});
+
+function renderPreviews() {
+  imageRow.innerHTML = _files.map(f => {
+    const url = URL.createObjectURL(f);
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <img class="image-thumb" src="${url}" alt="">
+        <div class="image-filename">${f.name}</div>
+      </div>`;
+  }).join('');
+}
+
+function setProgress(idx, state, msg) {
+  const item = document.getElementById(`prog-${idx}`);
+  if (!item) return;
+  item.className = `progress-item ${state}`;
+  item.querySelector('.progress-msg').textContent = msg;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  RUN ANALYSIS
+// ─────────────────────────────────────────────────────────────
+
+runBtn.addEventListener('click', async () => {
+  const apiKey = document.getElementById('api-key').value.trim();
+  if (!apiKey || _files.length === 0) return;
+
+  runBtn.disabled = true;
+  progressRow.innerHTML = '';
+  resultsEl.innerHTML   = '';
+  manifestEl.innerHTML  = '';
+
+  // Build progress indicators
+  progressRow.innerHTML = _files.map((f, i) => `
+    <div class="progress-item active" id="prog-${i}">
+      <span class="progress-dot"></span>
+      <span class="progress-msg">Analysing ${f.name}…</span>
+    </div>
+  `).join('');
+
+  const mappedResults = [];
+  const perImageCards = [];
+
+  for (let i = 0; i < _files.length; i++) {
+    setProgress(i, 'active', `Analysing ${_files[i].name}…`);
+
+    try {
+      setProgress(i, 'active', `Compressing ${_files[i].name}…`);
+      const mapped = await analyseImage(_files[i], apiKey);
+      mappedResults.push(mapped);
+      perImageCards.push({ file: _files[i], data: mapped, ok: true });
+      setProgress(i, 'done', `✓ ${_files[i].name}`);
+    } catch (err) {
+      perImageCards.push({ file: _files[i], error: err.message, ok: false });
+      setProgress(i, 'error', `✗ ${_files[i].name} — ${err.message}`);
+    }
+  }
+
+  // Render per-image cards
+  resultsEl.innerHTML = `
+    <div class="results-section">
+      <div class="results-title">Per-image results</div>
+      <div class="results-grid">
+        ${perImageCards.map((c, i) => `
+          <div class="result-card">
+            <div class="result-card-header">
+              <img class="result-card-thumb" src="${URL.createObjectURL(c.file)}" alt="">
+              <div>
+                <div class="result-card-label">IMAGE ${i + 1}</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">${c.file.name}</div>
+              </div>
+            </div>
+            <div class="result-card-body">
+              ${c.ok
+                ? `<pre>${colorJSON(c.data)}</pre>`
+                : `<span style="color:#E05C5C;font-size:12px;font-family:var(--mono)">Error: ${c.error}</span>`
+              }
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+
+  // Merge and render manifest
+  if (mappedResults.length > 0) {
+    const manifest = mergePersonManifest(mappedResults);
+
+    manifestEl.innerHTML = `
+      <div class="results-section">
+        <div class="results-title">Merged person manifest</div>
+        <div class="manifest-section">
+          <div class="manifest-header">
+            <span class="manifest-title">person_manifest.json — ${mappedResults.length} image${mappedResults.length > 1 ? 's' : ''} merged</span>
+            <button class="copy-btn" id="copy-manifest">Copy JSON</button>
+          </div>
+          <div class="manifest-body">
+            <pre>${colorJSON(manifest)}</pre>
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById('copy-manifest').addEventListener('click', () => {
+      navigator.clipboard.writeText(JSON.stringify(manifest, null, 2));
+      document.getElementById('copy-manifest').textContent = 'Copied!';
+      setTimeout(() => { document.getElementById('copy-manifest').textContent = 'Copy JSON'; }, 2000);
+    });
+  }
+
+  runBtn.disabled = false;
+});
+</script>
+</body>
+</html>
