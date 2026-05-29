@@ -177,6 +177,36 @@
     .mb-brand-body{display:none;padding:0 20px 12px;}
     .mb-brand-section.is-open .mb-brand-body{display:block;}
     .mb-brand-coming-soon{font-family:'Inter',sans-serif;font-size:12px;font-weight:300;color:var(--taupe);padding:12px 0;text-align:center;}
+    .mb-buy-outfit {
+      display: block; width: calc(100% - 40px); margin: 0 20px 20px;
+      padding: 13px; text-align: center;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      background: var(--charcoal); color: white;
+      border: none; border-radius: 12px; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .mb-buy-outfit:hover { background: var(--brown); }
+    .mb-store-logos {
+      padding: 4px 20px 20px;
+      border-top: 1px solid rgba(158,140,126,0.1);
+    }
+    .mb-store-logos-label {
+      font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 500;
+      letter-spacing: 1.5px; text-transform: uppercase; color: var(--light-taupe);
+      margin-bottom: 10px; margin-top: 12px;
+    }
+    .mb-store-logos-grid {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    }
+    .mb-store-logo-item {
+      width: 36px; height: 22px; border-radius: 4px;
+      border: 1px solid rgba(158,140,126,0.15);
+      overflow: hidden; background: white;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0.5; cursor: default;
+    }
+    .mb-store-logo-item.is-live { opacity: 1; cursor: pointer; }
+    .mb-store-logo-item img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
     .mb-piece{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(158,140,126,0.08);}
     .mb-piece:last-child{border-bottom:none;}
     .mb-piece__img{width:52px;height:52px;border-radius:8px;object-fit:cover;background:var(--light-taupe);flex-shrink:0;}
@@ -202,19 +232,78 @@
     .mb-card__occasion{font-family:'Inter',sans-serif;font-size:13px;font-weight:300;color:var(--taupe);}
     .mb-card__hint{font-family:'Inter',sans-serif;font-size:11px;color:var(--light-taupe);margin-top:8px;display:flex;align-items:center;gap:5px;}
     .mb-empty{text-align:center;padding:40px;font-family:'Inter',sans-serif;font-size:14px;font-weight:300;color:var(--taupe);}
-    /* Compare modal */
-    .compare-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));background:var(--off-white);border-radius:20px;z-index:1001;box-shadow:0 24px 80px rgba(0,0,0,0.25);padding:28px;display:none;}
-    .compare-modal.is-open{display:block;}
-    .compare-modal__title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px;}
-    .compare-modal__product{font-family:'Inter',sans-serif;font-size:12px;font-weight:300;color:var(--taupe);margin-bottom:20px;}
-    .compare-step{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-    .compare-step__brand{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--charcoal);width:80px;flex-shrink:0;}
-    .compare-step__bar-wrap{flex:1;height:4px;background:var(--light-taupe);border-radius:4px;overflow:hidden;}
-    .compare-step__bar{height:100%;width:0%;border-radius:4px;transition:width 0.8s ease;}
-    .compare-step__status{font-family:'Inter',sans-serif;font-size:10px;color:var(--taupe);width:60px;text-align:right;flex-shrink:0;}
-    .compare-messages{font-family:'Inter',sans-serif;font-size:13px;font-weight:300;color:var(--taupe);margin-bottom:16px;min-height:18px;}
-    .compare-result{background:var(--beige);border:1px solid var(--light-taupe);border-radius:12px;padding:16px 18px;font-family:'Inter',sans-serif;font-size:13px;font-weight:300;color:var(--taupe);display:none;line-height:1.6;}
-    .compare-close{width:100%;margin-top:16px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;background:var(--charcoal);color:white;border:none;border-radius:10px;cursor:pointer;}
+
+    /* ── COMPARE MODAL (updated) ── */
+    .compare-modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(400px, calc(100vw - 32px));
+      background: var(--off-white);
+      border-radius: 20px; z-index: 1001;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+      overflow: hidden; display: none;
+    }
+    .compare-modal.is-open { display: block; }
+    .compare-modal__product-img {
+      width: 100%; height: 180px; object-fit: cover;
+      display: block; background: var(--light-taupe);
+    }
+    .compare-modal__product-img-ph {
+      width: 100%; height: 140px;
+      background: linear-gradient(135deg, var(--beige), var(--light-taupe));
+      display: flex; align-items: center; justify-content: center;
+      color: var(--light-taupe); font-size: 32px;
+    }
+    .compare-modal__inner { padding: 20px 22px 24px; }
+
+    .compare-modal__title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 17px; font-weight: 500;
+      color: var(--charcoal); margin-bottom: 3px;
+    }
+    .compare-modal__subtitle {
+      font-family: 'Inter', sans-serif; font-size: 11px;
+      font-weight: 300; color: var(--taupe); margin-bottom: 18px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .compare-store-row {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+    }
+    .compare-store-name {
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700;
+      color: var(--charcoal); width: 76px; flex-shrink: 0;
+    }
+    .compare-bar-wrap {
+      flex: 1; height: 5px; background: var(--light-taupe);
+      border-radius: 5px; overflow: hidden;
+    }
+    .compare-bar {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--brown), var(--terracotta));
+      border-radius: 5px;
+      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .compare-store-status {
+      font-family: 'Inter', sans-serif; font-size: 10px;
+      color: var(--taupe); width: 52px; text-align: right; flex-shrink: 0;
+    }
+    .compare-message {
+      font-family: 'Inter', sans-serif; font-size: 12px;
+      font-weight: 300; color: var(--taupe); min-height: 16px;
+      margin: 12px 0 10px; transition: opacity 0.3s;
+    }
+    .compare-result {
+      background: var(--beige); border: 1px solid var(--light-taupe);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: 'Inter', sans-serif; font-size: 13px;
+      font-weight: 300; color: var(--taupe); display: none; line-height: 1.6;
+    }
+    .compare-close {
+      width: 100%; margin-top: 14px; padding: 10px;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+      background: var(--charcoal); color: white; border: none;
+      border-radius: 10px; cursor: pointer;
+    }
     /* Color examples (view_report) */
     .examples-btn{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:7px 14px;font-family:'Inter',sans-serif;font-size:11px;font-weight:500;color:var(--brown);background:none;border:1.5px solid var(--light-taupe);border-radius:18px;cursor:pointer;transition:all 0.2s;}
     .examples-btn:hover{border-color:var(--brown);background:var(--beige);}
@@ -370,23 +459,25 @@
   <div class="mb-overlay" id="mb-overlay" onclick="handleOverlayClick(event)"></div>
 
   <div class="compare-modal" id="compare-modal">
-    <div class="compare-modal__title">Price Comparison</div>
-    <div class="compare-modal__product" id="compare-product-name"></div>
-    <div>
-      <div class="compare-step"><span class="compare-step__brand">Zara</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
-      <div class="compare-step"><span class="compare-step__brand">Uniqlo</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
-      <div class="compare-step"><span class="compare-step__brand">Walmart</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
-      <div class="compare-step"><span class="compare-step__brand">Lululemon</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
-      <div class="compare-step"><span class="compare-step__brand">Gap</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
-      <div class="compare-step"><span class="compare-step__brand">ASOS</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
-      <div class="compare-step"><span class="compare-step__brand">H&M</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+    <div class="compare-modal__product-img-wrap">
+      <div class="compare-modal__product-img-ph"><i class="fas fa-tshirt"></i></div>
     </div>
-    <div class="compare-messages"></div>
-    <div class="compare-result">
-      <strong style="color:var(--brown);">Comparison complete.</strong><br>
-      Cross-store price comparison is currently unavailable. We're working on bringing you real-time pricing across all brands — check back soon!
+    <div class="compare-modal__inner">
+
+      <div class="compare-modal__title">Price Comparison</div>
+      <div class="compare-modal__subtitle"></div>
+      <div class="compare-store-row">
+        <span class="compare-store-name"></span>
+        <div class="compare-bar-wrap"><div class="compare-bar"></div></div>
+        <span class="compare-store-status"></span>
+      </div>
+      <div class="compare-message"></div>
+      <div class="compare-result">
+        <strong style="color:var(--brown);">Comparison complete.</strong><br>
+        Cross-store price comparison is currently unavailable. We're working on bringing you real-time pricing across all brands — check back soon!
+      </div>
+      <button class="compare-close" onclick="closeCompare()">Got it</button>
     </div>
-    <button class="compare-close" onclick="closeCompare()">Got it</button>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -640,14 +731,33 @@
           </div>
           <div class="mb-piece__actions">
             ${p.url ? `<a class="mb-piece__checkout" href="${p.url}" target="_blank" rel="noopener">Checkout</a>` : ''}
-            <button class="mb-piece__compare" onclick="openCompare('${(p.name||'').replace(/'/g,'')}')"><i class="fas fa-magic"></i> Compare</button>
+            <button class="mb-piece__compare" onclick="openCompare('${(p.name||'').replace(/'/g,'')}','${p.image_url||''}',null)"><i class="fas fa-magic"></i> Compare</button>
           </div>
         </div>`).join('');
       const brandSections = BRANDS.map(b => b.live
         ? `<div class="mb-brand-section is-open" id="brand-${b.id}"><div class="mb-brand-header" onclick="toggleBrand('brand-${b.id}')"><div class="mb-brand-left"><span class="mb-brand-logo ${b.cls}">${b.label}</span><span class="mb-brand-badge live">Live</span></div><i class="fas fa-chevron-down mb-brand-chevron"></i></div><div class="mb-brand-body">${amazonPieces||'<p class="mb-brand-coming-soon">No products found.</p>'}</div></div>`
         : `<div class="mb-brand-section" id="brand-${b.id}"><div class="mb-brand-header" onclick="brandComingSoon('${b.label}')"><div class="mb-brand-left"><span class="mb-brand-logo">${b.label}</span><span class="mb-brand-badge soon">Coming Soon</span></div><i class="fas fa-chevron-right mb-brand-chevron"></i></div></div>`
       ).join('');
-      return `<div class="mb-expanded-modal" id="mb-modal"><div class="mb-expanded-modal__close"><button onclick="closeMBModal()"><i class="fas fa-times"></i></button></div>${imgHtml}<div class="mb-expanded-body"><div class="mb-expanded-goal">${board.goal}</div><div class="mb-expanded-title">${board.title}</div><div class="mb-expanded-desc">${board.occasion||board.description||''}</div></div><div class="mb-brands">${brandSections}</div></div>`;
+      // Calculate total price
+      const total = (board.pieces ?? []).reduce((s, p) => s + (parseFloat(p.price) || 0), 0);
+      const totalStr = total > 0 ? `$${total.toFixed(2)}` : null;
+
+      // Store logos footer
+      const allStores = [
+        { id:'amazon',    live:true  }, { id:'zara',      live:false },
+        { id:'uniqlo',    live:false }, { id:'walmart',   live:false },
+        { id:'lululemon', live:false }, { id:'gap',       live:false },
+        { id:'asos',      live:false }, { id:'hm',        live:false },
+        { id:'nike',      live:false }, { id:'adidas',    live:false },
+        { id:'target',    live:false }, { id:'nordstrom', live:false },
+        { id:'macys',     live:false },
+      ];
+      const logosHtml = allStores.map(s => `
+        <div class="mb-store-logo-item ${s.live ? 'is-live' : ''}" title="${s.id}">
+          <img src="assets/logos/${s.id}.png" alt="${s.id}" onerror="this.parentElement.style.display='none'">
+        </div>`).join('');
+
+      return `<div class="mb-expanded-modal" id="mb-modal"><div class="mb-expanded-modal__close"><button onclick="closeMBModal()"><i class="fas fa-times"></i></button></div>${imgHtml}<div class="mb-expanded-body"><div class="mb-expanded-goal">${board.goal}</div><div class="mb-expanded-title">${board.title}</div><div class="mb-expanded-desc">${board.occasion||board.description||''}</div></div><div class="mb-brands">${brandSections}</div>${totalStr ? `<button class="mb-buy-outfit">Buy Whole Outfit &nbsp;${totalStr}</button>` : ''}<div class="mb-store-logos"><div class="mb-store-logos-label">Available on</div><div class="mb-store-logos-grid">${logosHtml}</div></div></div>`;
     }
 
     function renderMoodBoards(boards) {
@@ -714,36 +824,92 @@
       setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2000);
     };
 
-    const COMPARE_BRANDS_V = ['Zara','Uniqlo','Walmart','Lululemon','Gap','ASOS','H&M'];
-    const COMPARE_MSGS_V   = ['Comparing prices…','Finding best matches…','Contrasting quality…','Generating report…'];
 
-    window.openCompare = function(productName) {
+    // ── Compare modal shared logic ────────────────────────
+    const _STORES = ['Zara','Uniqlo','Walmart','Lululemon','Gap','ASOS','H&M'];
+    const _MSGS   = ['Comparing prices…','Finding best matches…','Contrasting quality…','Generating report…'];
+    let _compareTimer = null;
+
+    window.openCompare = function(productName, productImgUrl, totalPrice) {
       const modal = document.getElementById('compare-modal');
       if (!modal) return;
-      document.getElementById('compare-product-name').textContent = productName;
+
+      // Product image
+      const imgWrap = modal.querySelector('.compare-modal__product-img-wrap');
+      if (imgWrap) {
+        imgWrap.innerHTML = productImgUrl
+          ? `<img class="compare-modal__product-img" src="${productImgUrl}" alt="${productName}">`
+          : `<div class="compare-modal__product-img-ph"><i class="fas fa-tshirt"></i></div>`;
+      }
+
+      modal.querySelector('.compare-modal__subtitle').textContent = productName;
       modal.classList.add('is-open');
       document.getElementById('mb-overlay').classList.add('is-visible');
-      // animate
-      const steps = modal.querySelectorAll('.compare-step');
-      const msgEl = modal.querySelector('.compare-messages');
-      const resultEl = modal.querySelector('.compare-result');
-      steps.forEach(s => { s.querySelector('.compare-step__bar').style.width='0%'; s.querySelector('.compare-step__status').textContent=''; });
-      resultEl.style.display = 'none';
-      msgEl.textContent = COMPARE_MSGS_V[0];
-      let mi = 0;
-      const mt = setInterval(() => { mi=(mi+1)%COMPARE_MSGS_V.length; msgEl.textContent=COMPARE_MSGS_V[mi]; }, 1800);
-      const colors = ['#E05C5C','#C4906A','#6B4F3A','#9E8C7E','#D4C9BE','#C4906A','#6B4F3A'];
-      steps.forEach((step, i) => {
-        const bar=step.querySelector('.compare-step__bar'), status=step.querySelector('.compare-step__status');
-        bar.style.background=colors[i%colors.length];
-        setTimeout(() => { bar.style.width=`${60+Math.random()*35}%`; status.textContent='Searching…'; setTimeout(()=>{bar.style.width='100%';status.textContent='Done';},900); }, i*600);
-      });
-      setTimeout(() => { clearInterval(mt); msgEl.textContent=''; resultEl.style.display='block'; }, steps.length*600+1200);
+      _runCompare(modal);
     };
 
+    function _runCompare(modal) {
+      clearInterval(_compareTimer);
+      const row   = modal.querySelector('.compare-store-row');
+      const bar   = modal.querySelector('.compare-bar');
+      const name  = modal.querySelector('.compare-store-name');
+      const stat  = modal.querySelector('.compare-store-status');
+      const msg   = modal.querySelector('.compare-message');
+      const result = modal.querySelector('.compare-result');
+
+      // Reset
+      bar.style.transition = 'none';
+      bar.style.width = '0%';
+      stat.textContent = '';
+      result.style.display = 'none';
+      msg.textContent = _MSGS[0];
+
+      let storeIdx = 0;
+      let msgIdx   = 0;
+
+      function nextStore() {
+        if (storeIdx >= _STORES.length) {
+          // All done
+          clearInterval(_compareTimer);
+          bar.style.width = '0%';
+          name.textContent = '';
+          stat.textContent = '';
+          msg.textContent = '';
+          result.style.display = 'block';
+          return;
+        }
+        // Update store label + rotate message
+        name.textContent = _STORES[storeIdx];
+        msgIdx = (storeIdx) % _MSGS.length;
+        msg.textContent = _MSGS[msgIdx];
+        stat.textContent = '…';
+        // Animate bar
+        requestAnimationFrame(() => {
+          bar.style.transition = 'width 1.6s cubic-bezier(0.4,0,0.2,1)';
+          bar.style.width = `${70 + Math.random() * 28}%`;
+        });
+        setTimeout(() => {
+          bar.style.transition = 'width 0.4s ease';
+          bar.style.width = '100%';
+          stat.textContent = 'Done';
+          setTimeout(() => {
+            bar.style.transition = 'none';
+            bar.style.width = '0%';
+            storeIdx++;
+            nextStore();
+          }, 400);
+        }, 1800);
+      }
+
+      nextStore();
+    }
+
     window.closeCompare = function() {
+      clearInterval(_compareTimer);
       document.getElementById('compare-modal')?.classList.remove('is-open');
-      if (!document.getElementById('mb-modal')) document.getElementById('mb-overlay')?.classList.remove('is-visible');
+      if (!document.getElementById('mb-modal')) {
+        document.getElementById('mb-overlay')?.classList.remove('is-visible');
+      }
     };
 
     window.handleOverlayClick = function(e) {

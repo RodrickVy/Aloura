@@ -88,27 +88,21 @@ function buildReportSkeleton({ accountId, imageIds = [], goals = [] }) {
     color_intelligence:           null,
 
     best_colors:                  null,
-    best_colors_example:          null,
     best_colors_description:      null,
 
     accent_colors:                null,
-    accent_colors_example:        null,
     accent_colors_description:    null,
 
     neutral_staples:              null,
-    neutral_staples_example:      null,
     neutral_staples_description:  null,
 
     use_sparingly:                null,
-    use_sparingly_example:        null,
     use_sparingly_description:    null,
 
     high_contrast_pairings:             null,
-    high_contrast_pairings_example:     null,
     high_contrast_pairings_description: null,
 
     harmony_note:                 null,
-    harmony_note_example:         null,
     harmony_note_description:     null,
     harmony_note_cool_colors:     null,
 
