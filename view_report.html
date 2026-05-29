@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aloura — Your Style Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --beige: #F5EFE6; --cream: #FAF7F2; --off-white: #FDFBF8;
+      --charcoal: #2C2C2C; --brown: #6B4F3A; --terracotta: #C4906A;
+      --taupe: #9E8C7E; --light-taupe: #D4C9BE;
+      --shadow: 0 4px 24px rgba(0,0,0,0.07); --shadow-md: 0 8px 40px rgba(0,0,0,0.10);
+      --nav-h: 72px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Georgia', serif; background: var(--off-white); color: var(--charcoal); overflow-x: hidden; }
+    .sans { font-family: 'Inter', sans-serif; }
+
+    /* NAV */
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--nav-h); padding: 0 48px; display: flex; align-items: center; justify-content: space-between; background: rgba(253,251,248,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(158,140,126,0.12); }
+    .nav.scrolled { box-shadow: var(--shadow); }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 600; color: var(--charcoal); text-decoration: none; letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--terracotta); }
+    .nav-back { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: var(--taupe); background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
+    .nav-back:hover { color: var(--charcoal); }
+
+    /* LOADING */
+    .loading-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding-top: var(--nav-h); }
+    .loading-spinner { width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--light-taupe); border-top-color: var(--terracotta); animation: spin 0.9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-label { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 300; color: var(--taupe); }
+
+    /* ERROR */
+    .error-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 48px; text-align: center; }
+    .error-screen h2 { font-family: 'Playfair Display', serif; font-size: 28px; }
+    .error-screen p { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 300; color: var(--taupe); }
+
+    /* LAYOUT */
+    #report-body { opacity: 0; transition: opacity 0.5s ease; padding-top: var(--nav-h); }
+    #report-body.visible { opacity: 1; }
+    .section { padding: 72px 48px; max-width: 1200px; margin: 0 auto; }
+    .section.wide { max-width: 1280px; }
+
+    /* TYPOGRAPHY */
+    .eyebrow { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; color: var(--terracotta); margin-bottom: 12px; }
+    .heading { font-family: 'Playfair Display', serif; font-size: clamp(28px, 3vw, 40px); font-weight: 500; line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 12px; }
+    .heading em { font-style: italic; color: var(--brown); }
+    .lead { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 300; line-height: 1.75; color: var(--taupe); max-width: 600px; margin-bottom: 32px; }
+
+    /* HERO */
+    .hero { min-height: 75vh; display: flex; align-items: center; position: relative; overflow: hidden; padding: 80px 48px; max-width: 1280px; margin: 0 auto; }
+    .hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, var(--cream), var(--beige), #EDE0D0); z-index: 0; }
+    .hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 360px; gap: 64px; align-items: center; width: 100%; }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(36px, 5vw, 54px); font-weight: 500; line-height: 1.08; letter-spacing: -1px; margin-bottom: 16px; }
+    .hero h1 em { font-style: italic; color: var(--brown); }
+    .hero-desc { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 300; line-height: 1.8; color: var(--taupe); margin-bottom: 20px; }
+    .hero-goals { display: flex; flex-wrap: wrap; gap: 8px; }
+    .hero-goal-tag { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; padding: 5px 12px; border-radius: 20px; background: rgba(107,79,58,0.1); color: var(--brown); }
+    .hero-img { width: 100%; aspect-ratio: 3/4; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-md); background: var(--light-taupe); }
+    .hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--light-taupe); font-size: 48px; }
+
+    /* SNAPSHOT */
+    .snapshot-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+    .snapshot-card { background: var(--cream); border: 1px solid rgba(158,140,126,0.15); border-radius: 14px; padding: 20px 18px; box-shadow: var(--shadow); }
+    .snapshot-label { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--taupe); margin-bottom: 8px; }
+    .snapshot-value { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500; color: var(--charcoal); }
+    .snapshot-note { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 300; color: var(--light-taupe); margin-top: 5px; }
+    .skin-swatch { display: inline-block; width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.08); vertical-align: middle; margin-right: 5px; }
+
+    /* COLLAPSIBLE */
+    .collapsible { border-bottom: 1px solid rgba(158,140,126,0.12); }
+    .collapsible-trigger { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; background: none; border: none; cursor: pointer; text-align: left; transition: background 0.2s; max-width: 1280px; margin: 0 auto; }
+    .collapsible-trigger:hover { background: rgba(245,239,230,0.5); }
+    .collapsible-left { display: flex; flex-direction: column; gap: 3px; }
+    .collapsible-label { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--terracotta); }
+    .collapsible-title { font-family: 'Playfair Display', serif; font-size: clamp(20px, 2.2vw, 28px); font-weight: 500; color: var(--charcoal); }
+    .collapsible-title em { font-style: italic; color: var(--brown); }
+    .collapsible-chevron { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--light-taupe); display: flex; align-items: center; justify-content: center; color: var(--taupe); font-size: 12px; flex-shrink: 0; transition: transform 0.35s, border-color 0.2s; }
+    .collapsible.is-open .collapsible-chevron { transform: rotate(180deg); border-color: var(--brown); color: var(--brown); }
+    .collapsible-body { overflow: hidden; max-height: 0; transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1); }
+    .collapsible.is-open .collapsible-body { max-height: 6000px; }
+    .collapsible-inner { padding: 0 48px 56px; max-width: 1280px; margin: 0 auto; }
+    .collapsible-inner.narrow { max-width: 1200px; }
+
+    /* COLOR BLOCKS */
+    .color-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .color-block { background: var(--cream); border-radius: 16px; padding: 24px; border: 1px solid rgba(158,140,126,0.12); box-shadow: var(--shadow); }
+    .color-block h4 { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 8px; }
+    .color-block p { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300; line-height: 1.6; color: var(--taupe); margin-bottom: 14px; }
+    .swatch-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .swatch { width: 40px; height: 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+    /* INSIGHT CARDS */
+    .insight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .insight-card { background: var(--cream); border-radius: 14px; padding: 24px; border: 1px solid rgba(158,140,126,0.1); }
+    .insight-card i { font-size: 20px; color: var(--terracotta); margin-bottom: 12px; display: block; }
+    .insight-card h4 { font-family: 'Playfair Display', serif; font-size: 17px; margin-bottom: 10px; }
+    .insight-card p { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300; line-height: 1.65; color: var(--taupe); }
+    .insight-card ul { padding-left: 16px; margin-top: 8px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300; line-height: 1.7; color: var(--taupe); }
+
+    /* MOOD BOARDS */
+    .mb-deck-wrap { position: relative; height: 460px; margin-bottom: 28px; }
+    .mb-card { position: absolute; inset: 0; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-md); cursor: pointer; background: var(--cream); user-select: none; transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s; }
+    .mb-card:nth-child(1) { z-index: 3; }
+    .mb-card:nth-child(2) { z-index: 2; transform: translateX(14px) translateY(7px) scale(0.97); }
+    .mb-card:nth-child(3) { z-index: 1; transform: translateX(24px) translateY(14px) scale(0.94); }
+    .mb-card.swiped-left  { transform: translateX(-120%) rotate(-10deg) !important; opacity: 0; pointer-events: none; }
+    .mb-card.swiped-right { transform: translateX(120%)  rotate(10deg)  !important; opacity: 0; pointer-events: none; }
+    .mb-card.expanded { z-index: 20; position: fixed; inset: 16px; height: auto; border-radius: 24px; overflow-y: auto; transform: none !important; cursor: default; }
+    .mb-card__img { width: 100%; height: 260px; object-fit: cover; display: block; background: var(--light-taupe); }
+    .mb-card__img-ph { width: 100%; height: 260px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--beige), var(--light-taupe)); color: var(--taupe); font-size: 40px; }
+    .mb-card__info { padding: 18px 20px; }
+    .mb-card__goal-tag { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--terracotta); margin-bottom: 5px; }
+    .mb-card__title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 500; margin-bottom: 6px; }
+    .mb-card__occasion { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300; color: var(--taupe); }
+    .mb-card__hint { font-family: 'Inter', sans-serif; font-size: 11px; color: var(--light-taupe); margin-top: 8px; display: flex; align-items: center; gap: 5px; }
+    .mb-card__close { position: sticky; top: 12px; float: right; margin: 0 12px 0 0; width: 32px; height: 32px; border-radius: 50%; background: rgba(44,44,44,0.6); border: none; cursor: pointer; color: white; font-size: 12px; display: none; align-items: center; justify-content: center; z-index: 5; }
+    .mb-pieces { padding: 0 20px 24px; }
+    .mb-pieces-title { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--taupe); margin-bottom: 14px; }
+    .mb-piece { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(158,140,126,0.1); }
+    .mb-piece:last-child { border-bottom: none; }
+    .mb-piece__img { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; background: var(--light-taupe); flex-shrink: 0; }
+    .mb-piece__info { flex: 1; min-width: 0; }
+    .mb-piece__name { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--charcoal); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mb-piece__price { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; color: var(--brown); }
+    .mb-piece__buy { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; color: white; background: var(--brown); border: none; padding: 5px 12px; border-radius: 14px; cursor: pointer; text-decoration: none; flex-shrink: 0; transition: background 0.2s; }
+    .mb-piece__buy:hover { background: var(--charcoal); }
+    .mb-controls { display: flex; align-items: center; justify-content: center; gap: 18px; }
+    .mb-btn { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--light-taupe); background: var(--off-white); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; color: var(--taupe); transition: all 0.2s; box-shadow: var(--shadow); }
+    .mb-btn:hover { border-color: var(--brown); color: var(--brown); }
+    .mb-counter { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--taupe); min-width: 56px; text-align: center; }
+    .mb-overlay { display: none; position: fixed; inset: 0; z-index: 10; background: rgba(44,44,44,0.5); backdrop-filter: blur(4px); }
+    .mb-overlay.on { display: block; }
+    .mb-empty { text-align: center; padding: 40px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 300; color: var(--taupe); }
+
+    /* FINAL CTA */
+    .final-cta { text-align: center; padding: 80px 48px 100px; background: var(--charcoal); color: var(--off-white); }
+    .final-cta h2 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 3.5vw, 40px); font-weight: 500; margin-bottom: 12px; }
+    .final-cta h2 em { font-style: italic; color: var(--terracotta); }
+    .final-cta p { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 300; color: rgba(253,251,248,0.6); max-width: 440px; margin: 0 auto 28px; line-height: 1.7; }
+    .btn-cta { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; background: var(--terracotta); color: white; border: none; padding: 14px 32px; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+    .btn-cta:hover { background: #D4A07A; transform: translateY(-1px); }
+
+    /* ── MOOD BOARDS (same as report.html) ── */
+    .mb-deck { position:relative; height:460px; margin-bottom:28px; }
+    .mb-card { position:absolute; inset:0; border-radius:20px; overflow:hidden; box-shadow:var(--shadow-md); cursor:pointer; transition:transform 0.4s cubic-bezier(0.4,0,0.2,1),opacity 0.4s; background:var(--cream); user-select:none; }
+    .mb-card:nth-child(1){z-index:3;}.mb-card:nth-child(2){z-index:2;transform:translateX(16px) translateY(8px) scale(0.97);}.mb-card:nth-child(3){z-index:1;transform:translateX(28px) translateY(16px) scale(0.94);}
+    .mb-card.is-swiped-left{transform:translateX(-120%) rotate(-12deg) !important;opacity:0;pointer-events:none;}.mb-card.is-swiped-right{transform:translateX(120%) rotate(12deg) !important;opacity:0;pointer-events:none;}
+    .mb-expanded-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 48px);border-radius:20px;background:var(--off-white);box-shadow:0 24px 80px rgba(0,0,0,0.22);z-index:1000;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+    .mb-expanded-modal__close{position:sticky;top:0;left:0;right:0;display:flex;justify-content:flex-end;padding:12px 14px 0;background:var(--off-white);z-index:2;}
+    .mb-expanded-modal__close button{width:32px;height:32px;border-radius:50%;background:rgba(44,44,44,0.08);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--charcoal);font-size:13px;transition:background 0.2s;}
+    .mb-expanded-modal__close button:hover{background:rgba(44,44,44,0.16);}
+    .mb-expanded-img{width:100%;height:240px;object-fit:cover;display:block;background:var(--light-taupe);}
+    .mb-expanded-img-ph{width:100%;height:180px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--beige),var(--light-taupe));color:var(--taupe);font-size:36px;}
+    .mb-expanded-body{padding:16px 20px 0;}
+    .mb-expanded-goal{font-family:'Inter',sans-serif;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--terracotta);margin-bottom:4px;}
+    .mb-expanded-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:500;margin-bottom:6px;}
+    .mb-expanded-desc{font-family:'Inter',sans-serif;font-size:13px;font-weight:300;color:var(--taupe);line-height:1.6;margin-bottom:16px;}
+    .mb-brands{padding:0 0 20px;}
+    .mb-brand-section{border-top:1px solid rgba(158,140,126,0.12);}
+    .mb-brand-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;cursor:pointer;transition:background 0.15s;}
+    .mb-brand-header:hover{background:rgba(245,239,230,0.6);}
+    .mb-brand-left{display:flex;align-items:center;gap:10px;}
+    .mb-brand-logo{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.05em;color:var(--charcoal);}
+    .mb-brand-logo.amazon{color:#FF9900;}
+    .mb-brand-badge{font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;padding:2px 7px;border-radius:10px;}
+    .mb-brand-badge.live{background:rgba(107,79,58,0.1);color:var(--brown);}
+    .mb-brand-badge.soon{background:rgba(158,140,126,0.12);color:var(--taupe);}
+    .mb-brand-chevron{font-size:11px;color:var(--light-taupe);transition:transform 0.25s;}
+    .mb-brand-section.is-open .mb-brand-chevron{transform:rotate(180deg);}
+    .mb-brand-body{display:none;padding:0 20px 12px;}
+    .mb-brand-section.is-open .mb-brand-body{display:block;}
+    .mb-brand-coming-soon{font-family:'Inter',sans-serif;font-size:12px;font-weight:300;color:var(--taupe);padding:12px 0;text-align:center;}
+    .mb-piece{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(158,140,126,0.08);}
+    .mb-piece:last-child{border-bottom:none;}
+    .mb-piece__img{width:52px;height:52px;border-radius:8px;object-fit:cover;background:var(--light-taupe);flex-shrink:0;}
+    .mb-piece__info{flex:1;min-width:0;}
+    .mb-piece__name{font-family:'Inter',sans-serif;font-size:12px;font-weight:400;color:var(--charcoal);margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .mb-piece__price{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--brown);}
+    .mb-piece__actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+    .mb-piece__checkout{font-family:'Inter',sans-serif;font-size:10px;font-weight:600;color:white;background:var(--brown);border:none;padding:5px 10px;border-radius:12px;cursor:pointer;text-decoration:none;display:inline-block;text-align:center;transition:background 0.2s;white-space:nowrap;}
+    .mb-piece__checkout:hover{background:var(--charcoal);}
+    .mb-piece__compare{font-family:'Inter',sans-serif;font-size:10px;font-weight:500;color:var(--taupe);background:none;border:1px solid var(--light-taupe);padding:4px 10px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:all 0.2s;}
+    .mb-piece__compare:hover{border-color:var(--brown);color:var(--brown);}
+    .mb-controls{display:flex;align-items:center;justify-content:center;gap:18px;}
+    .mb-btn{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--light-taupe);background:var(--off-white);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;color:var(--taupe);transition:all 0.2s;box-shadow:var(--shadow);}
+    .mb-btn:hover{border-color:var(--brown);color:var(--brown);}
+    .mb-counter{font-family:'Inter',sans-serif;font-size:12px;color:var(--taupe);min-width:56px;text-align:center;}
+    .mb-overlay{display:none;position:fixed;inset:0;z-index:999;background:rgba(44,44,44,0.45);backdrop-filter:blur(4px);}
+    .mb-overlay.is-visible{display:block;}
+    .mb-card__img{width:100%;height:260px;object-fit:cover;display:block;background:var(--light-taupe);}
+    .mb-card__img-ph{width:100%;height:260px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--beige),var(--light-taupe));color:var(--taupe);font-size:36px;}
+    .mb-card__info{padding:18px 20px;}
+    .mb-card__goal-tag{font-family:'Inter',sans-serif;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--terracotta);margin-bottom:5px;}
+    .mb-card__title{font-family:'Playfair Display',serif;font-size:20px;font-weight:500;margin-bottom:6px;}
+    .mb-card__occasion{font-family:'Inter',sans-serif;font-size:13px;font-weight:300;color:var(--taupe);}
+    .mb-card__hint{font-family:'Inter',sans-serif;font-size:11px;color:var(--light-taupe);margin-top:8px;display:flex;align-items:center;gap:5px;}
+    .mb-empty{text-align:center;padding:40px;font-family:'Inter',sans-serif;font-size:14px;font-weight:300;color:var(--taupe);}
+    /* Compare modal */
+    .compare-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));background:var(--off-white);border-radius:20px;z-index:1001;box-shadow:0 24px 80px rgba(0,0,0,0.25);padding:28px;display:none;}
+    .compare-modal.is-open{display:block;}
+    .compare-modal__title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px;}
+    .compare-modal__product{font-family:'Inter',sans-serif;font-size:12px;font-weight:300;color:var(--taupe);margin-bottom:20px;}
+    .compare-step{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+    .compare-step__brand{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--charcoal);width:80px;flex-shrink:0;}
+    .compare-step__bar-wrap{flex:1;height:4px;background:var(--light-taupe);border-radius:4px;overflow:hidden;}
+    .compare-step__bar{height:100%;width:0%;border-radius:4px;transition:width 0.8s ease;}
+    .compare-step__status{font-family:'Inter',sans-serif;font-size:10px;color:var(--taupe);width:60px;text-align:right;flex-shrink:0;}
+    .compare-messages{font-family:'Inter',sans-serif;font-size:13px;font-weight:300;color:var(--taupe);margin-bottom:16px;min-height:18px;}
+    .compare-result{background:var(--beige);border:1px solid var(--light-taupe);border-radius:12px;padding:16px 18px;font-family:'Inter',sans-serif;font-size:13px;font-weight:300;color:var(--taupe);display:none;line-height:1.6;}
+    .compare-close{width:100%;margin-top:16px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;background:var(--charcoal);color:white;border:none;border-radius:10px;cursor:pointer;}
+    /* Color examples (view_report) */
+    .examples-btn{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:7px 14px;font-family:'Inter',sans-serif;font-size:11px;font-weight:500;color:var(--brown);background:none;border:1.5px solid var(--light-taupe);border-radius:18px;cursor:pointer;transition:all 0.2s;}
+    .examples-btn:hover{border-color:var(--brown);background:var(--beige);}
+    .examples-btn.is-loading{opacity:0.6;pointer-events:none;}
+    .examples-panel{margin-top:14px;display:flex;gap:16px;align-items:flex-start;}
+    .example-tabs{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+    .example-tab{font-family:'Inter',sans-serif;font-size:11px;font-weight:500;padding:7px 12px;border-radius:8px;cursor:pointer;border:1.5px solid var(--light-taupe);background:none;color:var(--taupe);text-align:left;white-space:nowrap;transition:all 0.2s;}
+    .example-tab:hover{border-color:var(--taupe);color:var(--charcoal);background:var(--beige);}
+    .example-tab.is-active{background:var(--brown);border-color:var(--brown);color:white;}
+    .example-image-wrap{width:150px;flex-shrink:0;}
+    .example-image-wrap img{width:150px;border-radius:10px;display:block;box-shadow:var(--shadow);}
+    .example-skeleton{width:150px;height:200px;border-radius:10px;background:linear-gradient(90deg,var(--light-taupe) 0%,var(--beige) 50%,var(--light-taupe) 100%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;}
+    @keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+
+    /* GRAIN */
+    body::after { content: ''; position: fixed; inset: 0; z-index: 9998; pointer-events: none; opacity: 0.025; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 200px; }
+
+    @media (max-width: 1024px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .snapshot-grid { grid-template-columns: repeat(3, 1fr); }
+      .color-grid, .insight-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .nav, .section, .hero { padding-left: 24px; padding-right: 24px; }
+      .collapsible-trigger, .collapsible-inner { padding-left: 24px; padding-right: 24px; }
+      .snapshot-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav" id="main-nav">
+    <a href="signup.html" class="nav-logo">Aloura<span>.</span></a>
+    <button class="nav-back" onclick="window.location.href='signup.html'">
+      <i class="fas fa-arrow-left" style="font-size:11px;"></i> My Profiles
+    </button>
+  </nav>
+
+  <!-- Loading -->
+  <div class="loading-screen" id="loading-screen">
+    <div class="loading-spinner"></div>
+    <p class="loading-label">Loading your style report…</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-screen" id="error-screen" style="display:none;">
+    <h2>Report not found</h2>
+    <p>This style report could not be loaded.</p>
+    <button class="btn-cta" onclick="window.location.href='signup.html'" style="margin-top:16px;">Go back</button>
+  </div>
+
+  <!-- Report body -->
+  <div id="report-body" style="display:none;">
+
+    <!-- HERO -->
+    <section class="hero" id="hero-section">
+      <div class="hero-bg"></div>
+      <div class="hero-inner">
+        <div>
+          <div class="eyebrow">Your Style Profile</div>
+          <h1 id="hero-title">Your Style<br><em>Report</em></h1>
+          <p class="hero-desc" id="hero-desc">Based on your goals and visual analysis.</p>
+          <div class="hero-goals" id="hero-goals"></div>
+        </div>
+        <div class="hero-img" id="hero-img">
+          <div class="hero-img-placeholder"><i class="fas fa-user-circle"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SNAPSHOT -->
+    <section class="section">
+      <div class="eyebrow">Analysis</div>
+      <h2 class="heading">Quick <em>Snapshot</em></h2>
+      <div class="snapshot-grid" id="snapshot-grid"></div>
+    </section>
+
+    <!-- COLOR INTELLIGENCE -->
+    <div class="collapsible" id="col-color">
+      <button class="collapsible-trigger" onclick="toggleSection('col-color')">
+        <div class="collapsible-left">
+          <span class="collapsible-label">Analysis</span>
+          <span class="collapsible-title">Color <em>Intelligence</em></span>
+        </div>
+        <span class="collapsible-chevron"><i class="fas fa-chevron-down"></i></span>
+      </button>
+      <div class="collapsible-body">
+        <div class="collapsible-inner">
+          <div class="color-grid" id="color-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JEWELRY -->
+    <div class="collapsible" id="col-jewelry">
+      <button class="collapsible-trigger" onclick="toggleSection('col-jewelry')">
+        <div class="collapsible-left">
+          <span class="collapsible-label">Accessories</span>
+          <span class="collapsible-title">Jewelry &amp; <em>Metals</em></span>
+        </div>
+        <span class="collapsible-chevron"><i class="fas fa-chevron-down"></i></span>
+      </button>
+      <div class="collapsible-body">
+        <div class="collapsible-inner narrow">
+          <div class="insight-grid" id="jewelry-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EYEWEAR -->
+    <div class="collapsible" id="col-eyewear">
+      <button class="collapsible-trigger" onclick="toggleSection('col-eyewear')">
+        <div class="collapsible-left">
+          <span class="collapsible-label">Accessories</span>
+          <span class="collapsible-title">Eyewear &amp; <em>Frames</em></span>
+        </div>
+        <span class="collapsible-chevron"><i class="fas fa-chevron-down"></i></span>
+      </button>
+      <div class="collapsible-body">
+        <div class="collapsible-inner narrow">
+          <div class="insight-grid" id="eyewear-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOOD BOARDS -->
+    <div class="collapsible" id="col-moodboards">
+      <button class="collapsible-trigger" onclick="toggleSection('col-moodboards')">
+        <div class="collapsible-left">
+          <span class="collapsible-label">Style Direction</span>
+          <span class="collapsible-title">Mood <em>Boards</em></span>
+        </div>
+        <span class="collapsible-chevron"><i class="fas fa-chevron-down"></i></span>
+      </button>
+      <div class="collapsible-body">
+        <div class="collapsible-inner">
+          <div id="moodboards-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINAL CTA -->
+    <section class="final-cta">
+      <h2>Style is a <em>journey</em></h2>
+      <p>Update your profile as your style evolves. New goals, new analysis, new recommendations.</p>
+      <button class="btn-cta" onclick="window.location.href='signup.html'">Back to My Profiles</button>
+    </section>
+
+  </div>
+
+  <div class="mb-overlay" id="mb-overlay" onclick="closeMBExpand()"></div>
+
+  <div class="mb-overlay" id="mb-overlay" onclick="handleOverlayClick(event)"></div>
+
+  <div class="compare-modal" id="compare-modal">
+    <div class="compare-modal__title">Price Comparison</div>
+    <div class="compare-modal__product" id="compare-product-name"></div>
+    <div>
+      <div class="compare-step"><span class="compare-step__brand">Zara</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">Uniqlo</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">Walmart</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">Lululemon</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">Gap</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">ASOS</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">H&M</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+    </div>
+    <div class="compare-messages"></div>
+    <div class="compare-result">
+      <strong style="color:var(--brown);">Comparison complete.</strong><br>
+      Cross-store price comparison is currently unavailable. We're working on bringing you real-time pricing across all brands — check back soon!
+    </div>
+    <button class="compare-close" onclick="closeCompare()">Got it</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module">
+    const { createClient } = supabase;
+    const SUPABASE_URL  = 'https://uaydumvwlatbwcqdtluv.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVheWR1bXZ3bGF0YndjcWR0bHV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzM0NTUsImV4cCI6MjA5NTAwOTQ1NX0.nolSdxlP-esK3x8-oEq_e9Ruk8QY-DfULA2BJySd3UY';
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // ── Get report ID from URL ────────────────────────────────
+    const params   = new URLSearchParams(window.location.search);
+    const reportId = params.get('id') || localStorage.getItem('aloura_report_id');
+
+    if (!reportId) {
+      showError();
+    } else {
+      loadReport(reportId);
+    }
+
+    // ── Collapsible ──────────────────────────────────────────
+    window.toggleSection = function(id) {
+      document.getElementById(id).classList.toggle('is-open');
+    };
+
+    // ── Nav scroll shadow ────────────────────────────────────
+    window.addEventListener('scroll', () => {
+      document.getElementById('main-nav').classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // ── Load report ──────────────────────────────────────────
+    async function loadReport(id) {
+      try {
+        // Fetch report
+        const { data: report, error } = await db
+          .from('style_reports')
+          .select(`
+            id, account_id, title, description, goal_1, goal_2, goal_3,
+            skin_tone, undertone, color_family, accessories,
+            metals, chains, watches_and_leather,
+            recommended_shapes, size_and_thickness, lens_and_material,
+            best_colors, best_colors_description,
+            accent_colors, accent_colors_description,
+            neutral_staples, neutral_staples_description,
+            use_sparingly, use_sparingly_description,
+            high_contrast_pairings, high_contrast_pairings_description,
+            harmony_note, harmony_note_description,
+            best_colors_images, accent_colors_images,
+            neutral_staples_images, use_sparingly_images,
+            high_contrast_pairs_images, harmony_note_images,
+            profile_image_1_id
+          `)
+          .eq('id', id)
+          .single();
+
+        if (error || !report) { showError(); return; }
+
+        // Fetch user metadata for face analysis
+        const { data: meta } = await db
+          .from('user_metadata')
+          .select('skin_type, face_shape, hair_color, hair_length, eye_glasses')
+          .eq('account_id', report.account_id)
+          .single();
+
+        // Fetch first profile image
+        let heroImageUrl = null;
+        if (report.profile_image_1_id) {
+          const { data: img } = await db
+            .from('profile_images')
+            .select('image_url')
+            .eq('id', report.profile_image_1_id)
+            .single();
+          heroImageUrl = img?.image_url ?? null;
+        }
+
+        // Fetch mood boards with pieces
+        const { data: moodBoards } = await db
+          .from('mood_boards')
+          .select('id, title, description, goal, occasion, colors, image_url')
+          .eq('style_report_id', id)
+          .order('created_at', { ascending: true });
+
+        let boardsWithPieces = [];
+        if (moodBoards?.length) {
+          const mbIds = moodBoards.map(b => b.id);
+          const { data: pieces } = await db
+            .from('pieces')
+            .select('*')
+            .in('mood_board_id', mbIds);
+
+          boardsWithPieces = moodBoards.map(b => ({
+            ...b,
+            pieces: (pieces ?? []).filter(p => p.mood_board_id === b.id),
+          }));
+        }
+
+        renderReport(report, meta, heroImageUrl, boardsWithPieces);
+
+      } catch (err) {
+        console.error('[view_report] Load failed:', err);
+        showError();
+      }
+    }
+
+    // ── Render ───────────────────────────────────────────────
+    function renderReport(report, meta, heroImageUrl, moodBoards) {
+      // Hero
+      const title = report.title || 'Your Style Report';
+      document.title = `Aloura — ${title}`;
+      document.getElementById('hero-title').innerHTML = `${title.split(' — ')[0] || 'Your Style'}<br><em>${title.split(' — ')[1] || 'Report'}</em>`;
+      document.getElementById('hero-desc').textContent = report.description || 'Based on your goals and visual analysis, we\'ve mapped a style direction designed to feel natural rather than prescribed.';
+
+      const goals = [report.goal_1, report.goal_2, report.goal_3].filter(Boolean);
+      document.getElementById('hero-goals').innerHTML = goals.map(g => `<span class="hero-goal-tag">${g}</span>`).join('');
+
+      if (heroImageUrl) {
+        document.getElementById('hero-img').innerHTML = `<img src="${heroImageUrl}" alt="Your profile photo">`;
+      }
+
+      // Snapshot
+      const skinTone = report.skin_tone || meta?.skin_type || '—';
+      const skinHex  = null; // hex not stored in style_reports — shown via skin_tone text
+      const cards = [
+        { label: 'Skin Tone',  value: skinTone,                            note: report.undertone || '—' },
+        { label: 'Undertone',  value: report.undertone || '—',             note: 'Determines your palette' },
+        { label: 'Face Shape', value: meta?.face_shape || '—',             note: '' },
+        { label: 'Hair',       value: meta?.hair_color || '—',             note: meta?.hair_length || '' },
+        { label: 'Glasses',    value: meta?.eye_glasses || report.accessories || '—', note: '' },
+      ];
+      document.getElementById('snapshot-grid').innerHTML = cards.map(c => `
+        <div class="snapshot-card">
+          <div class="snapshot-label">${c.label}</div>
+          <div class="snapshot-value">${c.value}</div>
+          ${c.note ? `<div class="snapshot-note">${c.note}</div>` : ''}
+        </div>`).join('');
+
+      // Color intelligence
+      const colorSections = [
+        { key: 'best_colors',         title: 'Best Colors',          colors: report.best_colors,         desc: report.best_colors_description },
+        { key: 'accent_colors',       title: 'Accent Colors',        colors: report.accent_colors,        desc: report.accent_colors_description },
+        { key: 'neutral_staples',     title: 'Neutral Staples',      colors: report.neutral_staples,      desc: report.neutral_staples_description },
+        { key: 'use_sparingly',       title: 'Use Sparingly',        colors: report.use_sparingly,        desc: report.use_sparingly_description },
+        { key: 'high_contrast_pairs', title: 'High-Contrast Pairs',  colors: report.high_contrast_pairings, desc: report.high_contrast_pairings_description },
+        { key: 'harmony_note',        title: 'Harmony Note',         colors: report.harmony_note,         desc: report.harmony_note_description },
+      ].filter(s => s.colors?.length);
+
+      // Map section key to pre-existing image arrays from style_reports
+      const imageArrays = {
+        best_colors:         report.best_colors_images        ?? [],
+        accent_colors:       report.accent_colors_images      ?? [],
+        neutral_staples:     report.neutral_staples_images    ?? [],
+        use_sparingly:       report.use_sparingly_images      ?? [],
+        high_contrast_pairs: report.high_contrast_pairs_images ?? [],
+        harmony_note:        report.harmony_note_images       ?? [],
+      };
+
+      if (colorSections.length) {
+        document.getElementById('color-grid').innerHTML = colorSections.map(s => {
+          const preloaded = imageArrays[s.key] ?? [];
+          const preloadedJson = JSON.stringify(preloaded).replace(/"/g, '&quot;');
+          const colorsJson    = JSON.stringify(s.colors ?? []).replace(/"/g, '&quot;');
+          return `
+          <div class="color-block" data-section="${s.key}" data-colors="${colorsJson}">
+            <h4>${s.title}</h4>
+            ${s.desc ? `<p>${s.desc}</p>` : ''}
+            <div class="swatch-row">${(s.colors ?? []).map(hex => `<div class="swatch" style="background:${hex}" title="${hex}"></div>`).join('')}</div>
+            <button class="examples-btn" onclick="loadViewExamples(this,'${s.key}',${colorsJson},${preloadedJson})">
+              <i class="fas fa-images"></i> ${preloaded.length ? 'View examples' : 'See examples'}
+            </button>
+            <div id="vgallery-${s.key}" style="display:none;"></div>
+          </div>`;
+        }).join('');
+      } else {
+        document.getElementById('color-grid').innerHTML = `<p class="lead">Color analysis not yet generated for this report.</p>`;
+      }
+
+      // Jewelry
+      function buildInsightCard(icon, title, summary, items) {
+        const listHtml = items?.length
+          ? `<ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>`
+          : '';
+        return `<div class="insight-card"><i class="${icon}"></i><h4>${title}</h4><p>${summary || '—'}</p>${listHtml}</div>`;
+      }
+      // Note: metals/chains/watches stored as summary strings in style_reports
+      document.getElementById('jewelry-grid').innerHTML = [
+        buildInsightCard('fas fa-gem',   'Metals',            report.metals, []),
+        buildInsightCard('fas fa-link',  'Chains & Layers',   report.chains, []),
+        buildInsightCard('fas fa-clock', 'Watches & Leather', report.watches_and_leather, []),
+      ].join('');
+
+      // Eyewear
+      document.getElementById('eyewear-grid').innerHTML = [
+        buildInsightCard('fas fa-glasses', 'Recommended Shapes', report.recommended_shapes, []),
+        buildInsightCard('fas fa-ruler',   'Size & Thickness',   report.size_and_thickness, []),
+        buildInsightCard('fas fa-sun',     'Lens & Material',    report.lens_and_material, []),
+      ].join('');
+
+      // Mood boards
+      renderMoodBoards(moodBoards);
+
+      // Show body
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('report-body').style.display = 'block';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.getElementById('report-body').classList.add('visible');
+      }));
+    }
+
+    // ── Mood boards (same pattern as report.html) ───────────
+
+    let _mbDeckIndex = 0;
+    let _mbBoards    = [];
+    let _mbExpanded  = null;
+
+    const BRANDS = [
+      { id: 'amazon',    label: 'Amazon',    cls: 'amazon', live: true },
+      { id: 'zara',      label: 'Zara',      cls: '',       live: false },
+      { id: 'uniqlo',    label: 'Uniqlo',    cls: '',       live: false },
+      { id: 'walmart',   label: 'Walmart',   cls: '',       live: false },
+      { id: 'lululemon', label: 'lululemon', cls: '',       live: false },
+      { id: 'gap',       label: 'Gap',       cls: '',       live: false },
+      { id: 'asos',      label: 'ASOS',      cls: '',       live: false },
+    ];
+
+    function buildMoodBoardCard(board, idx) {
+      const imgHtml = board.image_url
+        ? `<img class="mb-card__img" src="${board.image_url}" alt="${board.title}" loading="lazy">`
+        : `<div class="mb-card__img-ph"><i class="fas fa-tshirt"></i></div>`;
+      return `
+        <div class="mb-card" data-idx="${idx}" id="mb-card-${idx}">
+          ${imgHtml}
+          <div class="mb-card__info">
+            <div class="mb-card__goal-tag">${board.goal}</div>
+            <div class="mb-card__title">${board.title}</div>
+            <div class="mb-card__occasion">${board.occasion || board.description || ''}</div>
+            <div class="mb-card__hint"><i class="fas fa-expand-alt"></i> Tap to explore outfit</div>
+          </div>
+        </div>`;
+    }
+
+    function buildExpandedModal(board) {
+      const imgHtml = board.image_url
+        ? `<img class="mb-expanded-img" src="${board.image_url}" alt="${board.title}">`
+        : `<div class="mb-expanded-img-ph"><i class="fas fa-tshirt"></i></div>`;
+      const pieces = (board.pieces ?? []).filter(p => p.name);
+      const amazonPieces = pieces.map(p => `
+        <div class="mb-piece">
+          ${p.image_url ? `<img class="mb-piece__img" src="${p.image_url}" alt="${p.name}" loading="lazy">` : `<div class="mb-piece__img" style="display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--light-taupe);"><i class="fas fa-tag"></i></div>`}
+          <div class="mb-piece__info">
+            <div class="mb-piece__name">${p.name}</div>
+            ${p.price ? `<div class="mb-piece__price">$${parseFloat(p.price).toFixed(2)}</div>` : ''}
+          </div>
+          <div class="mb-piece__actions">
+            ${p.url ? `<a class="mb-piece__checkout" href="${p.url}" target="_blank" rel="noopener">Checkout</a>` : ''}
+            <button class="mb-piece__compare" onclick="openCompare('${(p.name||'').replace(/'/g,'')}')"><i class="fas fa-magic"></i> Compare</button>
+          </div>
+        </div>`).join('');
+      const brandSections = BRANDS.map(b => b.live
+        ? `<div class="mb-brand-section is-open" id="brand-${b.id}"><div class="mb-brand-header" onclick="toggleBrand('brand-${b.id}')"><div class="mb-brand-left"><span class="mb-brand-logo ${b.cls}">${b.label}</span><span class="mb-brand-badge live">Live</span></div><i class="fas fa-chevron-down mb-brand-chevron"></i></div><div class="mb-brand-body">${amazonPieces||'<p class="mb-brand-coming-soon">No products found.</p>'}</div></div>`
+        : `<div class="mb-brand-section" id="brand-${b.id}"><div class="mb-brand-header" onclick="brandComingSoon('${b.label}')"><div class="mb-brand-left"><span class="mb-brand-logo">${b.label}</span><span class="mb-brand-badge soon">Coming Soon</span></div><i class="fas fa-chevron-right mb-brand-chevron"></i></div></div>`
+      ).join('');
+      return `<div class="mb-expanded-modal" id="mb-modal"><div class="mb-expanded-modal__close"><button onclick="closeMBModal()"><i class="fas fa-times"></i></button></div>${imgHtml}<div class="mb-expanded-body"><div class="mb-expanded-goal">${board.goal}</div><div class="mb-expanded-title">${board.title}</div><div class="mb-expanded-desc">${board.occasion||board.description||''}</div></div><div class="mb-brands">${brandSections}</div></div>`;
+    }
+
+    function renderMoodBoards(boards) {
+      _mbBoards = boards;
+      const container = document.getElementById('moodboards-container');
+      if (!boards?.length) {
+        container.innerHTML = `<p class="mb-empty">No mood boards generated yet for this report.</p>`;
+        return;
+      }
+      const cards = boards.map((b, i) => buildMoodBoardCard(b, i)).join('');
+      container.innerHTML = `
+        <div class="mb-deck" id="mb-deck">${cards}</div>
+        <div class="mb-controls">
+          <button class="mb-btn" onclick="mbSwipe('left')" title="Skip"><i class="fas fa-times"></i></button>
+          <span class="mb-counter" id="mb-counter">1 / ${boards.length}</span>
+          <button class="mb-btn" onclick="mbSwipe('right')" title="Save"><i class="fas fa-heart"></i></button>
+        </div>`;
+      document.querySelectorAll('.mb-card').forEach(card => {
+        card.addEventListener('click', e => {
+          const idx = parseInt(card.dataset.idx);
+          if (idx === _mbDeckIndex) openMBModal(idx);
+        });
+      });
+    }
+
+    window.mbSwipe = function(dir) {
+      const deck = document.getElementById('mb-deck');
+      if (!deck) return;
+      const cards = [...deck.querySelectorAll('.mb-card:not(.is-swiped-left):not(.is-swiped-right)')];
+      if (!cards.length) return;
+      cards[0].classList.add(dir === 'left' ? 'is-swiped-left' : 'is-swiped-right');
+      const remaining = deck.querySelectorAll('.mb-card:not(.is-swiped-left):not(.is-swiped-right)').length;
+      const total = deck.querySelectorAll('.mb-card').length;
+      _mbDeckIndex = total - remaining;
+      document.getElementById('mb-counter').textContent = `${total - remaining + 1} / ${total}`;
+      [...deck.querySelectorAll('.mb-card:not(.is-swiped-left):not(.is-swiped-right)')].forEach((c, i) => {
+        c.style.zIndex = 3 - i;
+        c.style.transform = i === 0 ? '' : i === 1 ? 'translateX(16px) translateY(8px) scale(0.97)' : 'translateX(28px) translateY(16px) scale(0.94)';
+      });
+    };
+
+    function openMBModal(idx) {
+      document.getElementById('mb-modal')?.remove();
+      document.getElementById('mb-overlay').classList.add('is-visible');
+      document.body.insertAdjacentHTML('beforeend', buildExpandedModal(_mbBoards[idx]));
+      _mbExpanded = idx;
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMBModal() {
+      document.getElementById('mb-modal')?.remove();
+      document.getElementById('mb-overlay').classList.remove('is-visible');
+      document.body.style.overflow = '';
+      _mbExpanded = null;
+    }
+
+    window.toggleBrand = function(id) { document.getElementById(id)?.classList.toggle('is-open'); };
+    window.brandComingSoon = function(name) {
+      const t = document.createElement('div');
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2C;color:white;font-family:Inter,sans-serif;font-size:13px;padding:10px 20px;border-radius:20px;z-index:9999;opacity:0;transition:opacity 0.2s;';
+      t.textContent = `${name} — coming soon`;
+      document.body.appendChild(t);
+      requestAnimationFrame(() => { t.style.opacity = '1'; });
+      setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2000);
+    };
+
+    const COMPARE_BRANDS_V = ['Zara','Uniqlo','Walmart','Lululemon','Gap','ASOS','H&M'];
+    const COMPARE_MSGS_V   = ['Comparing prices…','Finding best matches…','Contrasting quality…','Generating report…'];
+
+    window.openCompare = function(productName) {
+      const modal = document.getElementById('compare-modal');
+      if (!modal) return;
+      document.getElementById('compare-product-name').textContent = productName;
+      modal.classList.add('is-open');
+      document.getElementById('mb-overlay').classList.add('is-visible');
+      // animate
+      const steps = modal.querySelectorAll('.compare-step');
+      const msgEl = modal.querySelector('.compare-messages');
+      const resultEl = modal.querySelector('.compare-result');
+      steps.forEach(s => { s.querySelector('.compare-step__bar').style.width='0%'; s.querySelector('.compare-step__status').textContent=''; });
+      resultEl.style.display = 'none';
+      msgEl.textContent = COMPARE_MSGS_V[0];
+      let mi = 0;
+      const mt = setInterval(() => { mi=(mi+1)%COMPARE_MSGS_V.length; msgEl.textContent=COMPARE_MSGS_V[mi]; }, 1800);
+      const colors = ['#E05C5C','#C4906A','#6B4F3A','#9E8C7E','#D4C9BE','#C4906A','#6B4F3A'];
+      steps.forEach((step, i) => {
+        const bar=step.querySelector('.compare-step__bar'), status=step.querySelector('.compare-step__status');
+        bar.style.background=colors[i%colors.length];
+        setTimeout(() => { bar.style.width=`${60+Math.random()*35}%`; status.textContent='Searching…'; setTimeout(()=>{bar.style.width='100%';status.textContent='Done';},900); }, i*600);
+      });
+      setTimeout(() => { clearInterval(mt); msgEl.textContent=''; resultEl.style.display='block'; }, steps.length*600+1200);
+    };
+
+    window.closeCompare = function() {
+      document.getElementById('compare-modal')?.classList.remove('is-open');
+      if (!document.getElementById('mb-modal')) document.getElementById('mb-overlay')?.classList.remove('is-visible');
+    };
+
+    window.handleOverlayClick = function(e) {
+      if (e.target === document.getElementById('mb-overlay')) {
+        if (document.getElementById('compare-modal')?.classList.contains('is-open')) closeCompare();
+        else closeMBModal();
+      }
+    };
+    window.closeMBModal = closeMBModal;
+
+    // ── Color examples for view_report ─────────────────────
+    // State: sectionKey → { outfits, images }
+    const _vExamples = {};
+    const VLABELS = { formal:'Formal', streetwear:'Streetwear', semi_casual:'Semi-Casual' };
+
+    async function resolveVAccountId() {
+      const { data: { user } } = await db.auth.getUser();
+      if (!user) return null;
+      const { data: acct } = await db.from('accounts').select('id').eq('auth_id', user.id).single();
+      return acct?.id ?? null;
+    }
+
+    window.loadViewExamples = async function(btn, sectionKey, colors, preloadedImages) {
+      const gallery = document.getElementById(`vgallery-${sectionKey}`);
+      if (!gallery) return;
+
+      // Toggle
+      if (btn.classList.contains('is-open') && gallery.style.display !== 'none') {
+        gallery.style.display = 'none'; btn.classList.remove('is-open');
+        btn.innerHTML = '<i class="fas fa-images"></i> See examples'; return;
+      }
+
+      // Already have preloaded images from DB — show immediately
+      if (preloadedImages?.length && !_vExamples[sectionKey]) {
+        _vExamples[sectionKey] = { images: {
+          formal:      preloadedImages[0] || null,
+          streetwear:  preloadedImages[1] || null,
+          semi_casual: preloadedImages[2] || null,
+        }};
+      }
+
+      if (_vExamples[sectionKey]?.images && Object.values(_vExamples[sectionKey].images).some(Boolean)) {
+        const state = _vExamples[sectionKey];
+        gallery.innerHTML = renderVExampleShell(sectionKey);
+        gallery.style.display = 'block';
+        btn.classList.add('is-open');
+        btn.innerHTML = '<i class="fas fa-chevron-up"></i> Hide examples';
+        // Show first available image
+        const firstKey = Object.keys(state.images).find(k => state.images[k]);
+        if (firstKey) showVImage(sectionKey, firstKey, state.images[firstKey]);
+        return;
+      }
+
+      // Generate fresh
+      btn.classList.add('is-loading', 'is-open');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating…';
+      gallery.style.display = 'block';
+      gallery.innerHTML = renderVExampleShell(sectionKey);
+
+      try {
+        const { data: outfitData, error: outfitErr } = await db.functions.invoke('color_outfit_generator', {
+          body: { style_report_id: reportId, colors, section_name: sectionKey },
+        });
+        if (outfitErr) throw outfitErr;
+        if (!outfitData?.outfits) throw new Error('No outfits returned');
+
+        const accountId = await resolveVAccountId();
+        if (!accountId) throw new Error('Not authenticated');
+
+        _vExamples[sectionKey] = { outfits: outfitData.outfits, accountId, images: {} };
+        btn.classList.remove('is-loading');
+        btn.innerHTML = '<i class="fas fa-chevron-up"></i> Hide examples';
+        await generateVImage(sectionKey, 'formal');
+      } catch (err) {
+        console.error('[ViewExamples]', err);
+        gallery.innerHTML = `<p style="font-family:Inter,sans-serif;font-size:13px;color:var(--taupe);padding:16px 0;">Could not generate — please try again.</p>`;
+        btn.classList.remove('is-loading','is-open');
+        btn.innerHTML = '<i class="fas fa-images"></i> See examples';
+        delete _vExamples[sectionKey];
+      }
+    };
+
+    function renderVExampleShell(sectionKey) {
+      const tabs = Object.entries(VLABELS).map(([key, label]) => `
+        <button class="example-tab ${key==='formal'?'is-active':''}" onclick="handleVTab(this,'${sectionKey}','${key}')">${label}</button>`).join('');
+      return `<div class="examples-panel"><div class="example-tabs">${tabs}</div><div class="example-image-wrap" id="vimg-${sectionKey}"><div class="example-skeleton"></div></div></div>`;
+    }
+
+    window.handleVTab = async function(btn, sectionKey, outfitType) {
+      btn.closest('.example-tabs').querySelectorAll('.example-tab').forEach(t=>t.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      const state = _vExamples[sectionKey];
+      if (!state) return;
+      if (state.images?.[outfitType]) { showVImage(sectionKey, outfitType, state.images[outfitType]); return; }
+      document.getElementById(`vimg-${sectionKey}`).innerHTML = '<div class="example-skeleton"></div>';
+      await generateVImage(sectionKey, outfitType);
+    };
+
+    async function generateVImage(sectionKey, outfitType) {
+      const state = _vExamples[sectionKey];
+      if (!state?.outfits) return;
+      try {
+        const { data, error } = await db.functions.invoke('generate_outfit_image', {
+          body: { style_report_id: reportId, account_id: state.accountId, section_name: sectionKey, outfit_type: outfitType, outfit: state.outfits[outfitType] },
+        });
+        if (error) throw error;
+        if (!data?.image_url) throw new Error('No URL');
+        state.images[outfitType] = data.image_url;
+        showVImage(sectionKey, outfitType, data.image_url);
+      } catch (err) {
+        console.error('[ViewExamples] Generate failed:', err);
+        const wrap = document.getElementById(`vimg-${sectionKey}`);
+        if (wrap) wrap.innerHTML = '<div class="example-skeleton" style="opacity:0.4;"></div>';
+      }
+    }
+
+    function showVImage(sectionKey, outfitType, url) {
+      const wrap = document.getElementById(`vimg-${sectionKey}`);
+      if (!wrap) return;
+      wrap.innerHTML = `<div style="position:relative;"><img src="${url}" alt="${VLABELS[outfitType]}" loading="lazy" style="width:150px;border-radius:10px;display:block;box-shadow:0 4px 24px rgba(0,0,0,0.07);"><div style="position:absolute;bottom:0;left:0;right:0;padding:6px 8px;background:linear-gradient(transparent,rgba(44,44,44,0.7));border-radius:0 0 10px 10px;font-family:Inter,sans-serif;font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.9);">${VLABELS[outfitType]}</div></div>`;
+    }
+
+    function showError() {
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('error-screen').style.display   = 'flex';
+    }
+  </script>
+</body>
+</html>

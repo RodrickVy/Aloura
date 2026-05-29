@@ -23,7 +23,7 @@
     body { font-family: 'Georgia', serif; background: var(--off-white); color: var(--charcoal); overflow-x: hidden; }
     .sans { font-family: 'Inter', sans-serif; }
 
-    /* NAV */
+    /* ── NAV ── */
     .report-nav { position:fixed; top:0; left:0; right:0; z-index:200; height:var(--nav-h); padding:0 48px; display:flex; align-items:center; justify-content:space-between; background:rgba(253,251,248,0.92); backdrop-filter:blur(16px); border-bottom:1px solid rgba(158,140,126,0.12); transition:box-shadow 0.3s; }
     .report-nav.scrolled { box-shadow:var(--shadow); }
     .nav-logo { font-family:'Playfair Display',Georgia,serif; font-size:26px; font-weight:600; color:var(--charcoal); text-decoration:none; letter-spacing:-0.5px; }
@@ -31,19 +31,19 @@
     .nav-save { font-family:'Inter',sans-serif; font-size:13px; font-weight:500; color:var(--taupe); background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:8px; transition:color 0.2s; }
     .nav-save:hover { color:var(--charcoal); }
 
-    /* LAYOUT */
+    /* ── LAYOUT ── */
     #phase-report { opacity:1; padding-top:var(--nav-h); }
     .report-section { padding:80px 48px; max-width:1200px; margin:0 auto; }
     .report-section.wide { max-width:1280px; }
 
-    /* TYPOGRAPHY */
+    /* ── TYPOGRAPHY ── */
     .section-eyebrow { font-family:'Inter',sans-serif; font-size:11px; font-weight:500; letter-spacing:2.5px; text-transform:uppercase; color:var(--terracotta); margin-bottom:14px; }
     .section-title { font-family:'Playfair Display',Georgia,serif; font-size:clamp(32px,3.5vw,44px); font-weight:500; line-height:1.12; letter-spacing:-0.6px; margin-bottom:16px; }
     .section-title em { font-style:italic; color:var(--brown); }
     .section-lead { font-family:'Inter',sans-serif; font-size:15px; font-weight:300; line-height:1.75; color:var(--taupe); max-width:640px; margin-bottom:40px; }
     .confidence-tag { display:inline-flex; align-items:center; gap:6px; font-family:'Inter',sans-serif; font-size:10px; font-weight:500; letter-spacing:0.8px; text-transform:uppercase; color:var(--taupe); background:var(--beige); padding:6px 12px; border-radius:20px; margin-bottom:20px; }
 
-    /* HERO */
+    /* ── HERO ── */
     .report-hero { min-height:80vh; display:flex; align-items:center; position:relative; overflow:hidden; padding:80px 48px; max-width:1280px; margin:0 auto; }
     .report-hero-bg { position:absolute; inset:0; background:linear-gradient(135deg,var(--cream) 0%,var(--beige) 50%,#EDE0D0 100%); z-index:0; }
     .report-hero-shape { position:absolute; border-radius:50%; filter:blur(60px); opacity:0.4; animation:floatSoft 14s ease-in-out infinite; }
@@ -52,31 +52,27 @@
     .report-hero h1 { font-family:'Playfair Display',Georgia,serif; font-size:clamp(40px,5vw,58px); font-weight:500; line-height:1.06; letter-spacing:-1.2px; margin-bottom:20px; }
     .report-hero h1 em { font-style:italic; color:var(--brown); }
     .report-hero-summary { font-family:'Inter',sans-serif; font-size:16px; font-weight:300; line-height:1.8; color:var(--taupe); margin-bottom:28px; }
-
-    /* HERO IMAGE */
     .hero-single-img { width:100%; aspect-ratio:3/4; border-radius:20px; overflow:hidden; box-shadow:var(--shadow-md); background:var(--light-taupe); position:relative; }
     .hero-single-img img { width:100%; height:100%; object-fit:cover; display:block; }
     .hero-img-placeholder { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--taupe); font-family:'Inter',sans-serif; font-size:13px; font-weight:300; }
     .hero-img-placeholder i { font-size:28px; color:var(--light-taupe); }
 
-    /* SNAPSHOT GRID */
+    /* ── SNAPSHOT GRID ── */
     .snapshot-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; }
     .snapshot-card { background:var(--cream); border:1px solid rgba(158,140,126,0.15); border-radius:14px; padding:22px 20px; box-shadow:var(--shadow); transition:transform 0.25s,box-shadow 0.25s; position:relative; overflow:hidden; }
     .snapshot-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
     .snapshot-label { font-family:'Inter',sans-serif; font-size:10px; font-weight:500; letter-spacing:1px; text-transform:uppercase; color:var(--taupe); margin-bottom:8px; }
     .snapshot-value { font-family:'Playfair Display',Georgia,serif; font-size:20px; font-weight:500; color:var(--charcoal); line-height:1.3; }
     .snapshot-note { font-family:'Inter',sans-serif; font-size:11px; font-weight:300; color:var(--light-taupe); margin-top:6px; }
-
-    /* Skin hex swatch inside snapshot card */
     .skin-swatch { display:inline-block; width:18px; height:18px; border-radius:50%; border:2px solid rgba(0,0,0,0.08); vertical-align:middle; margin-right:6px; flex-shrink:0; }
 
-    /* Skeleton shimmer */
+    /* ── SKELETON SHIMMER ── */
     .snapshot-card.is-loading .snapshot-value,
     .snapshot-card.is-loading .snapshot-note { opacity:0; }
     .snapshot-card.is-loading::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.6) 50%,transparent 100%); background-size:200% 100%; animation:shimmer 1.5s ease-in-out infinite; }
     @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
 
-    /* Section loader bar */
+    /* ── SECTION LOADER BAR ── */
     .section-loader { display:flex; align-items:center; gap:12px; padding:16px 0 20px; }
     .section-loader__bar-wrap { flex:1; height:2px; background:var(--light-taupe); border-radius:2px; overflow:hidden; }
     .section-loader__bar { height:100%; width:0%; background:linear-gradient(90deg,var(--brown),var(--terracotta)); border-radius:2px; animation:loader-crawl 8s cubic-bezier(0.1,0.4,0.2,1) forwards; }
@@ -85,7 +81,28 @@
     .section-loader__dot { width:5px; height:5px; border-radius:50%; background:var(--terracotta); animation:dot-pulse 1.3s ease-in-out infinite; }
     @keyframes dot-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.5)} }
 
-    /* COLORS */
+    /* ── COLLAPSIBLE SECTIONS ── */
+    .collapsible-section { border-bottom: 1px solid rgba(158,140,126,0.12); }
+    .collapsible-trigger {
+      width:100%; display:flex; align-items:center; justify-content:space-between;
+      padding:32px 48px; background:none; border:none; cursor:pointer;
+      text-align:left; transition:background 0.2s;
+      max-width:1280px; margin:0 auto;
+    }
+    .collapsible-trigger:hover { background:rgba(245,239,230,0.5); }
+    .collapsible-trigger-left { display:flex; flex-direction:column; gap:4px; }
+    .collapsible-trigger-label { font-family:'Inter',sans-serif; font-size:11px; font-weight:500; letter-spacing:2px; text-transform:uppercase; color:var(--terracotta); }
+    .collapsible-trigger-title { font-family:'Playfair Display',Georgia,serif; font-size:clamp(22px,2.5vw,30px); font-weight:500; line-height:1.15; letter-spacing:-0.4px; color:var(--charcoal); }
+    .collapsible-trigger-title em { font-style:italic; color:var(--brown); }
+    .collapsible-chevron { width:36px; height:36px; border-radius:50%; border:1.5px solid var(--light-taupe); display:flex; align-items:center; justify-content:center; color:var(--taupe); font-size:13px; flex-shrink:0; transition:transform 0.35s ease, border-color 0.2s, background 0.2s; }
+    .collapsible-trigger:hover .collapsible-chevron { border-color:var(--taupe); background:var(--beige); }
+    .collapsible-section.is-open .collapsible-chevron { transform:rotate(180deg); border-color:var(--brown); color:var(--brown); }
+    .collapsible-body { overflow:hidden; max-height:0; transition:max-height 0.45s cubic-bezier(0.4,0,0.2,1); }
+    .collapsible-section.is-open .collapsible-body { max-height:8000px; }
+    .collapsible-inner { padding:0 48px 64px; max-width:1280px; margin:0 auto; }
+    .collapsible-inner.narrow { max-width:1200px; }
+
+    /* ── COLOR BLOCKS ── */
     .color-categories { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }
     .color-block { background:var(--cream); border-radius:16px; padding:28px; border:1px solid rgba(158,140,126,0.12); box-shadow:var(--shadow); }
     .color-block h4 { font-family:'Playfair Display',Georgia,serif; font-size:22px; margin-bottom:8px; }
@@ -95,7 +112,7 @@
     .swatch:hover { transform:scale(1.08); border-color:var(--terracotta); box-shadow:0 4px 16px rgba(196,144,106,0.3); }
     .swatch.selected { border-color:var(--brown); box-shadow:0 0 0 3px rgba(107,79,58,0.2); }
 
-    /* INSIGHTS */
+    /* ── INSIGHT CARDS ── */
     .insight-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
     .insight-card { background:var(--cream); border-radius:14px; padding:26px; border:1px solid rgba(158,140,126,0.1); transition:box-shadow 0.25s; }
     .insight-card:hover { box-shadow:var(--shadow-md); }
@@ -103,11 +120,11 @@
     .insight-card h4 { font-family:'Playfair Display',Georgia,serif; font-size:18px; margin-bottom:10px; }
     .insight-card p { font-family:'Inter',sans-serif; font-size:13px; font-weight:300; line-height:1.65; color:var(--taupe); }
 
-    /* MOOD BOARDS */
+    /* ── MOOD BOARDS ── */
     .mood-board { background:var(--cream); border-radius:18px; overflow:hidden; margin-bottom:32px; border:1px solid rgba(158,140,126,0.12); box-shadow:var(--shadow); transition:box-shadow 0.3s; }
     .mood-board:hover { box-shadow:var(--shadow-md); }
 
-    /* FOOTER */
+    /* ── FIT CHECK & FINAL CTA ── */
     .fit-check-cta { text-align:center; padding:80px 48px; background:linear-gradient(180deg,var(--cream) 0%,var(--beige) 100%); border-radius:24px; margin:0 auto 80px; max-width:1104px; position:relative; overflow:hidden; }
     .fit-check-cta::before { content:''; position:absolute; width:400px; height:400px; top:-100px; right:-100px; background:radial-gradient(circle,rgba(196,144,106,0.15) 0%,transparent 70%); }
     .fit-check-icon { width:88px; height:88px; border-radius:50%; background:var(--off-white); display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:32px; color:var(--brown); box-shadow:var(--shadow-md); }
@@ -118,7 +135,7 @@
     .btn-final { font-family:'Inter',sans-serif; font-size:14px; font-weight:500; background:var(--terracotta); color:var(--off-white); border:none; padding:16px 40px; border-radius:10px; cursor:pointer; transition:all 0.25s; }
     .btn-final:hover { background:#D4A07A; transform:translateY(-2px); box-shadow:0 8px 32px rgba(196,144,106,0.35); }
 
-    /* MODAL */
+    /* ── MODAL ── */
     .modal-overlay { position:fixed; inset:0; z-index:300; background:rgba(44,44,44,0.4); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; padding:24px; opacity:0; visibility:hidden; transition:all 0.35s; }
     .modal-overlay.open { opacity:1; visibility:visible; }
     .modal { background:var(--off-white); border-radius:18px; max-width:480px; width:100%; padding:40px; text-align:center; transform:translateY(16px); transition:transform 0.35s; }
@@ -127,26 +144,319 @@
     .modal p { font-family:'Inter',sans-serif; font-size:14px; font-weight:300; color:var(--taupe); line-height:1.65; margin-bottom:24px; }
     .modal-close { font-family:'Inter',sans-serif; font-size:13px; font-weight:500; background:var(--charcoal); color:var(--off-white); border:none; padding:12px 32px; border-radius:8px; cursor:pointer; }
 
-    /* GRAIN */
+    /* ── GRAIN ── */
     body::after { content:''; position:fixed; inset:0; z-index:9998; pointer-events:none; opacity:0.025; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size:200px; }
 
+    /* ── EXAMPLES BUTTON & GALLERY ── */
+    .examples-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 16px; padding: 8px 16px;
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+      letter-spacing: 0.04em; color: var(--brown);
+      background: none; border: 1.5px solid var(--light-taupe);
+      border-radius: 20px; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+    .examples-btn:hover { border-color: var(--brown); background: var(--beige); }
+    .examples-btn.is-loading { opacity: 0.6; pointer-events: none; }
+    .examples-btn.is-open { background: var(--beige); border-color: var(--brown); }
+
+    .examples-gallery {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .examples-gallery-item {
+      border-radius: 12px; overflow: hidden;
+      aspect-ratio: 3/4; background: var(--light-taupe);
+      position: relative; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .examples-gallery-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .examples-gallery-item img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .examples-gallery-label {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 8px 10px;
+      background: linear-gradient(transparent, rgba(44,44,44,0.7));
+      font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.9);
+    }
+    .examples-gallery-skeleton {
+      border-radius: 12px; aspect-ratio: 3/4;
+      background: linear-gradient(90deg, var(--light-taupe) 0%, var(--beige) 50%, var(--light-taupe) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    /* ── EXAMPLE TABS ── */
+    .examples-panel {
+      margin-top: 20px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .example-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .example-tab {
+      font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500;
+      padding: 8px 14px; border-radius: 8px; cursor: pointer;
+      border: 1.5px solid var(--light-taupe);
+      background: none; color: var(--taupe);
+      text-align: left; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .example-tab:hover { border-color: var(--taupe); color: var(--charcoal); background: var(--beige); }
+    .example-tab.is-active { background: var(--brown); border-color: var(--brown); color: white; }
+    .example-image-wrap {
+      width: 160px;
+      flex-shrink: 0;
+    }
+    .example-image-wrap img {
+      width: 160px;
+      border-radius: 10px;
+      display: block;
+      box-shadow: var(--shadow);
+    }
+    .examples-gallery-skeleton {
+      width: 160px;
+      height: 213px; /* 3:4 ratio of 160px */
+      border-radius: 10px;
+    }
+    .examples-gallery-item {
+      width: 160px;
+      position: relative;
+    }
+
+    /* ── MOOD BOARDS — shared CSS ── */
+    .mb-deck {
+      position: relative;
+      height: 480px;
+      margin-bottom: 32px;
+    }
+    .mb-card {
+      position: absolute; inset: 0;
+      border-radius: 20px; overflow: hidden;
+      box-shadow: var(--shadow-md); cursor: pointer;
+      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s;
+      background: var(--cream); user-select: none;
+    }
+    .mb-card:nth-child(1) { z-index: 3; }
+    .mb-card:nth-child(2) { z-index: 2; transform: translateX(16px) translateY(8px) scale(0.97); }
+    .mb-card:nth-child(3) { z-index: 1; transform: translateX(28px) translateY(16px) scale(0.94); }
+    .mb-card.is-swiped-left  { transform: translateX(-120%) rotate(-12deg) !important; opacity: 0; pointer-events: none; }
+    .mb-card.is-swiped-right { transform: translateX(120%)  rotate(12deg)  !important; opacity: 0; pointer-events: none; }
+
+    /* Expanded modal — centered, scrollable, max width */
+    .mb-expanded-modal {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(560px, calc(100vw - 32px));
+      max-height: calc(100vh - 48px);
+      border-radius: 20px;
+      background: var(--off-white);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.22);
+      z-index: 1000;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .mb-expanded-modal__close {
+      position: sticky; top: 0; left: 0; right: 0;
+      display: flex; justify-content: flex-end;
+      padding: 12px 14px 0;
+      background: var(--off-white);
+      z-index: 2;
+    }
+    .mb-expanded-modal__close button {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(44,44,44,0.08); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--charcoal); font-size: 13px;
+      transition: background 0.2s;
+    }
+    .mb-expanded-modal__close button:hover { background: rgba(44,44,44,0.16); }
+    .mb-expanded-img { width: 100%; height: 240px; object-fit: cover; display: block; background: var(--light-taupe); }
+    .mb-expanded-img-ph { width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--beige), var(--light-taupe)); color: var(--taupe); font-size: 36px; }
+    .mb-expanded-body { padding: 16px 20px 0; }
+    .mb-expanded-goal { font-family:'Inter',sans-serif; font-size:10px; font-weight:500; letter-spacing:1.5px; text-transform:uppercase; color:var(--terracotta); margin-bottom:4px; }
+    .mb-expanded-title { font-family:'Playfair Display',Georgia,serif; font-size:20px; font-weight:500; margin-bottom:6px; }
+    .mb-expanded-desc { font-family:'Inter',sans-serif; font-size:13px; font-weight:300; color:var(--taupe); line-height:1.6; margin-bottom:16px; }
+
+    /* Brand sections */
+    .mb-brands { padding: 0 0 20px; }
+    .mb-brand-section { border-top: 1px solid rgba(158,140,126,0.12); }
+    .mb-brand-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .mb-brand-header:hover { background: rgba(245,239,230,0.6); }
+    .mb-brand-left { display: flex; align-items: center; gap: 10px; }
+    .mb-brand-logo { font-family:'Inter',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.05em; color: var(--charcoal); }
+    .mb-brand-logo.amazon { color: #FF9900; }
+    .mb-brand-badge { font-family:'Inter',sans-serif; font-size:9px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; padding:2px 7px; border-radius:10px; }
+    .mb-brand-badge.live { background:rgba(107,79,58,0.1); color:var(--brown); }
+    .mb-brand-badge.soon { background:rgba(158,140,126,0.12); color:var(--taupe); }
+    .mb-brand-chevron { font-size:11px; color:var(--light-taupe); transition:transform 0.25s; }
+    .mb-brand-section.is-open .mb-brand-chevron { transform:rotate(180deg); }
+    .mb-brand-body { display:none; padding: 0 20px 12px; }
+    .mb-brand-section.is-open .mb-brand-body { display:block; }
+    .mb-brand-coming-soon { font-family:'Inter',sans-serif; font-size:12px; font-weight:300; color:var(--taupe); padding:12px 0; text-align:center; }
+
+    /* Piece row */
+    .mb-piece {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid rgba(158,140,126,0.08);
+    }
+    .mb-piece:last-child { border-bottom: none; }
+    .mb-piece__img { width:52px; height:52px; border-radius:8px; object-fit:cover; background:var(--light-taupe); flex-shrink:0; }
+    .mb-piece__info { flex:1; min-width:0; }
+    .mb-piece__name { font-family:'Inter',sans-serif; font-size:12px; font-weight:400; color:var(--charcoal); margin-bottom:3px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .mb-piece__price { font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:var(--brown); }
+    .mb-piece__actions { display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
+    .mb-piece__checkout {
+      font-family:'Inter',sans-serif; font-size:10px; font-weight:600;
+      color:white; background:var(--brown); border:none;
+      padding:5px 10px; border-radius:12px; cursor:pointer;
+      text-decoration:none; display:inline-block; text-align:center;
+      transition:background 0.2s; white-space:nowrap;
+    }
+    .mb-piece__checkout:hover { background:var(--charcoal); }
+    .mb-piece__compare {
+      font-family:'Inter',sans-serif; font-size:10px; font-weight:500;
+      color:var(--taupe); background:none; border:1px solid var(--light-taupe);
+      padding:4px 10px; border-radius:12px; cursor:pointer;
+      display:flex; align-items:center; gap:4px; white-space:nowrap;
+      transition:all 0.2s;
+    }
+    .mb-piece__compare:hover { border-color:var(--brown); color:var(--brown); }
+
+    /* Deck controls */
+    .mb-controls { display:flex; align-items:center; justify-content:center; gap:20px; }
+    .mb-btn { width:46px; height:46px; border-radius:50%; border:1.5px solid var(--light-taupe); background:var(--off-white); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; color:var(--taupe); transition:all 0.2s; box-shadow:var(--shadow); }
+    .mb-btn:hover { border-color:var(--brown); color:var(--brown); transform:scale(1.05); }
+    .mb-counter { font-family:'Inter',sans-serif; font-size:12px; color:var(--taupe); min-width:56px; text-align:center; }
+
+    .mb-card__img { width:100%; height:280px; object-fit:cover; display:block; background:var(--light-taupe); }
+    .mb-card__img-placeholder { width:100%; height:280px; background:linear-gradient(135deg,var(--beige),var(--light-taupe)); display:flex; align-items:center; justify-content:center; color:var(--taupe); font-size:32px; }
+    .mb-card__body { padding:20px 22px; }
+    .mb-card__goal { font-family:'Inter',sans-serif; font-size:10px; font-weight:500; letter-spacing:1.5px; text-transform:uppercase; color:var(--terracotta); margin-bottom:6px; }
+    .mb-card__title { font-family:'Playfair Display',Georgia,serif; font-size:22px; font-weight:500; color:var(--charcoal); margin-bottom:8px; line-height:1.2; }
+    .mb-card__occasion { font-family:'Inter',sans-serif; font-size:13px; font-weight:300; color:var(--taupe); line-height:1.55; }
+    .mb-card__expand-hint { font-family:'Inter',sans-serif; font-size:11px; color:var(--light-taupe); margin-top:10px; display:flex; align-items:center; gap:6px; }
+
+    /* Overlay — behind modal, z-index below modal */
+    .mb-overlay { display:none; position:fixed; inset:0; z-index:999; background:rgba(44,44,44,0.45); backdrop-filter:blur(4px); }
+    .mb-overlay.is-visible { display:block; }
+
+    /* Compare modal */
+    .compare-modal {
+      position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:min(420px,calc(100vw - 32px)); background:var(--off-white);
+      border-radius:20px; z-index:1001;
+      box-shadow:0 24px 80px rgba(0,0,0,0.25);
+      padding:28px; display:none;
+    }
+    .compare-modal.is-open { display:block; }
+    .compare-modal__title { font-family:'Playfair Display',Georgia,serif; font-size:20px; margin-bottom:4px; }
+    .compare-modal__product { font-family:'Inter',sans-serif; font-size:12px; font-weight:300; color:var(--taupe); margin-bottom:20px; }
+    .compare-step { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+    .compare-step__brand { font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:var(--charcoal); width:80px; flex-shrink:0; }
+    .compare-step__bar-wrap { flex:1; height:4px; background:var(--light-taupe); border-radius:4px; overflow:hidden; }
+    .compare-step__bar { height:100%; width:0%; border-radius:4px; transition:width 0.8s ease; }
+    .compare-step__status { font-family:'Inter',sans-serif; font-size:10px; color:var(--taupe); width:60px; text-align:right; flex-shrink:0; }
+    .compare-messages { font-family:'Inter',sans-serif; font-size:13px; font-weight:300; color:var(--taupe); margin-bottom:16px; min-height:18px; transition:opacity 0.3s; }
+    .compare-result { background:var(--beige); border:1px solid var(--light-taupe); border-radius:12px; padding:16px 18px; font-family:'Inter',sans-serif; font-size:13px; font-weight:300; color:var(--taupe); display:none; line-height:1.6; }
+    .compare-close { width:100%; margin-top:16px; padding:10px; font-family:'Inter',sans-serif; font-size:13px; font-weight:500; background:var(--charcoal); color:white; border:none; border-radius:10px; cursor:pointer; }
+
+    .mb-generating { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:48px 24px; text-align:center; }
+    .mb-generating__spinner { width:40px; height:40px; border-radius:50%; border:3px solid var(--light-taupe); border-top-color:var(--terracotta); animation:spin 0.9s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .mb-generating__label { font-family:'Inter',sans-serif; font-size:13px; font-weight:300; color:var(--taupe); }
+
+    /* Deck controls */
+    .mb-controls {
+      display: flex; align-items: center; justify-content: center;
+      gap: 20px;
+    }
+    .mb-btn {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 1.5px solid var(--light-taupe);
+      background: var(--off-white);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 16px; color: var(--taupe);
+      transition: all 0.2s; box-shadow: var(--shadow);
+    }
+    .mb-btn:hover { border-color: var(--brown); color: var(--brown); transform: scale(1.05); }
+    .mb-btn--pass { color: #C44; border-color: rgba(204,68,68,0.3); }
+    .mb-btn--pass:hover { background: rgba(204,68,68,0.06); border-color: #C44; }
+    .mb-btn--like { color: var(--brown); border-color: rgba(107,79,58,0.3); }
+    .mb-btn--like:hover { background: var(--beige); }
+    .mb-counter {
+      font-family: 'Inter', sans-serif; font-size: 12px;
+      color: var(--taupe); min-width: 60px; text-align: center;
+    }
+
+    /* Loading/generating state */
+    .mb-generating {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 12px;
+      padding: 48px 24px; text-align: center;
+    }
+    .mb-generating__spinner {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 3px solid var(--light-taupe);
+      border-top-color: var(--terracotta);
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .mb-generating__label {
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300;
+      color: var(--taupe);
+    }
+
+    /* overlay behind expanded card */
+    .mb-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 9;
+      background: rgba(44,44,44,0.5); backdrop-filter: blur(4px);
+    }
+    .mb-overlay.is-visible { display: block; }
+
+    /* ── ANIMATIONS ── */
     .fade-up { opacity:0; transform:translateY(20px); transition:opacity 0.7s ease,transform 0.7s ease; }
     .fade-up.visible { opacity:1; transform:translateY(0); }
 
+    /* ── RESPONSIVE ── */
     @media (max-width:1024px) {
       .report-hero-inner { grid-template-columns:1fr; }
       .hero-single-img { max-width:320px; margin:0 auto; }
       .snapshot-grid { grid-template-columns:repeat(3,1fr); }
       .color-categories,.insight-grid { grid-template-columns:1fr; }
+      .collapsible-trigger, .collapsible-inner { padding-left:24px; padding-right:24px; }
     }
     @media (max-width:640px) {
       .report-nav,.report-section,.report-hero { padding-left:24px; padding-right:24px; }
       .fit-check-cta { margin-left:24px; margin-right:24px; padding:60px 24px; }
+      .snapshot-grid { grid-template-columns:repeat(2,1fr); }
+      .collapsible-trigger { padding:24px; }
+      .collapsible-inner { padding:0 24px 48px; }
     }
   </style>
 </head>
 <body>
 
+  <!-- ══════════════════════════════════════════════
+       NAV
+  ══════════════════════════════════════════════ -->
   <nav class="report-nav" id="report-nav">
     <a href="index.html" class="nav-logo">Aloura<span>.</span></a>
     <button type="button" class="nav-save" id="nav-save">
@@ -156,7 +466,9 @@
 
   <div id="phase-report">
 
-    <!-- ── HERO ── -->
+    <!-- ══════════════════════════════════════════════
+         HERO — profile image + greeting
+    ══════════════════════════════════════════════ -->
     <section class="report-hero" id="hero-section">
       <div class="report-hero-bg"></div>
       <div class="report-hero-shape" style="width:400px;height:400px;top:10%;right:-5%;background:var(--terracotta)"></div>
@@ -178,7 +490,9 @@
       </div>
     </section>
 
-    <!-- ── SNAPSHOT ── -->
+    <!-- ══════════════════════════════════════════════
+         SNAPSHOT — always visible, no collapse
+    ══════════════════════════════════════════════ -->
     <section class="report-section fade-up" id="snapshot-section">
       <div class="confidence-tag sans"><i class="fas fa-chart-simple"></i> AI-generated · personalised to you</div>
       <h2 class="section-title">Quick <em>Snapshot</em></h2>
@@ -186,60 +500,111 @@
       <div class="snapshot-grid" id="snapshot-grid"></div>
     </section>
 
-    <!-- ── COLOR INTELLIGENCE ── -->
-    <section class="report-section wide fade-up" id="color-section">
-      <h2 class="section-title">Color <em>Intelligence</em></h2>
-      <p class="section-lead" id="color-intelligence-text">Color families that harmonize with your undertone — creating balance without flattening your features.</p>
-      <div class="color-categories" id="color-categories"></div>
-    </section>
-
-    <!-- ── JEWELRY ── -->
-    <section class="report-section fade-up" id="jewelry-section">
-      <h2 class="section-title">Jewelry &amp; <em>Accessories</em></h2>
-      <p class="section-lead">Metals, textures, and scale that complement your undertone and facial proportions.</p>
-      <div class="insight-grid" id="jewelry-grid">
-        <div class="insight-card"><i class="fas fa-gem"></i><h4>Metals</h4><p id="jewelry-metals">Generating recommendations…</p></div>
-        <div class="insight-card"><i class="fas fa-link"></i><h4>Chains &amp; Layers</h4><p id="jewelry-chains">Generating recommendations…</p></div>
-        <div class="insight-card"><i class="fas fa-clock"></i><h4>Watches &amp; Leather</h4><p id="jewelry-watches">Generating recommendations…</p></div>
+    <!-- ══════════════════════════════════════════════
+         COLOR INTELLIGENCE — collapsible
+    ══════════════════════════════════════════════ -->
+    <div class="collapsible-section fade-up" id="section-color">
+      <button class="collapsible-trigger" data-target="section-color" aria-expanded="false">
+        <div class="collapsible-trigger-left">
+          <span class="collapsible-trigger-label">Analysis</span>
+          <span class="collapsible-trigger-title">Color <em>Intelligence</em></span>
+        </div>
+        <span class="collapsible-chevron"><i class="fas fa-chevron-down"></i></span>
+      </button>
+      <div class="collapsible-body">
+        <div class="collapsible-inner">
+          <p class="section-lead">Color families that harmonize with your undertone — creating balance without flattening your features.</p>
+          <div class="color-categories" id="color-categories"></div>
+        </div>
       </div>
-    </section>
+    </div>
 
-    <!-- ── EYEWEAR ── -->
-    <section class="report-section fade-up" id="eyewear-section">
-      <h2 class="section-title">Eyewear &amp; <em>Frames</em></h2>
-      <p class="section-lead">Frame shapes and proportions that complement your face structure.</p>
-      <div class="insight-grid" id="eyewear-grid">
-        <div class="insight-card"><i class="fas fa-glasses"></i><h4>Recommended Shapes</h4><p id="eyewear-shapes">Generating recommendations…</p></div>
-        <div class="insight-card"><i class="fas fa-ruler"></i><h4>Size &amp; Thickness</h4><p id="eyewear-size">Generating recommendations…</p></div>
-        <div class="insight-card"><i class="fas fa-sun"></i><h4>Lens &amp; Material</h4><p id="eyewear-lens">Generating recommendations…</p></div>
+    <!-- ══════════════════════════════════════════════
+         JEWELRY & ACCESSORIES — collapsible
+    ══════════════════════════════════════════════ -->
+    <div class="collapsible-section fade-up" id="section-jewelry">
+      <button class="collapsible-trigger" data-target="section-jewelry" aria-expanded="false">
+        <div class="collapsible-trigger-left">
+          <span class="collapsible-trigger-label">Accessories</span>
+          <span class="collapsible-trigger-title">Jewelry &amp; <em>Metals</em></span>
+        </div>
+        <span class="collapsible-chevron"><i class="fas fa-chevron-down"></i></span>
+      </button>
+      <div class="collapsible-body">
+        <div class="collapsible-inner narrow">
+          <p class="section-lead">Metals, textures, and scale that complement your undertone and facial proportions.</p>
+          <div class="insight-grid" id="jewelry-grid">
+            <div class="insight-card"><i class="fas fa-gem"></i><h4>Metals</h4><p id="jewelry-metals">Generating recommendations…</p></div>
+            <div class="insight-card"><i class="fas fa-link"></i><h4>Chains &amp; Layers</h4><p id="jewelry-chains">Generating recommendations…</p></div>
+            <div class="insight-card"><i class="fas fa-clock"></i><h4>Watches &amp; Leather</h4><p id="jewelry-watches">Generating recommendations…</p></div>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
 
-    <!-- ── MOOD BOARDS ── -->
-    <section class="report-section wide fade-up" id="mood-boards-section">
-      <h2 class="section-title">Your Style <em>Mood Boards</em></h2>
-      <p class="section-lead">Scenario-based looks built around your goals — real moments, not abstract aesthetics.</p>
-      <div id="mood-boards-container">
-        <p class="sans" style="color:var(--taupe);font-size:14px;font-weight:300;text-align:center;padding:40px 0;">
-          Mood boards are being generated — check back shortly.
-        </p>
+    <!-- ══════════════════════════════════════════════
+         EYEWEAR & FRAMES — collapsible
+    ══════════════════════════════════════════════ -->
+    <div class="collapsible-section fade-up" id="section-eyewear">
+      <button class="collapsible-trigger" data-target="section-eyewear" aria-expanded="false">
+        <div class="collapsible-trigger-left">
+          <span class="collapsible-trigger-label">Accessories</span>
+          <span class="collapsible-trigger-title">Eyewear &amp; <em>Frames</em></span>
+        </div>
+        <span class="collapsible-chevron"><i class="fas fa-chevron-down"></i></span>
+      </button>
+      <div class="collapsible-body">
+        <div class="collapsible-inner narrow">
+          <p class="section-lead">Frame shapes and proportions that complement your face structure.</p>
+          <div class="insight-grid" id="eyewear-grid">
+            <div class="insight-card"><i class="fas fa-glasses"></i><h4>Recommended Shapes</h4><p id="eyewear-shapes">Generating recommendations…</p></div>
+            <div class="insight-card"><i class="fas fa-ruler"></i><h4>Size &amp; Thickness</h4><p id="eyewear-size">Generating recommendations…</p></div>
+            <div class="insight-card"><i class="fas fa-sun"></i><h4>Lens &amp; Material</h4><p id="eyewear-lens">Generating recommendations…</p></div>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
 
-    <!-- ── FIT CHECK ── -->
-    <section class="fit-check-cta fade-up">
+    <!-- ══════════════════════════════════════════════
+         MOOD BOARDS — collapsible, swipeable cards
+    ══════════════════════════════════════════════ -->
+    <div class="collapsible-section fade-up" id="section-moodboards">
+      <button class="collapsible-trigger" data-target="section-moodboards" aria-expanded="false">
+        <div class="collapsible-trigger-left">
+          <span class="collapsible-trigger-label">Style Direction</span>
+          <span class="collapsible-trigger-title">Your Style <em>Mood Boards</em></span>
+        </div>
+        <span class="collapsible-chevron"><i class="fas fa-chevron-down"></i></span>
+      </button>
+      <div class="collapsible-body">
+        <div class="collapsible-inner">
+          <p class="section-lead">Three looks built around your goals — real outfits, real products, ready to shop.</p>
+          <div id="mood-boards-container">
+            <!-- Filled by renderMoodBoards() -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         FIT CHECK CTA
+    ══════════════════════════════════════════════ -->
+    <section class="fit-check-cta fade-up" style="margin-top:80px;">
       <div class="fit-check-icon"><i class="fas fa-camera-retro"></i></div>
       <h2 class="section-title" style="margin-bottom:12px">Try <em>Fit Check</em></h2>
       <p class="section-lead" style="margin:0 auto 28px">Upload or scan an outfit anytime for instant feedback — calibrated to your profile.</p>
       <button type="button" class="btn-final" onclick="alert('Fit Check — coming soon.')">Try Fit Check</button>
     </section>
 
-    <!-- ── FINAL CTA ── -->
+    <!-- ══════════════════════════════════════════════
+         FINAL CTA
+    ══════════════════════════════════════════════ -->
     <section class="final-cta fade-up">
       <h2>Your profile <em>evolves</em> with you</h2>
       <p>Revisit mood boards, refine your selections, and discover new recommendations as your style shifts.</p>
       <button type="button" class="btn-final" onclick="window.scrollTo({top:0,behavior:'smooth'})">Explore Saved Looks</button>
     </section>
+
   </div>
 
   <div class="modal-overlay" id="modal-soon">
@@ -250,14 +615,37 @@
     </div>
   </div>
 
+  <!-- Mood board overlay + compare modal — appended to body, never inside a card -->
+  <div class="mb-overlay" id="mb-overlay" onclick="handleOverlayClick(event)"></div>
+
+  <div class="compare-modal" id="compare-modal">
+    <div class="compare-modal__title">Price Comparison</div>
+    <div class="compare-modal__product" id="compare-product-name"></div>
+    <div id="compare-steps">
+      <div class="compare-step"><span class="compare-step__brand">Zara</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">Uniqlo</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">Walmart</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">Lululemon</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">Gap</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">ASOS</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+      <div class="compare-step"><span class="compare-step__brand">H&M</span><div class="compare-step__bar-wrap"><div class="compare-step__bar"></div></div><span class="compare-step__status"></span></div>
+    </div>
+    <div class="compare-messages" id="compare-msg">Comparing prices…</div>
+    <div class="compare-result" id="compare-result">
+      <strong style="color:var(--brown);">Comparison complete.</strong><br>
+      Cross-store price comparison is currently unavailable. We're working on bringing you real-time pricing across all brands. Check back soon!
+    </div>
+    <button class="compare-close" onclick="closeCompare()">Got it</button>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script type="module">
     import { AuthService } from './auth.service.js';
 
-    // ════════════════════════════════════════════════════════
-    //  CONFIG
-    // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════
+    //  ①  CONFIG & CONTEXT
+    // ════════════════════════════════════════════════════════════════
 
     const SUPABASE_URL  = 'https://uaydumvwlatbwcqdtluv.supabase.co';
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVheWR1bXZ3bGF0YndjcWR0bHV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzM0NTUsImV4cCI6MjA5NTAwOTQ1NX0.nolSdxlP-esK3x8-oEq_e9Ruk8QY-DfULA2BJySd3UY';
@@ -266,10 +654,6 @@
     const db   = createClient(SUPABASE_URL, SUPABASE_ANON);
     const auth = new AuthService(db);
 
-    // ════════════════════════════════════════════════════════
-    //  CONTEXT  — from localStorage set during signup
-    // ════════════════════════════════════════════════════════
-
     const reportId  = localStorage.getItem('aloura_report_id');
     let   profile   = {};
     try { profile = JSON.parse(localStorage.getItem('alouraProfile') || '{}'); } catch(_) {}
@@ -277,11 +661,11 @@
 
     console.log('[Report] reportId:', reportId);
 
-    // ════════════════════════════════════════════════════════
-    //  LOADER UTILITIES
-    // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════
+    //  ②  SHARED UTILITIES
+    // ════════════════════════════════════════════════════════════════
 
-    /** Inject a progress loader bar into any element by ID */
+    /** Inject a crawling progress bar into a parent element */
     function showLoader(parentId, loaderId, label = 'Analysing') {
       const parent = document.getElementById(parentId);
       if (!parent || document.getElementById(loaderId)) return;
@@ -295,21 +679,35 @@
     /** Remove a loader by ID */
     function hideLoader(id) { document.getElementById(id)?.remove(); }
 
-    /** Show shimmer skeleton in the snapshot grid */
-    function showSnapshotSkeleton() {
-      document.getElementById('snapshot-grid').innerHTML =
-        ['Skin Tone', 'Undertone', 'Face Shape', 'Hair', 'Glasses']
-          .map(l => `
-            <div class="snapshot-card is-loading">
-              <div class="snapshot-label">${l}</div>
-              <div class="snapshot-value" style="background:var(--light-taupe);border-radius:6px;height:24px;width:70%;margin-bottom:8px;"></div>
-              <div class="snapshot-note" style="background:var(--light-taupe);border-radius:4px;height:12px;width:50%;"></div>
-            </div>`).join('');
+    /** Render a summary sentence + bullet list into an element */
+    function renderInsightCard(elId, section) {
+      const el = document.getElementById(elId);
+      if (!el || !section) return;
+      const items = (section.items ?? [])
+        .map(i => `<li style="padding:3px 0;">${i}</li>`).join('');
+      el.innerHTML = `
+        ${section.summary ? `<span style="font-style:italic;color:var(--taupe);">${section.summary}</span>` : ''}
+        ${items ? `<ul style="margin-top:10px;padding-left:16px;list-style:disc;font-size:13px;line-height:1.7;">${items}</ul>` : ''}`;
     }
 
-    // ════════════════════════════════════════════════════════
-    //  SECTION: HERO IMAGE
-    // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════
+    //  ③  COLLAPSIBLE SECTIONS
+    // ════════════════════════════════════════════════════════════════
+
+    function initCollapsibles() {
+      document.querySelectorAll('.collapsible-trigger').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const section = document.getElementById(btn.dataset.target);
+          if (!section) return;
+          const isOpen = section.classList.toggle('is-open');
+          btn.setAttribute('aria-expanded', isOpen);
+        });
+      });
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  ④  HERO — profile image
+    // ════════════════════════════════════════════════════════════════
 
     async function renderHeroImage() {
       if (!reportId) return;
@@ -336,115 +734,33 @@
       imgEl.src = img.image_url;
     }
 
-    // ════════════════════════════════════════════════════════
-    //  SECTION: SNAPSHOT
-    //  Pipeline: face_analyser → skin_tone_analyzer → render
-    // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════
+    //  ⑤  SNAPSHOT
+    //     Pipeline: face_analyser → skin_tone_analyzer → render → save
+    // ════════════════════════════════════════════════════════════════
 
-    async function renderSnapshot(accountId) {
-      if (!reportId) { renderSnapshotEmpty(); return; }
-
-      showSnapshotSkeleton();
-      showLoader('snapshot-section', 'loader-snapshot', 'Analysing your features');
-
-      try {
-        // ── Step 1: face_analyser — get face attributes + face_rect ──
-        console.log('[Snapshot] Calling face_analyser…');
-        const { data: faceData, error: faceErr } = await db.functions.invoke('face_analyser', {
-          body: { reportId },
-        });
-        if (faceErr) throw faceErr;
-
-        const manifest = faceData?.manifest;
-        const perImage = faceData?.per_image ?? [];
-
-        console.log('[Snapshot] face_analyser manifest:', manifest);
-
-        if (!manifest) throw new Error('No manifest from face_analyser');
-
-        // ── Step 2: skin_tone_analyzer — use face_rect from image 1 ──
-        // Get face_rect from the first successfully analysed image
-        const firstOk = perImage.find(r => r.ok && r.data?.face_position);
-        let skinResult = null;
-
-        if (firstOk) {
-          const fp = firstOk.data.face_position; // { x, y, width, height }
-          console.log('[Snapshot] Calling skin_tone_analyzer with face_rect:', fp);
-
-          const { data: skinData, error: skinErr } = await db.functions.invoke('skin_tone_analyzer', {
-            body: {
-              style_report_id: reportId,
-              x:      fp.x,
-              y:      fp.y,
-              width:  fp.width,
-              height: fp.height,
-            },
-          });
-
-          if (skinErr) {
-            console.warn('[Snapshot] skin_tone_analyzer failed:', skinErr.message);
-          } else {
-            skinResult = skinData;
-            console.log('[Snapshot] skin_tone_analyzer result:', skinResult);
-          }
-        } else {
-          console.warn('[Snapshot] No valid face_rect — skipping skin tone analysis');
-        }
-
-        hideLoader('loader-snapshot');
-
-        // ── Step 3: Render snapshot cards ──
-        renderSnapshotCards(manifest, skinResult);
-
-        // ── Step 4: Save to user_metadata + style_reports (non-blocking) ──
-        if (accountId) saveUserMetadata(accountId, manifest, skinResult);
-        saveSnapshotToReport(reportId, manifest, skinResult);
-
-      } catch (err) {
-        console.error('[Snapshot] Pipeline failed:', err);
-        hideLoader('loader-snapshot');
-        renderSnapshotEmpty();
-      }
+    function showSnapshotSkeleton() {
+      document.getElementById('snapshot-grid').innerHTML =
+        ['Skin Tone', 'Undertone', 'Face Shape', 'Hair', 'Glasses'].map(l => `
+          <div class="snapshot-card is-loading">
+            <div class="snapshot-label">${l}</div>
+            <div class="snapshot-value" style="background:var(--light-taupe);border-radius:6px;height:24px;width:70%;margin-bottom:8px;"></div>
+            <div class="snapshot-note" style="background:var(--light-taupe);border-radius:4px;height:12px;width:50%;"></div>
+          </div>`).join('');
     }
 
     function renderSnapshotCards(manifest, skin) {
-      // skin from skin_tone_analyzer: { skin_tone, undertone, skin_color_hex }
-      // manifest from face_analyser
-
-      const skinTone = skin?.skin_tone      || manifest?.skin?.type?.value || '—';
+      const skinTone  = skin?.skin_tone      || manifest?.skin?.type?.value || '—';
       const undertone = skin?.undertone      || '—';
       const skinHex   = skin?.skin_color_hex || null;
-
-      const swatchHtml = skinHex
-        ? `<span class="skin-swatch" style="background:${skinHex};"></span>`
-        : '';
+      const swatch    = skinHex ? `<span class="skin-swatch" style="background:${skinHex};"></span>` : '';
 
       const cards = [
-        {
-          label: 'Skin Tone',
-          value: `${swatchHtml}${skinTone}`,
-          note:  skinHex || 'Analysed',
-        },
-        {
-          label: 'Undertone',
-          value: undertone,
-          note:  'Determines your best colour palette',
-        },
-        {
-          label: 'Face Shape',
-          value: manifest?.face_shape?.value || '—',
-          note:  manifest?.face_shape?.confidence || '',
-        },
-        {
-          label: 'Hair',
-          value: manifest?.hair?.color?.value || '—',
-          note:  manifest?.hair?.length?.value || '',
-        },
-        {
-          label: 'Glasses',
-          value: manifest?.eyes?.glasses?.value || '—',
-          note:  manifest?.eyes?.glasses?.confidence || '',
-        },
+        { label: 'Skin Tone',   value: `${swatch}${skinTone}`,                   note: skinHex || 'Analysed' },
+        { label: 'Undertone',   value: undertone,                                  note: 'Determines your best colour palette' },
+        { label: 'Face Shape',  value: manifest?.face_shape?.value || '—',         note: manifest?.face_shape?.confidence || '' },
+        { label: 'Hair',        value: manifest?.hair?.color?.value || '—',        note: manifest?.hair?.length?.value || '' },
+        { label: 'Glasses',     value: manifest?.eyes?.glasses?.value || '—',      note: manifest?.eyes?.glasses?.confidence || '' },
       ];
 
       document.getElementById('snapshot-grid').innerHTML = cards.map(c => `
@@ -465,32 +781,76 @@
           </div>`).join('');
     }
 
-    // ════════════════════════════════════════════════════════
-    //  SECTION: COLOR INTELLIGENCE
-    //  Calls color_intelligence edge function, renders 6 sections
-    // ════════════════════════════════════════════════════════
+    async function renderSnapshot(accountId) {
+      if (!reportId) { renderSnapshotEmpty(); return; }
+
+      showSnapshotSkeleton();
+      showLoader('snapshot-section', 'loader-snapshot', 'Analysing your features');
+
+      try {
+        // Step 1 — face_analyser: attributes + face position
+        console.log('[Snapshot] Calling face_analyser…');
+        const { data: faceData, error: faceErr } = await db.functions.invoke('face_analyser', {
+          body: { reportId },
+        });
+        if (faceErr) throw faceErr;
+
+        const manifest = faceData?.manifest;
+        const perImage  = faceData?.per_image ?? [];
+        if (!manifest) throw new Error('No manifest from face_analyser');
+        console.log('[Snapshot] Manifest:', manifest);
+
+        // Step 2 — skin_tone_analyzer: crop face + analyse skin
+        let skinResult = null;
+        const firstOk  = perImage.find(r => r.ok && r.data?.face_position);
+        if (firstOk) {
+          const fp = firstOk.data.face_position;
+          console.log('[Snapshot] Calling skin_tone_analyzer…', fp);
+          const { data: skinData, error: skinErr } = await db.functions.invoke('skin_tone_analyzer', {
+            body: { style_report_id: reportId, x: fp.x, y: fp.y, width: fp.width, height: fp.height },
+          });
+          if (skinErr) console.warn('[Snapshot] skin_tone_analyzer failed:', skinErr.message);
+          else { skinResult = skinData; console.log('[Snapshot] Skin result:', skinResult); }
+        } else {
+          console.warn('[Snapshot] No face_rect — skipping skin tone analysis');
+        }
+
+        hideLoader('loader-snapshot');
+
+        // Step 3 — render
+        renderSnapshotCards(manifest, skinResult);
+
+        // Step 4 — save (non-blocking)
+        if (accountId) saveUserMetadata(accountId, manifest, skinResult);
+        saveSnapshotToReport(reportId, manifest, skinResult);
+
+      } catch (err) {
+        console.error('[Snapshot] Pipeline failed:', err);
+        hideLoader('loader-snapshot');
+        renderSnapshotEmpty();
+      }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  ⑥  COLOR INTELLIGENCE
+    // ════════════════════════════════════════════════════════════════
 
     async function renderColorIntelligence() {
       if (!reportId) return;
 
-      showLoader('color-section', 'loader-color', 'Building your colour palette');
+      showLoader('section-color', 'loader-color', 'Building your colour palette');
 
       try {
         console.log('[Color] Calling color_intelligence…');
-
         const { data, error } = await db.functions.invoke('color_intelligence', {
           body: { reportId },
         });
-
         hideLoader('loader-color');
-
         if (error) throw error;
 
         const ci = data?.color_intelligence;
         if (!ci) throw new Error('No color_intelligence in response');
-
-        console.log('[Color] Received:', ci);
-        console.log('[Color] Results saved to style_reports by edge function ✓');
+        console.log('[Color] Received ✓ — saved to style_reports by edge function');
 
         const sections = [
           { key: 'best_colors',         title: 'Best Colors' },
@@ -502,19 +862,22 @@
         ];
 
         document.getElementById('color-categories').innerHTML = sections.map(s => {
-          const block = ci[s.key] ?? { colors: [], description: '' };
-          const swatches = (block.colors ?? []).map(hex => `
-            <div class="swatch" style="background:${hex}" title="${hex}" data-hex="${hex}"></div>
-          `).join('');
+          const block   = ci[s.key] ?? { colors: [], description: '' };
+          const swatches = (block.colors ?? []).map(hex =>
+            `<div class="swatch" style="background:${hex}" title="${hex}" data-hex="${hex}"></div>`
+          ).join('');
           return `
-            <div class="color-block">
+            <div class="color-block" data-section-key="${s.key}" data-colors='${JSON.stringify(block.colors ?? [])}'>
               <h4>${s.title}</h4>
               ${block.description ? `<p>${block.description}</p>` : ''}
               <div class="swatch-row">${swatches}</div>
+              <button class="examples-btn" data-section="${s.key}" data-title="${s.title}">
+                <i class="fas fa-images"></i> See examples
+              </button>
+              <div class="examples-gallery" id="gallery-${s.key}" style="display:none;"></div>
             </div>`;
         }).join('');
 
-        // Swatch click to select
         document.querySelectorAll('#color-categories .swatch').forEach(sw => {
           sw.addEventListener('click', () => {
             sw.closest('.swatch-row').querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
@@ -522,158 +885,44 @@
           });
         });
 
+        // Wire up See Examples buttons
+        document.querySelectorAll('.examples-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const sectionKey = btn.dataset.section;
+            const block      = btn.closest('.color-block');
+            const colors     = JSON.parse(block.dataset.colors || '[]');
+            loadColorExamples(btn, sectionKey, colors);
+          });
+        });
+
       } catch (err) {
         console.error('[Color] Failed:', err);
         hideLoader('loader-color');
         document.getElementById('color-categories').innerHTML = `
-          <div class="color-block">
-            <h4>Your Palette</h4>
-            <p>Could not load color intelligence — please try again shortly.</p>
-          </div>`;
+          <div class="color-block"><h4>Your Palette</h4><p>Could not load — please try again shortly.</p></div>`;
       }
     }
 
-    // ════════════════════════════════════════════════════════
-    //  SAVE: style_reports — snapshot fields
-    //  Writes skin_tone, undertone, accessories, face shape
-    //  back to the report row immediately after analysis.
-    // ════════════════════════════════════════════════════════
-
-    async function saveSnapshotToReport(reportId, manifest, skin) {
-      if (!reportId) return;
-
-      const fields = {
-        skin_tone:    skin?.skin_tone      || manifest?.skin?.type?.value || null,
-        undertone:    skin?.undertone      || null,
-        color_family: null, // filled later by color_intelligence
-        accessories:  manifest?.eyes?.glasses?.value
-                        ? `Glasses: ${manifest.eyes.glasses.value}`
-                        : null,
-      };
-
-      // Only update non-null fields
-      const update = Object.fromEntries(
-        Object.entries(fields).filter(([, v]) => v !== null)
-      );
-
-      if (Object.keys(update).length === 0) return;
-
-      const { error } = await db
-        .from('style_reports')
-        .update(update)
-        .eq('id', reportId);
-
-      if (error) console.error('[style_reports] Snapshot save failed:', error.message);
-      else       console.log('[style_reports] Snapshot saved ✓', Object.keys(update));
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  SAVE: user_metadata
-    // ════════════════════════════════════════════════════════
-
-    async function saveUserMetadata(accountId, manifest, skin) {
-      const s   = manifest?.skin ?? {};
-      const fs  = manifest?.face_shape ?? {};
-      const g   = manifest?.gender ?? {};
-      const e   = manifest?.eyes ?? {};
-      const eb  = manifest?.eyebrows ?? {};
-      const h   = manifest?.hair ?? {};
-      const hat = manifest?.hat ?? {};
-      const n   = manifest?.nose ?? {};
-      const mo  = manifest?.moustache ?? {};
-      const ma  = manifest?.mask ?? {};
-      const mu  = manifest?.mouth ?? {};
-      const em  = manifest?.emotion ?? {};
-
-      const row = {
-        account_id:                  accountId,
-        source:                      manifest?._source ?? '',
-        image_count:                 String(manifest?._image_count ?? ''),
-        // Skin — prefer skin_tone_analyzer values, fall back to AILab coarse type
-        skin_type:                   skin?.skin_tone || s.type?.value || '',
-        skin_type_confidence:        s.type?.confidence ?? '',
-        skin_raw_type_id:            String(s.raw_type_id ?? ''),
-        face_shape:                  fs.value ?? '',
-        face_shape_confidence:       fs.confidence ?? '',
-        gender:                      g.value ?? '',
-        gender_confidence:           g.confidence ?? '',
-        age:                         String(manifest?.age ?? ''),
-        eye_glasses:                 e.glasses?.value ?? '',
-        eye_glasses_confidence:      e.glasses?.confidence ?? '',
-        eye_open:                    e.open?.value ?? '',
-        eye_open_confidence:         e.open?.confidence ?? '',
-        eye_eyelid:                  e.eyelid?.value ?? '',
-        eye_eyelid_confidence:       e.eyelid?.confidence ?? '',
-        eye_size:                    e.size?.value ?? '',
-        eye_size_confidence:         e.size?.confidence ?? '',
-        eyebrow_density:             eb.density?.value ?? '',
-        eyebrow_density_confidence:  eb.density?.confidence ?? '',
-        eyebrow_curve:               eb.curve?.value ?? '',
-        eyebrow_curve_confidence:    eb.curve?.confidence ?? '',
-        eyebrow_length:              eb.length?.value ?? '',
-        eyebrow_length_confidence:   eb.length?.confidence ?? '',
-        hair_length:                 h.length?.value ?? '',
-        hair_length_confidence:      h.length?.confidence ?? '',
-        hair_fringe:                 h.fringe?.value ?? '',
-        hair_fringe_confidence:      h.fringe?.confidence ?? '',
-        hair_color:                  h.color?.value ?? '',
-        hair_color_confidence:       h.color?.confidence ?? '',
-        hat_style:                   hat.style?.value ?? '',
-        hat_style_confidence:        hat.style?.confidence ?? '',
-        hat_color:                   hat.color?.value ?? '',
-        hat_color_confidence:        hat.color?.confidence ?? '',
-        nose:                        n.value ?? '',
-        nose_confidence:             n.confidence ?? '',
-        moustache:                   mo.value ?? '',
-        moustache_confidence:        mo.confidence ?? '',
-        mask:                        ma.value ?? '',
-        mask_confidence:             ma.confidence ?? '',
-        mouth:                       mu.value ?? '',
-        mouth_confidence:            mu.confidence ?? '',
-        emotion:                     em.value ?? '',
-        emotion_confidence:          em.confidence ?? '',
-      };
-
-      const { error } = await db.from('user_metadata').upsert(row, { onConflict: 'account_id' });
-      if (error) console.error('[user_metadata] Save failed:', error.message);
-      else       console.log('[user_metadata] Saved ✓');
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  SECTION: JEWELRY & ACCESSORIES
-    //  Calls jewelry_recommendations, renders 3 insight cards
-    // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════
+    //  ⑦  JEWELRY & ACCESSORIES
+    // ════════════════════════════════════════════════════════════════
 
     async function renderJewelry() {
       if (!reportId) return;
 
-      showLoader('jewelry-section', 'loader-jewelry', 'Generating accessory recommendations');
+      showLoader('section-jewelry', 'loader-jewelry', 'Generating accessory recommendations');
 
       try {
         console.log('[Jewelry] Calling jewelry_recommendations…');
-
         const { data, error } = await db.functions.invoke('jewelry_recommendations', {
           body: { reportId },
         });
-
         hideLoader('loader-jewelry');
         if (error) throw error;
 
-        function renderJewelryCard(elId, section) {
-          if (!section) return;
-          const el = document.getElementById(elId);
-          if (!el) return;
-          const items = (section.items ?? []).map(i => `<li style="padding:3px 0;">${i}</li>`).join('');
-          el.innerHTML = `
-            ${section.summary ? `<span style="font-style:italic;color:var(--taupe);">${section.summary}</span>` : ''}
-            ${items ? `<ul style="margin-top:10px;padding-left:16px;list-style:disc;font-size:13px;line-height:1.7;">${items}</ul>` : ''}
-          `;
-        }
-
-        renderJewelryCard('jewelry-metals',  data?.metals);
-        renderJewelryCard('jewelry-chains',  data?.chains_and_layers);
-        renderJewelryCard('jewelry-watches', data?.watches_and_leather);
-
+        renderInsightCard('jewelry-metals',  data?.metals);
+        renderInsightCard('jewelry-chains',  data?.chains_and_layers);
+        renderInsightCard('jewelry-watches', data?.watches_and_leather);
         console.log('[Jewelry] Rendered ✓ — saved to style_reports by edge function');
 
       } catch (err) {
@@ -682,41 +931,26 @@
       }
     }
 
-    // ════════════════════════════════════════════════════════
-    //  SECTION: EYEWEAR & FRAMES
-    //  Calls eyewear_recommendations, renders 3 insight cards
-    // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════
+    //  ⑧  EYEWEAR & FRAMES
+    // ════════════════════════════════════════════════════════════════
 
     async function renderEyewear() {
       if (!reportId) return;
 
-      showLoader('eyewear-section', 'loader-eyewear', 'Analysing frame recommendations');
+      showLoader('section-eyewear', 'loader-eyewear', 'Analysing frame recommendations');
 
       try {
         console.log('[Eyewear] Calling eyewear_recommendations…');
-
         const { data, error } = await db.functions.invoke('eyewear_recommendations', {
           body: { reportId },
         });
-
         hideLoader('loader-eyewear');
         if (error) throw error;
 
-        function renderEyewearCard(elId, section) {
-          if (!section) return;
-          const el = document.getElementById(elId);
-          if (!el) return;
-          const items = (section.items ?? []).map(i => `<li style="padding:3px 0;">${i}</li>`).join('');
-          el.innerHTML = `
-            ${section.summary ? `<span style="font-style:italic;color:var(--taupe);">${section.summary}</span>` : ''}
-            ${items ? `<ul style="margin-top:10px;padding-left:16px;list-style:disc;font-size:13px;line-height:1.7;">${items}</ul>` : ''}
-          `;
-        }
-
-        renderEyewearCard('eyewear-shapes', data?.recommended_shapes);
-        renderEyewearCard('eyewear-size',   data?.size_and_thickness);
-        renderEyewearCard('eyewear-lens',   data?.lens_and_material);
-
+        renderInsightCard('eyewear-shapes', data?.recommended_shapes);
+        renderInsightCard('eyewear-size',   data?.size_and_thickness);
+        renderInsightCard('eyewear-lens',   data?.lens_and_material);
         console.log('[Eyewear] Rendered ✓ — saved to style_reports by edge function');
 
       } catch (err) {
@@ -725,9 +959,71 @@
       }
     }
 
-    // ════════════════════════════════════════════════════════
-    //  SCROLL OBSERVER
-    // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════
+    //  ⑨  DB SAVE HELPERS
+    // ════════════════════════════════════════════════════════════════
+
+    async function saveSnapshotToReport(reportId, manifest, skin) {
+      if (!reportId) return;
+
+      const update = {};
+      if (skin?.skin_tone || manifest?.skin?.type?.value)
+        update.skin_tone = skin?.skin_tone || manifest.skin.type.value;
+      if (skin?.undertone)
+        update.undertone = skin.undertone;
+      if (manifest?.eyes?.glasses?.value)
+        update.accessories = `Glasses: ${manifest.eyes.glasses.value}`;
+
+      if (Object.keys(update).length === 0) return;
+
+      const { error } = await db.from('style_reports').update(update).eq('id', reportId);
+      if (error) console.error('[style_reports] Snapshot save failed:', error.message);
+      else       console.log('[style_reports] Snapshot saved ✓', Object.keys(update));
+    }
+
+    async function saveUserMetadata(accountId, manifest, skin) {
+      if (!accountId || !manifest) return;
+
+      const s = manifest?.skin ?? {}, fs = manifest?.face_shape ?? {}, g = manifest?.gender ?? {};
+      const e = manifest?.eyes ?? {}, eb = manifest?.eyebrows ?? {}, h = manifest?.hair ?? {};
+      const hat = manifest?.hat ?? {}, n = manifest?.nose ?? {}, mo = manifest?.moustache ?? {};
+      const ma = manifest?.mask ?? {}, mu = manifest?.mouth ?? {}, em = manifest?.emotion ?? {};
+
+      const row = {
+        account_id: accountId,
+        source: manifest?._source ?? '', image_count: String(manifest?._image_count ?? ''),
+        skin_type: skin?.skin_tone || s.type?.value || '', skin_type_confidence: s.type?.confidence ?? '',
+        skin_raw_type_id: String(s.raw_type_id ?? ''),
+        face_shape: fs.value ?? '', face_shape_confidence: fs.confidence ?? '',
+        gender: g.value ?? '', gender_confidence: g.confidence ?? '',
+        age: String(manifest?.age ?? ''),
+        eye_glasses: e.glasses?.value ?? '', eye_glasses_confidence: e.glasses?.confidence ?? '',
+        eye_open: e.open?.value ?? '', eye_open_confidence: e.open?.confidence ?? '',
+        eye_eyelid: e.eyelid?.value ?? '', eye_eyelid_confidence: e.eyelid?.confidence ?? '',
+        eye_size: e.size?.value ?? '', eye_size_confidence: e.size?.confidence ?? '',
+        eyebrow_density: eb.density?.value ?? '', eyebrow_density_confidence: eb.density?.confidence ?? '',
+        eyebrow_curve: eb.curve?.value ?? '', eyebrow_curve_confidence: eb.curve?.confidence ?? '',
+        eyebrow_length: eb.length?.value ?? '', eyebrow_length_confidence: eb.length?.confidence ?? '',
+        hair_length: h.length?.value ?? '', hair_length_confidence: h.length?.confidence ?? '',
+        hair_fringe: h.fringe?.value ?? '', hair_fringe_confidence: h.fringe?.confidence ?? '',
+        hair_color: h.color?.value ?? '', hair_color_confidence: h.color?.confidence ?? '',
+        hat_style: hat.style?.value ?? '', hat_style_confidence: hat.style?.confidence ?? '',
+        hat_color: hat.color?.value ?? '', hat_color_confidence: hat.color?.confidence ?? '',
+        nose: n.value ?? '', nose_confidence: n.confidence ?? '',
+        moustache: mo.value ?? '', moustache_confidence: mo.confidence ?? '',
+        mask: ma.value ?? '', mask_confidence: ma.confidence ?? '',
+        mouth: mu.value ?? '', mouth_confidence: mu.confidence ?? '',
+        emotion: em.value ?? '', emotion_confidence: em.confidence ?? '',
+      };
+
+      const { error } = await db.from('user_metadata').upsert(row, { onConflict: 'account_id' });
+      if (error) console.error('[user_metadata] Save failed:', error.message);
+      else       console.log('[user_metadata] Saved ✓');
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  ⑩  SCROLL OBSERVER
+    // ════════════════════════════════════════════════════════════════
 
     function initScrollObserver() {
       const obs = new IntersectionObserver(entries => {
@@ -739,50 +1035,560 @@
       });
     }
 
-    // ════════════════════════════════════════════════════════
-    //  BOOT
-    // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════
+    //  ⑨·⁵  COLOR EXAMPLES
+    //
+    //  Flow:
+    //  1. Click "See examples" → call color_outfit_generator to get
+    //     all 3 outfit descriptions, then generate FORMAL image only
+    //  2. Click "Streetwear" tab → generate that image on demand
+    //  3. Click "Semi-Casual" tab → generate that image on demand
+    //
+    //  Each section stores: { outfits, accountId, images: {} }
+    // ════════════════════════════════════════════════════════════════
+
+    const _exampleState = {}; // sectionKey → { outfits, accountId, images: {formal, streetwear, semi_casual} }
+
+    const OUTFIT_LABELS = {
+      formal:      'Formal',
+      streetwear:  'Streetwear',
+      semi_casual: 'Semi-Casual',
+    };
+
+    async function resolveAccountId() {
+      let id = profile.accountId || null;
+      if (!id) {
+        const r = await auth.getUser();
+        if (r.ok && r.data) {
+          const { data: acct } = await db.from('accounts').select('id')
+            .eq('auth_id', r.data.id).single();
+          if (acct) id = acct.id;
+        }
+      }
+      return id;
+    }
+
+    async function loadColorExamples(btn, sectionKey, colors) {
+      const gallery = document.getElementById(`gallery-${sectionKey}`);
+      if (!gallery) return;
+
+      // Toggle closed
+      if (btn.classList.contains('is-open') && gallery.style.display !== 'none') {
+        gallery.style.display = 'none';
+        btn.classList.remove('is-open');
+        btn.innerHTML = '<i class="fas fa-images"></i> See examples';
+        return;
+      }
+
+      // Already generated — just show
+      if (_exampleState[sectionKey]?.outfits) {
+        gallery.style.display = 'block';
+        btn.classList.add('is-open');
+        btn.innerHTML = '<i class="fas fa-chevron-up"></i> Hide examples';
+        return;
+      }
+
+      // ── Step 1: Get outfit descriptions from color_outfit_generator ──
+      btn.classList.add('is-loading', 'is-open');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analysing outfits…';
+      gallery.style.display = 'block';
+      gallery.innerHTML = renderExampleShell(sectionKey, null); // shell with all 3 tabs loading
+
+      try {
+        console.log(`[Examples] Calling color_outfit_generator for ${sectionKey}…`);
+        const { data: outfitData, error: outfitErr } = await db.functions.invoke('color_outfit_generator', {
+          body: { style_report_id: reportId, colors, section_name: sectionKey },
+        });
+        if (outfitErr) throw outfitErr;
+        if (!outfitData?.outfits) throw new Error('No outfits returned');
+
+        const accountId = await resolveAccountId();
+        if (!accountId) throw new Error('Could not resolve account ID');
+
+        // Store state
+        _exampleState[sectionKey] = { outfits: outfitData.outfits, accountId, images: {} };
+
+        btn.classList.remove('is-loading');
+        btn.innerHTML = '<i class="fas fa-chevron-up"></i> Hide examples';
+
+        // Render shell with tabs, formal slot loading
+        gallery.innerHTML = renderExampleShell(sectionKey, 'formal');
+
+        // ── Step 2: Generate formal image first ──
+        await generateAndShowImage(sectionKey, 'formal');
+
+      } catch (err) {
+        console.error(`[Examples] Failed:`, err);
+        gallery.innerHTML = `<p style="text-align:center;padding:20px;font-family:'Inter',sans-serif;font-size:13px;color:var(--taupe);">Could not generate — please try again.</p>`;
+        btn.classList.remove('is-loading', 'is-open');
+        btn.innerHTML = '<i class="fas fa-images"></i> See examples';
+        delete _exampleState[sectionKey];
+      }
+    }
+
+    // Renders the tab shell — outfitType is which tab is currently loading (null = all loading)
+    function renderExampleShell(sectionKey, activeOutfitType) {
+      const tabs = Object.entries(OUTFIT_LABELS).map(([key, label]) => `
+        <button
+          class="example-tab ${key === (activeOutfitType || 'formal') ? 'is-active' : ''}"
+          data-section="${sectionKey}"
+          data-outfit="${key}"
+          onclick="handleExampleTab(this, '${sectionKey}', '${key}')">
+          ${label}
+        </button>`).join('');
+
+      return `
+        <div class="examples-panel">
+          <div class="example-tabs">${tabs}</div>
+          <div class="example-image-wrap" id="example-img-${sectionKey}">
+            <div class="examples-gallery-skeleton"></div>
+          </div>
+        </div>`;
+    }
+
+    // Called when user clicks a tab
+    async function handleExampleTab(btn, sectionKey, outfitType) {
+      // Update active tab
+      btn.closest('.example-tabs').querySelectorAll('.example-tab')
+        .forEach(t => t.classList.remove('is-active'));
+      btn.classList.add('is-active');
+
+      const state = _exampleState[sectionKey];
+      if (!state) return;
+
+      // If already generated, just show it
+      if (state.images[outfitType]) {
+        showExampleImage(sectionKey, outfitType, state.images[outfitType]);
+        return;
+      }
+
+      // Show skeleton and generate
+      document.getElementById(`example-img-${sectionKey}`).innerHTML =
+        `<div class="examples-gallery-skeleton"></div>`;
+      await generateAndShowImage(sectionKey, outfitType);
+    }
+
+    // Generates one image and displays it
+    async function generateAndShowImage(sectionKey, outfitType) {
+      const state = _exampleState[sectionKey];
+      if (!state) return;
+
+      const outfit = state.outfits[outfitType];
+      if (!outfit) return;
+
+      try {
+        console.log(`[Examples] Generating ${outfitType} image for ${sectionKey}…`);
+
+        const { data, error } = await db.functions.invoke('generate_outfit_image', {
+          body: {
+            style_report_id: reportId,
+            account_id:      state.accountId,
+            section_name:    sectionKey,
+            outfit_type:     outfitType,
+            outfit,
+          },
+        });
+
+        if (error) throw error;
+        if (!data?.image_url) throw new Error('No image_url in response');
+
+        state.images[outfitType] = data.image_url;
+        showExampleImage(sectionKey, outfitType, data.image_url);
+        console.log(`[Examples] ${outfitType} ✓ → ${data.image_url}`);
+
+      } catch (err) {
+        console.error(`[Examples] ${outfitType} image failed:`, err);
+        const wrap = document.getElementById(`example-img-${sectionKey}`);
+        if (wrap) wrap.innerHTML = `
+          <div style="width:160px;height:213px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center;">
+            <span style="font-family:'Inter',sans-serif;font-size:11px;color:var(--taupe);text-align:center;padding:12px;">Could not generate</span>
+          </div>`;
+      }
+    }
+
+    function showExampleImage(sectionKey, outfitType, url) {
+      const wrap = document.getElementById(`example-img-${sectionKey}`);
+      if (!wrap) return;
+      wrap.innerHTML = `
+        <div class="examples-gallery-item">
+          <img src="${url}" alt="${OUTFIT_LABELS[outfitType]} outfit" loading="lazy">
+          <div class="examples-gallery-label">${OUTFIT_LABELS[outfitType]}</div>
+        </div>`;
+    }
+
+    // Make handleExampleTab globally accessible (called from inline onclick)
+    window.handleExampleTab = handleExampleTab;
+
+    // ════════════════════════════════════════════════════════════════
+    //  ⑩  MOOD BOARDS
+    //  Generates one board per goal (up to 3).
+    //  Tinder-style swipe deck. Click to expand, see products, buy.
+    // ════════════════════════════════════════════════════════════════
+
+
+    // ─── Shared mood board helpers (used by report.html & view_report.html) ───
+
+    let _mbDeckIndex = 0;
+    let _mbBoards    = [];
+    let _mbExpanded  = null;
+
+    // BRANDS config — Amazon live, others coming soon
+    const BRANDS = [
+      { id: 'amazon',    label: 'Amazon',    cls: 'amazon', live: true },
+      { id: 'zara',      label: 'Zara',      cls: '',       live: false },
+      { id: 'uniqlo',    label: 'Uniqlo',    cls: '',       live: false },
+      { id: 'walmart',   label: 'Walmart',   cls: '',       live: false },
+      { id: 'lululemon', label: 'lululemon', cls: '',       live: false },
+      { id: 'gap',       label: 'Gap',       cls: '',       live: false },
+      { id: 'asos',      label: 'ASOS',      cls: '',       live: false },
+    ];
+
+    function buildMoodBoardCard(board, idx) {
+      const imgHtml = board.image_url
+        ? `<img class="mb-card__img" src="${board.image_url}" alt="${board.title}" loading="lazy">`
+        : `<div class="mb-card__img-placeholder"><i class="fas fa-tshirt"></i></div>`;
+
+      return `
+        <div class="mb-card" data-idx="${idx}" id="mb-card-${idx}">
+          ${imgHtml}
+          <div class="mb-card__body">
+            <div class="mb-card__goal">${board.goal}</div>
+            <div class="mb-card__title">${board.title}</div>
+            <div class="mb-card__occasion">${board.occasion || ''}</div>
+            <div class="mb-card__expand-hint"><i class="fas fa-expand-alt"></i> Tap to explore outfit</div>
+          </div>
+        </div>`;
+    }
+
+    function buildExpandedModal(board) {
+      const imgHtml = board.image_url
+        ? `<img class="mb-expanded-img" src="${board.image_url}" alt="${board.title}">`
+        : `<div class="mb-expanded-img-ph"><i class="fas fa-tshirt"></i></div>`;
+
+      const pieces = (board.pieces ?? []).filter(p => p.name);
+
+      const amazonPieces = pieces.map(p => `
+        <div class="mb-piece">
+          ${p.image_url
+            ? `<img class="mb-piece__img" src="${p.image_url}" alt="${p.name}" loading="lazy">`
+            : `<div class="mb-piece__img" style="display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--light-taupe);"><i class="fas fa-tag"></i></div>`}
+          <div class="mb-piece__info">
+            <div class="mb-piece__name">${p.name}</div>
+            ${p.price ? `<div class="mb-piece__price">$${parseFloat(p.price).toFixed(2)}</div>` : ''}
+          </div>
+          <div class="mb-piece__actions">
+            ${p.url ? `<a class="mb-piece__checkout" href="${p.url}" target="_blank" rel="noopener">Checkout</a>` : ''}
+            <button class="mb-piece__compare" onclick="openCompare('${p.name?.replace(/'/g,'')}', this)">
+              <i class="fas fa-magic"></i> Compare
+            </button>
+          </div>
+        </div>`).join('');
+
+      const brandSections = BRANDS.map((b, i) => {
+        if (b.live) {
+          return `
+            <div class="mb-brand-section is-open" id="brand-${b.id}">
+              <div class="mb-brand-header" onclick="toggleBrand('brand-${b.id}')">
+                <div class="mb-brand-left">
+                  <span class="mb-brand-logo ${b.cls}">${b.label}</span>
+                  <span class="mb-brand-badge live">Live</span>
+                </div>
+                <i class="fas fa-chevron-down mb-brand-chevron"></i>
+              </div>
+              <div class="mb-brand-body">
+                ${amazonPieces || '<p style="font-family:Inter,sans-serif;font-size:13px;color:var(--taupe);padding:8px 0;">No products found.</p>'}
+              </div>
+            </div>`;
+        } else {
+          return `
+            <div class="mb-brand-section" id="brand-${b.id}">
+              <div class="mb-brand-header" onclick="brandComingSoon('${b.label}')">
+                <div class="mb-brand-left">
+                  <span class="mb-brand-logo">${b.label}</span>
+                  <span class="mb-brand-badge soon">Coming Soon</span>
+                </div>
+                <i class="fas fa-chevron-right mb-brand-chevron"></i>
+              </div>
+            </div>`;
+        }
+      }).join('');
+
+      return `
+        <div class="mb-expanded-modal" id="mb-modal">
+          <div class="mb-expanded-modal__close">
+            <button onclick="closeMBModal()" aria-label="Close"><i class="fas fa-times"></i></button>
+          </div>
+          ${imgHtml}
+          <div class="mb-expanded-body">
+            <div class="mb-expanded-goal">${board.goal}</div>
+            <div class="mb-expanded-title">${board.title}</div>
+            <div class="mb-expanded-desc">${board.occasion || board.description || ''}</div>
+          </div>
+          <div class="mb-brands">${brandSections}</div>
+        </div>`;
+    }
+
+    function renderMoodBoardDeck(container, boards) {
+      _mbDeckIndex = 0;
+      const cards = boards.map((b, i) => buildMoodBoardCard(b, i)).join('');
+      container.innerHTML = `
+        <div class="mb-deck" id="mb-deck">${cards}</div>
+        <div class="mb-controls">
+          <button class="mb-btn" title="Skip" onclick="mbSwipe('left')"><i class="fas fa-times"></i></button>
+          <span class="mb-counter" id="mb-counter">1 / ${boards.length}</span>
+          <button class="mb-btn" title="Save" onclick="mbSwipe('right')"><i class="fas fa-heart"></i></button>
+        </div>`;
+
+      document.querySelectorAll('.mb-card').forEach(card => {
+        card.addEventListener('click', e => {
+          if (e.target.closest('.mb-piece__checkout') || e.target.closest('.mb-piece__compare')) return;
+          const idx = parseInt(card.dataset.idx);
+          if (idx === _mbDeckIndex) openMBModal(idx);
+        });
+      });
+    }
+
+    function openMBModal(idx) {
+      // Remove any existing modal
+      document.getElementById('mb-modal')?.remove();
+      document.getElementById('mb-overlay')?.classList.add('is-visible');
+
+      const board = _mbBoards[idx];
+      if (!board) return;
+
+      // Inject modal into body (not inside card — avoids z-index issues)
+      document.body.insertAdjacentHTML('beforeend', buildExpandedModal(board));
+      _mbExpanded = idx;
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMBModal() {
+      document.getElementById('mb-modal')?.remove();
+      document.getElementById('mb-overlay')?.classList.remove('is-visible');
+      document.body.style.overflow = '';
+      _mbExpanded = null;
+    }
+
+    window.mbSwipe = function(direction) {
+      const deck  = document.getElementById('mb-deck');
+      if (!deck) return;
+      const cards = [...deck.querySelectorAll('.mb-card:not(.is-swiped-left):not(.is-swiped-right)')];
+      if (!cards.length) return;
+      cards[0].classList.add(direction === 'left' ? 'is-swiped-left' : 'is-swiped-right');
+      const remaining = deck.querySelectorAll('.mb-card:not(.is-swiped-left):not(.is-swiped-right)').length;
+      const total = deck.querySelectorAll('.mb-card').length;
+      _mbDeckIndex = total - remaining;
+      document.getElementById('mb-counter').textContent = `${total - remaining + 1} / ${total}`;
+      [...deck.querySelectorAll('.mb-card:not(.is-swiped-left):not(.is-swiped-right)')].forEach((c, i) => {
+        c.style.zIndex    = 3 - i;
+        c.style.transform = i === 0 ? '' : i === 1 ? 'translateX(16px) translateY(8px) scale(0.97)' : 'translateX(28px) translateY(16px) scale(0.94)';
+      });
+    };
+
+    window.toggleBrand = function(id) {
+      document.getElementById(id)?.classList.toggle('is-open');
+    };
+
+    window.brandComingSoon = function(name) {
+      // Brief toast
+      const t = document.createElement('div');
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2C;color:white;font-family:Inter,sans-serif;font-size:13px;font-weight:400;padding:10px 20px;border-radius:20px;z-index:9999;opacity:0;transition:opacity 0.2s;';
+      t.textContent = `${name} — coming soon`;
+      document.body.appendChild(t);
+      requestAnimationFrame(() => { t.style.opacity = '1'; });
+      setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2000);
+    };
+
+    window.openCompare = function(productName, btn) {
+      const modal = document.getElementById('compare-modal');
+      if (!modal) return;
+      document.getElementById('compare-product-name').textContent = productName;
+      modal.classList.add('is-open');
+      document.getElementById('mb-overlay').classList.add('is-visible');
+      runCompareAnimation();
+    };
+
+    window.closeCompare = function() {
+      document.getElementById('compare-modal')?.classList.remove('is-open');
+      // Don't close overlay if MB modal is open
+      if (!document.getElementById('mb-modal')) {
+        document.getElementById('mb-overlay')?.classList.remove('is-visible');
+      }
+    };
+
+    window.closeMBModal = closeMBModal;
+    window.openMBModal  = openMBModal;
+
+    window.handleOverlayClick = function(e) {
+      if (e.target === document.getElementById('mb-overlay')) {
+        if (document.getElementById('compare-modal')?.classList.contains('is-open')) {
+          closeCompare();
+        } else {
+          closeMBModal();
+        }
+      }
+    };
+
+    const COMPARE_BRANDS = ['Zara', 'Uniqlo', 'Walmart', 'Lululemon', 'Gap', 'ASOS', 'H&M'];
+    const COMPARE_MSGS   = ['Comparing prices…', 'Finding best matches…', 'Contrasting quality…', 'Generating report…'];
+
+    function runCompareAnimation() {
+      const steps   = document.querySelectorAll('.compare-step');
+      const msgEl   = document.getElementById('compare-msg');
+      const resultEl = document.getElementById('compare-result');
+
+      // Reset
+      steps.forEach(s => {
+        s.querySelector('.compare-step__bar').style.width = '0%';
+        s.querySelector('.compare-step__status').textContent = '';
+      });
+      resultEl.style.display = 'none';
+      msgEl.textContent = COMPARE_MSGS[0];
+
+      let msgIdx = 0;
+      const msgTimer = setInterval(() => {
+        msgIdx = (msgIdx + 1) % COMPARE_MSGS.length;
+        msgEl.textContent = COMPARE_MSGS[msgIdx];
+      }, 1800);
+
+      // Animate each step with staggered delay
+      steps.forEach((step, i) => {
+        const bar    = step.querySelector('.compare-step__bar');
+        const status = step.querySelector('.compare-step__status');
+        const colors = ['#E05C5C','#C4906A','#6B4F3A','#9E8C7E','#D4C9BE','#C4906A','#6B4F3A'];
+        bar.style.background = colors[i % colors.length];
+        setTimeout(() => {
+          bar.style.width = `${60 + Math.random() * 35}%`;
+          status.textContent = 'Searching…';
+          setTimeout(() => {
+            bar.style.width = '100%';
+            status.textContent = 'Done';
+          }, 900);
+        }, i * 600);
+      });
+
+      // Show result after all done
+      const totalTime = steps.length * 600 + 1200;
+      setTimeout(() => {
+        clearInterval(msgTimer);
+        msgEl.textContent = '';
+        resultEl.style.display = 'block';
+      }, totalTime);
+    }
+
+    async function renderMoodBoards() {
+      if (!reportId) return;
+
+      const container = document.getElementById('mood-boards-container');
+
+      // Get goals from profile or re-fetch report
+      let goals = profile.goals ?? [];
+      if (!goals.length) {
+        const { data: rep } = await db
+          .from('style_reports')
+          .select('goal_1, goal_2, goal_3')
+          .eq('id', reportId).single();
+        goals = [rep?.goal_1, rep?.goal_2, rep?.goal_3].filter(Boolean);
+      }
+
+      if (!goals.length) {
+        container.innerHTML = `<p class="sans" style="color:var(--taupe);text-align:center;padding:40px 0;font-size:14px;font-weight:300;">No goals found for this report.</p>`;
+        return;
+      }
+
+      // Resolve accountId
+      let accountId = profile.accountId || null;
+      if (!accountId) {
+        const r = await auth.getUser();
+        if (r.ok && r.data) {
+          const { data: acct } = await db.from('accounts').select('id').eq('auth_id', r.data.id).single();
+          if (acct) accountId = acct.id;
+        }
+      }
+
+      // Show generating state
+      container.innerHTML = `
+        <div class="mb-generating">
+          <div class="mb-generating__spinner"></div>
+          <p class="mb-generating__label">Generating mood boards for your goals…</p>
+        </div>`;
+
+      // Generate boards one by one — each updates the UI as it arrives
+      const boards = [];
+      for (let i = 0; i < Math.min(goals.length, 3); i++) {
+        const goal = goals[i];
+        console.log(`[MoodBoards] Generating board ${i + 1}/${goals.length}: "${goal}"`);
+
+        container.innerHTML = `
+          <div class="mb-generating">
+            <div class="mb-generating__spinner"></div>
+            <p class="mb-generating__label">Creating board ${i + 1} of ${Math.min(goals.length, 3)}: <em>${goal}</em></p>
+          </div>`;
+
+        try {
+          const { data, error } = await db.functions.invoke('generate_mood_board', {
+            body: { style_report_id: reportId, goal },
+          });
+          if (error) throw error;
+          if (data?.mood_board) boards.push(data.mood_board);
+          console.log(`[MoodBoards] Board ${i + 1} done: "${data?.mood_board?.title}"`);
+        } catch (err) {
+          console.error(`[MoodBoards] Board ${i + 1} failed:`, err);
+        }
+      }
+
+      _mbBoards = boards;
+
+      if (boards.length === 0) {
+        container.innerHTML = `<p class="sans" style="color:var(--taupe);text-align:center;padding:40px 0;font-size:14px;font-weight:300;">Could not generate mood boards. Please try again.</p>`;
+        return;
+      }
+
+      renderMoodBoardDeck(container, boards);
+    }
+
+
+
+    // ════════════════════════════════════════════════════════════════
+    //  ⑪  BOOT
+    // ════════════════════════════════════════════════════════════════
 
     async function init() {
-      // Set name in hero immediately
       document.getElementById('hero-title').innerHTML =
         `${firstName}, Here's What<br><em>Works For You</em>`;
 
       initScrollObserver();
+      initCollapsibles();
 
-      // Load hero image — fire and forget
+      // Fire non-account sections immediately
       renderHeroImage();
 
-      // Render color intelligence (runs in parallel with snapshot)
-      renderColorIntelligence();
-
-      // Resolve accountId — from localStorage first, then from DB
+      // Resolve accountId — localStorage first, then DB lookup
       let accountId = profile.accountId || null;
       if (!accountId) {
         const userResult = await auth.getUser();
         if (userResult.ok && userResult.data) {
           const { data: account } = await db
-            .from('accounts')
-            .select('id')
-            .eq('auth_id', userResult.data.id)
-            .single();
+            .from('accounts').select('id')
+            .eq('auth_id', userResult.data.id).single();
           if (account) accountId = account.id;
         }
       }
       console.log('[Report] accountId:', accountId);
 
-      // Run all sections in parallel — each shows its own loader while waiting
+      // All sections run in parallel — each manages its own loader
       renderSnapshot(accountId);
       renderColorIntelligence();
       renderJewelry();
       renderEyewear();
+      renderMoodBoards();
     }
 
     init();
 
-    // ════════════════════════════════════════════════════════
-    //  MISC INTERACTIONS
-    // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════
+    //  ⑫  MISC INTERACTIONS
+    // ════════════════════════════════════════════════════════════════
 
     document.querySelectorAll('[data-close]').forEach(btn => {
       btn.addEventListener('click', () => btn.closest('.modal-overlay').classList.remove('open'));
@@ -797,6 +1603,7 @@
     window.addEventListener('scroll', () => {
       document.getElementById('report-nav').classList.toggle('scrolled', window.scrollY > 20);
     });
+
   </script>
 </body>
 </html>
