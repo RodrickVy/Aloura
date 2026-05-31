@@ -43,19 +43,8 @@
     .section-lead { font-family:'Inter',sans-serif; font-size:15px; font-weight:300; line-height:1.75; color:var(--taupe); max-width:640px; margin-bottom:40px; }
     .confidence-tag { display:inline-flex; align-items:center; gap:6px; font-family:'Inter',sans-serif; font-size:10px; font-weight:500; letter-spacing:0.8px; text-transform:uppercase; color:var(--taupe); background:var(--beige); padding:6px 12px; border-radius:20px; margin-bottom:20px; }
 
-    /* ── HERO ── */
-    .report-hero { min-height:80vh; display:flex; align-items:center; position:relative; overflow:hidden; padding:80px 48px; max-width:1280px; margin:0 auto; }
-    .report-hero-bg { position:absolute; inset:0; background:linear-gradient(135deg,var(--cream) 0%,var(--beige) 50%,#EDE0D0 100%); z-index:0; }
-    .report-hero-shape { position:absolute; border-radius:50%; filter:blur(60px); opacity:0.4; animation:floatSoft 14s ease-in-out infinite; }
-    @keyframes floatSoft { 0%,100%{transform:translate(0,0)} 50%{transform:translate(12px,-18px)} }
-    .report-hero-inner { position:relative; z-index:1; display:grid; grid-template-columns:1fr 380px; gap:64px; align-items:center; width:100%; }
-    .report-hero h1 { font-family:'Playfair Display',Georgia,serif; font-size:clamp(40px,5vw,58px); font-weight:500; line-height:1.06; letter-spacing:-1.2px; margin-bottom:20px; }
-    .report-hero h1 em { font-style:italic; color:var(--brown); }
-    .report-hero-summary { font-family:'Inter',sans-serif; font-size:16px; font-weight:300; line-height:1.8; color:var(--taupe); margin-bottom:28px; }
-    .hero-single-img { width:100%; aspect-ratio:3/4; border-radius:20px; overflow:hidden; box-shadow:var(--shadow-md); background:var(--light-taupe); position:relative; }
-    .hero-single-img img { width:100%; height:100%; object-fit:cover; display:block; }
-    .hero-img-placeholder { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--taupe); font-family:'Inter',sans-serif; font-size:13px; font-weight:300; }
-    .hero-img-placeholder i { font-size:28px; color:var(--light-taupe); }
+    /* ── HERO — compact strip ── */
+    .hero-img-placeholder i { color:var(--light-taupe); }
 
     /* ── SNAPSHOT GRID ── */
     .snapshot-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; }
@@ -235,269 +224,500 @@
       position: relative;
     }
 
-    /* ── MOOD BOARDS — shared CSS ── */
-    .mb-deck {
-      position: relative;
-      height: 480px;
-      margin-bottom: 32px;
-    }
-    .mb-card {
-      position: absolute; inset: 0;
-      border-radius: 20px; overflow: hidden;
-      box-shadow: var(--shadow-md); cursor: pointer;
-      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s;
-      background: var(--cream); user-select: none;
-    }
-    .mb-card:nth-child(1) { z-index: 3; }
-    .mb-card:nth-child(2) { z-index: 2; transform: translateX(16px) translateY(8px) scale(0.97); }
-    .mb-card:nth-child(3) { z-index: 1; transform: translateX(28px) translateY(16px) scale(0.94); }
-    .mb-card.is-swiped-left  { transform: translateX(-120%) rotate(-12deg) !important; opacity: 0; pointer-events: none; }
-    .mb-card.is-swiped-right { transform: translateX(120%)  rotate(12deg)  !important; opacity: 0; pointer-events: none; }
 
-    /* Expanded modal — centered, scrollable, max width */
-    .mb-expanded-modal {
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: min(560px, calc(100vw - 32px));
-      max-height: calc(100vh - 48px);
-      border-radius: 20px;
-      background: var(--off-white);
-      box-shadow: 0 24px 80px rgba(0,0,0,0.22);
-      z-index: 1000;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .mb-expanded-modal__close {
-      position: sticky; top: 0; left: 0; right: 0;
-      display: flex; justify-content: flex-end;
-      padding: 12px 14px 0;
-      background: var(--off-white);
-      z-index: 2;
-    }
-    .mb-expanded-modal__close button {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: rgba(44,44,44,0.08); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--charcoal); font-size: 13px;
-      transition: background 0.2s;
-    }
-    .mb-expanded-modal__close button:hover { background: rgba(44,44,44,0.16); }
-    .mb-expanded-img { width: 100%; height: 240px; object-fit: cover; display: block; background: var(--light-taupe); }
-    .mb-expanded-img-ph { width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--beige), var(--light-taupe)); color: var(--taupe); font-size: 36px; }
-    .mb-expanded-body { padding: 16px 20px 0; }
-    .mb-expanded-goal { font-family:'Inter',sans-serif; font-size:10px; font-weight:500; letter-spacing:1.5px; text-transform:uppercase; color:var(--terracotta); margin-bottom:4px; }
-    .mb-expanded-title { font-family:'Playfair Display',Georgia,serif; font-size:20px; font-weight:500; margin-bottom:6px; }
-    .mb-expanded-desc { font-family:'Inter',sans-serif; font-size:13px; font-weight:300; color:var(--taupe); line-height:1.6; margin-bottom:16px; }
+    /* ══════════════════════════════════════════
+       MOOD BOARD — Pinterest-style clean layout
+    ══════════════════════════════════════════ */
 
-    /* Brand sections */
-    .mb-brands { padding: 0 0 20px; }
-    .mb-brand-section { border-top: 1px solid rgba(158,140,126,0.12); }
-    .mb-brand-header {
+    /* Card */
+    .mb-board { display:none; }
+    .mb-board.is-active { display:block; animation:mbIn 0.28s ease; }
+    @keyframes mbIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+    .mb-card-wrap {
+      background: var(--cream);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 16px rgba(44,44,44,0.08);
+      border: 1px solid rgba(158,140,126,0.1);
+    }
+
+    /* Full-bleed image */
+    .mb-img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:var(--light-taupe); }
+    .mb-img-ph { width:100%; aspect-ratio:4/3; background:linear-gradient(135deg,var(--beige),var(--light-taupe)); display:flex; align-items:center; justify-content:center; color:var(--light-taupe); font-size:48px; }
+
+    /* Header: goal tag + shops strip on one row */
+    .mb-meta {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 20px; cursor: pointer;
+      padding: 14px 16px 10px;
+      gap: 12px;
+    }
+    .mb-goal {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 16px; font-weight: 500; color: var(--charcoal);
+      line-height: 1.25; flex: 1;
+    }
+    .mb-logos {
+      display: flex; gap: 5px; align-items: center; flex-shrink: 0;
+    }
+    .mb-logo {
+      width: 28px; height: 18px; border-radius: 3px;
+      border: 1px solid rgba(158,140,126,0.18); background: white;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0.35;
+    }
+    .mb-logo.live { opacity: 1; }
+    .mb-logo img { width:100%; height:100%; object-fit:contain; padding:2px; }
+
+    /* Products accordion */
+    .mb-products-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; cursor: pointer; user-select: none;
+      border-top: 1px solid rgba(158,140,126,0.09);
       transition: background 0.15s;
     }
-    .mb-brand-header:hover { background: rgba(245,239,230,0.6); }
-    .mb-brand-left { display: flex; align-items: center; gap: 10px; }
-    .mb-brand-logo { font-family:'Inter',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.05em; color: var(--charcoal); }
-    .mb-brand-logo.amazon { color: #FF9900; }
-    .mb-brand-badge { font-family:'Inter',sans-serif; font-size:9px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; padding:2px 7px; border-radius:10px; }
-    .mb-brand-badge.live { background:rgba(107,79,58,0.1); color:var(--brown); }
-    .mb-brand-badge.soon { background:rgba(158,140,126,0.12); color:var(--taupe); }
-    .mb-brand-chevron { font-size:11px; color:var(--light-taupe); transition:transform 0.25s; }
-    .mb-brand-section.is-open .mb-brand-chevron { transform:rotate(180deg); }
-    .mb-brand-body { display:none; padding: 0 20px 12px; }
-    .mb-brand-section.is-open .mb-brand-body { display:block; }
-    .mb-brand-coming-soon { font-family:'Inter',sans-serif; font-size:12px; font-weight:300; color:var(--taupe); padding:12px 0; text-align:center; }
-    .mb-buy-outfit {
-      display: block; width: calc(100% - 40px); margin: 0 20px 16px;
-      padding: 13px; text-align: center;
-      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
-      background: var(--charcoal); color: white;
-      border: none; border-radius: 12px; cursor: pointer;
-      transition: background 0.2s;
-    }
-    .mb-buy-outfit:hover { background: var(--brown); }
-    .mb-store-logos { padding: 4px 20px 20px; border-top: 1px solid rgba(158,140,126,0.1); }
-    .mb-store-logos-label { font-family:'Inter',sans-serif; font-size:9px; font-weight:500; letter-spacing:1.5px; text-transform:uppercase; color:var(--light-taupe); margin-bottom:10px; margin-top:12px; display:block; }
-    .mb-store-logos-grid { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-    .mb-store-logo-item { width:40px; height:24px; border-radius:4px; border:1px solid rgba(158,140,126,0.15); overflow:hidden; background:white; display:flex; align-items:center; justify-content:center; opacity:0.45; cursor:default; }
-    .mb-store-logo-item.is-live { opacity:1; cursor:pointer; }
-    .mb-store-logo-item img { width:100%; height:100%; object-fit:contain; padding:2px; }
+    .mb-products-row:hover { background: rgba(245,239,230,0.5); }
+    .mb-products-left { display: flex; align-items: center; gap: 8px; }
+    .mb-products-count { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:var(--charcoal); }
+    .mb-products-hint { font-family:'Inter',sans-serif; font-size:11px; font-weight:300; color:var(--taupe); }
+    .mb-products-icon { font-size:10px; color:var(--light-taupe); transition:transform 0.2s; }
+    .mb-card-wrap.open .mb-products-icon { transform:rotate(180deg); }
+    .mb-products-body { display:none; padding: 4px 16px 8px; }
+    .mb-card-wrap.open .mb-products-body { display:block; }
 
     /* Piece row */
     .mb-piece {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 0; border-bottom: 1px solid rgba(158,140,126,0.08);
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 0; border-bottom: 1px solid rgba(158,140,126,0.07);
     }
-    .mb-piece:last-child { border-bottom: none; }
-    .mb-piece__img { width:52px; height:52px; border-radius:8px; object-fit:cover; background:var(--light-taupe); flex-shrink:0; }
+    .mb-piece:last-child { border:none; }
+    .mb-piece__img { width:44px; height:44px; border-radius:7px; object-fit:cover; background:var(--light-taupe); flex-shrink:0; }
+    .mb-piece__img-ph { width:44px; height:44px; border-radius:7px; background:var(--beige); display:flex; align-items:center; justify-content:center; color:var(--light-taupe); font-size:16px; flex-shrink:0; }
     .mb-piece__info { flex:1; min-width:0; }
-    .mb-piece__name { font-family:'Inter',sans-serif; font-size:12px; font-weight:400; color:var(--charcoal); margin-bottom:3px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-    .mb-piece__price { font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:var(--brown); }
-    .mb-piece__actions { display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
+    .mb-piece__name { font-family:'Inter',sans-serif; font-size:11px; font-weight:400; color:var(--charcoal); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:2px; }
+    .mb-piece__price { font-family:'Inter',sans-serif; font-size:11px; font-weight:600; color:var(--brown); }
+    .mb-piece__btns { display:flex; flex-direction:column; gap:4px; flex-shrink:0; }
     .mb-piece__checkout {
-      font-family:'Inter',sans-serif; font-size:10px; font-weight:600;
+      font-family:'Inter',sans-serif; font-size:9px; font-weight:600;
       color:white; background:var(--brown); border:none;
-      padding:5px 10px; border-radius:12px; cursor:pointer;
+      padding:4px 9px; border-radius:10px; cursor:pointer;
       text-decoration:none; display:inline-block; text-align:center;
-      transition:background 0.2s; white-space:nowrap;
+      white-space:nowrap; transition:background 0.2s;
     }
     .mb-piece__checkout:hover { background:var(--charcoal); }
     .mb-piece__compare {
-      font-family:'Inter',sans-serif; font-size:10px; font-weight:500;
+      font-family:'Inter',sans-serif; font-size:9px; font-weight:500;
       color:var(--taupe); background:none; border:1px solid var(--light-taupe);
-      padding:4px 10px; border-radius:12px; cursor:pointer;
-      display:flex; align-items:center; gap:4px; white-space:nowrap;
+      padding:3px 9px; border-radius:10px; cursor:pointer;
+      display:flex; align-items:center; gap:3px; white-space:nowrap;
       transition:all 0.2s;
     }
     .mb-piece__compare:hover { border-color:var(--brown); color:var(--brown); }
 
-    /* Deck controls */
-    .mb-controls { display:flex; align-items:center; justify-content:center; gap:20px; }
-    .mb-btn { width:46px; height:46px; border-radius:50%; border:1.5px solid var(--light-taupe); background:var(--off-white); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; color:var(--taupe); transition:all 0.2s; box-shadow:var(--shadow); }
-    .mb-btn:hover { border-color:var(--brown); color:var(--brown); transform:scale(1.05); }
-    .mb-counter { font-family:'Inter',sans-serif; font-size:12px; color:var(--taupe); min-width:56px; text-align:center; }
+    /* Buy outfit button */
+    .mb-buy {
+      display:block; width:100%; margin-top:10px; margin-bottom:6px;
+      padding:11px; text-align:center;
+      font-family:'Inter',sans-serif; font-size:12px; font-weight:600;
+      background:var(--charcoal); color:white; border:none;
+      border-radius:10px; cursor:pointer; transition:background 0.2s;
+    }
+    .mb-buy:hover { background:var(--brown); }
 
-    .mb-card__img { width:100%; height:280px; object-fit:cover; display:block; background:var(--light-taupe); }
-    .mb-card__img-placeholder { width:100%; height:280px; background:linear-gradient(135deg,var(--beige),var(--light-taupe)); display:flex; align-items:center; justify-content:center; color:var(--taupe); font-size:32px; }
-    .mb-card__body { padding:20px 22px; }
-    .mb-card__goal { font-family:'Inter',sans-serif; font-size:10px; font-weight:500; letter-spacing:1.5px; text-transform:uppercase; color:var(--terracotta); margin-bottom:6px; }
-    .mb-card__title { font-family:'Playfair Display',Georgia,serif; font-size:22px; font-weight:500; color:var(--charcoal); margin-bottom:8px; line-height:1.2; }
-    .mb-card__occasion { font-family:'Inter',sans-serif; font-size:13px; font-weight:300; color:var(--taupe); line-height:1.55; }
-    .mb-card__expand-hint { font-family:'Inter',sans-serif; font-size:11px; color:var(--light-taupe); margin-top:10px; display:flex; align-items:center; gap:6px; }
+    /* Nav */
+    .mb-nav { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:14px; }
+    .mb-nav-btn {
+      width:34px; height:34px; border-radius:50%;
+      border:1.5px solid var(--light-taupe); background:var(--off-white);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; font-size:12px; color:var(--taupe);
+      transition:all 0.18s;
+    }
+    .mb-nav-btn:hover { border-color:var(--brown); color:var(--brown); background:var(--beige); }
+    .mb-nav-btn:disabled { opacity:0.25; pointer-events:none; }
+    .mb-dots-row { display:flex; gap:5px; align-items:center; }
+    .mb-dot { width:6px; height:6px; border-radius:50%; background:var(--light-taupe); border:none; padding:0; cursor:pointer; transition:all 0.2s; }
+    .mb-dot.on { background:var(--brown); transform:scale(1.4); }
 
-    /* Overlay — behind modal, z-index below modal */
-    .mb-overlay { display:none; position:fixed; inset:0; z-index:999; background:rgba(44,44,44,0.45); backdrop-filter:blur(4px); }
-    .mb-overlay.is-visible { display:block; }
-
-
-    /* ── COMPARE MODAL (updated) ── */
-    .compare-modal {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: min(400px, calc(100vw - 32px));
-      background: var(--off-white);
-      border-radius: 20px; z-index: 1001;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.25);
-      overflow: hidden; display: none;
-    }
-    .compare-modal.is-open { display: block; }
-    .compare-modal__product-img {
-      width: 100%; height: 180px; object-fit: cover;
-      display: block; background: var(--light-taupe);
-    }
-    .compare-modal__product-img-ph {
-      width: 100%; height: 140px;
-      background: linear-gradient(135deg, var(--beige), var(--light-taupe));
-      display: flex; align-items: center; justify-content: center;
-      color: var(--light-taupe); font-size: 32px;
-    }
-    .compare-modal__inner { padding: 20px 22px 24px; }
-
-    .compare-modal__title {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 17px; font-weight: 500;
-      color: var(--charcoal); margin-bottom: 3px;
-    }
-    .compare-modal__subtitle {
-      font-family: 'Inter', sans-serif; font-size: 11px;
-      font-weight: 300; color: var(--taupe); margin-bottom: 18px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .compare-store-row {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
-    }
-    .compare-store-name {
-      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700;
-      color: var(--charcoal); width: 76px; flex-shrink: 0;
-    }
-    .compare-bar-wrap {
-      flex: 1; height: 5px; background: var(--light-taupe);
-      border-radius: 5px; overflow: hidden;
-    }
-    .compare-bar {
-      height: 100%; width: 0%;
-      background: linear-gradient(90deg, var(--brown), var(--terracotta));
-      border-radius: 5px;
-      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
-    }
-    .compare-store-status {
-      font-family: 'Inter', sans-serif; font-size: 10px;
-      color: var(--taupe); width: 52px; text-align: right; flex-shrink: 0;
-    }
-    .compare-message {
-      font-family: 'Inter', sans-serif; font-size: 12px;
-      font-weight: 300; color: var(--taupe); min-height: 16px;
-      margin: 12px 0 10px; transition: opacity 0.3s;
-    }
-    .compare-result {
-      background: var(--beige); border: 1px solid var(--light-taupe);
-      border-radius: 12px; padding: 14px 16px;
-      font-family: 'Inter', sans-serif; font-size: 13px;
-      font-weight: 300; color: var(--taupe); display: none; line-height: 1.6;
-    }
-    .compare-close {
-      width: 100%; margin-top: 14px; padding: 10px;
-      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
-      background: var(--charcoal); color: white; border: none;
-      border-radius: 10px; cursor: pointer;
-    }
-
-    .mb-generating { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:48px 24px; text-align:center; }
-    .mb-generating__spinner { width:40px; height:40px; border-radius:50%; border:3px solid var(--light-taupe); border-top-color:var(--terracotta); animation:spin 0.9s linear infinite; }
+    /* Spinner */
+    .mb-spin { width:32px; height:32px; border-radius:50%; border:2.5px solid var(--light-taupe); border-top-color:var(--terracotta); animation:spin 0.85s linear infinite; }
     @keyframes spin { to{transform:rotate(360deg)} }
-    .mb-generating__label { font-family:'Inter',sans-serif; font-size:13px; font-weight:300; color:var(--taupe); }
+    .mb-loading { display:flex; flex-direction:column; align-items:center; gap:12px; padding:56px 24px; background:var(--cream); border-radius:16px; box-shadow:0 2px 16px rgba(44,44,44,0.08); border:1px solid rgba(158,140,126,0.1); }
+    .mb-loading p { font-family:'Inter',sans-serif; font-size:13px; font-weight:300; color:var(--taupe); }
 
-    /* Deck controls */
-    .mb-controls {
-      display: flex; align-items: center; justify-content: center;
-      gap: 20px;
+    /* Generate new outfit box */
+    .mb-generate-box {
+      margin-top: 20px;
+      background: var(--cream);
+      border-radius: 16px;
+      padding: 20px 16px;
+      border: 1px solid rgba(158,140,126,0.12);
+      box-shadow: 0 2px 12px rgba(44,44,44,0.05);
     }
-    .mb-btn {
-      width: 48px; height: 48px; border-radius: 50%;
-      border: 1.5px solid var(--light-taupe);
-      background: var(--off-white);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 16px; color: var(--taupe);
-      transition: all 0.2s; box-shadow: var(--shadow);
+    .mb-generate-label {
+      font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--taupe); margin-bottom: 10px; display: block;
     }
-    .mb-btn:hover { border-color: var(--brown); color: var(--brown); transform: scale(1.05); }
-    .mb-btn--pass { color: #C44; border-color: rgba(204,68,68,0.3); }
-    .mb-btn--pass:hover { background: rgba(204,68,68,0.06); border-color: #C44; }
-    .mb-btn--like { color: var(--brown); border-color: rgba(107,79,58,0.3); }
-    .mb-btn--like:hover { background: var(--beige); }
-    .mb-counter {
-      font-family: 'Inter', sans-serif; font-size: 12px;
-      color: var(--taupe); min-width: 60px; text-align: center;
+    .mb-chips {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
     }
-
-    /* Loading/generating state */
-    .mb-generating {
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 12px;
-      padding: 48px 24px; text-align: center;
+    .mb-chip {
+      font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 400;
+      color: var(--taupe); background: var(--off-white);
+      border: 1px solid rgba(158,140,126,0.2);
+      padding: 5px 11px; border-radius: 20px; cursor: pointer;
+      transition: all 0.18s; white-space: nowrap;
     }
-    .mb-generating__spinner {
-      width: 40px; height: 40px; border-radius: 50%;
-      border: 3px solid var(--light-taupe);
-      border-top-color: var(--terracotta);
-      animation: spin 0.9s linear infinite;
+    .mb-chip:hover, .mb-chip.picked { background:var(--beige); border-color:var(--brown); color:var(--brown); }
+    .mb-input-row { display:flex; gap:8px; }
+    .mb-input {
+      flex:1; font-family:'Inter',sans-serif; font-size:13px; font-weight:300;
+      padding:9px 13px; border:1.5px solid var(--light-taupe);
+      border-radius:10px; background:var(--off-white); color:var(--charcoal);
+      outline:none; transition:border-color 0.2s;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .mb-generating__label {
-      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300;
-      color: var(--taupe);
+    .mb-input:focus { border-color:var(--brown); }
+    .mb-input::placeholder { color:var(--light-taupe); }
+    .mb-gen-btn {
+      font-family:'Inter',sans-serif; font-size:12px; font-weight:600;
+      background:var(--brown); color:white; border:none;
+      padding:9px 18px; border-radius:10px; cursor:pointer;
+      white-space:nowrap; transition:background 0.2s; flex-shrink:0;
     }
-
-    /* overlay behind expanded card */
-    .mb-overlay {
+    .mb-gen-btn:hover { background:var(--charcoal); }
+    .mb-gen-btn:disabled { opacity:0.5; pointer-events:none; }
+    .mb-suggestions {
+      margin-top: 6px;
       display: none;
-      position: fixed; inset: 0; z-index: 9;
-      background: rgba(44,44,44,0.5); backdrop-filter: blur(4px);
+      flex-direction: column;
+      background: white;
+      border: 1px solid rgba(158,140,126,0.18);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
     }
-    .mb-overlay.is-visible { display: block; }
+    .mb-suggestion {
+      font-family:'Inter',sans-serif; font-size:12px; font-weight:300;
+      color:var(--charcoal); padding:9px 13px; cursor:pointer;
+      border-bottom:1px solid rgba(158,140,126,0.08);
+      transition:background 0.15s;
+    }
+    .mb-suggestion:last-child { border:none; }
+    .mb-suggestion:hover { background:var(--beige); }
+
+
+/* ══ MOODBOARD FULLSCREEN TINDER ══════════════════════════ */
+    #mb-section {
+      position: relative;
+      height: calc(100vh - var(--nav-h));
+      overflow: hidden;
+      background: var(--charcoal);
+    }
+    /* Floating header */
+    #mb-header {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+      padding: 18px 20px 12px;
+      background: linear-gradient(to bottom, rgba(44,44,44,0.72) 0%, transparent 100%);
+    }
+    .mb-header-row {
+      display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .mb-reset-btn {
+      width: 32px; height: 32px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.12); backdrop-filter: blur(4px);
+      color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s; flex-shrink: 0; margin-top: 2px;
+    }
+    .mb-reset-btn:hover { background: rgba(255,255,255,0.22); color: white; }
+    #mb-header .mb-eyebrow {
+      font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: rgba(255,255,255,0.55); margin-bottom: 3px;
+    }
+    #mb-header h2 {
+      font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 500;
+      color: white; letter-spacing: -0.3px;
+    }
+    #mb-header h2 em { font-style: italic; color: var(--terracotta); }
+
+    /* Card stack */
+    #mb-stack { position: absolute; inset: 0; }
+    .mbc {
+      position: absolute; inset: 0;
+      border-radius: 0;
+      overflow: hidden;
+      transition: transform 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.38s;
+      touch-action: pan-y;
+      cursor: grab;
+      will-change: transform;
+    }
+    .mbc:active { cursor: grabbing; }
+    .mbc img.mbc-img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .mbc-img-ph {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #3a2e28, #5a4035);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.25); font-size: 56px;
+    }
+    /* Bottom gradient + info */
+    .mbc-bottom {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(20,14,10,0.92) 0%, rgba(20,14,10,0.4) 60%, transparent 100%);
+      padding: 48px 20px 100px;
+    }
+    .mbc-goal {
+      font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 500;
+      color: white; line-height: 1.2; margin-bottom: 8px;
+    }
+    .mbc-hint {
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 300;
+      color: rgba(255,255,255,0.55); display: flex; align-items: center; gap: 6px;
+    }
+
+    /* Bottom action bar */
+    #mb-actions {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; padding: 16px 20px 28px;
+      background: linear-gradient(to top, rgba(20,14,10,0.7) 0%, transparent 100%);
+    }
+    .mb-act-btn {
+      width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      transition: transform 0.18s, box-shadow 0.18s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .mb-act-btn:hover { transform: scale(1.08); }
+    .mb-act-btn:active { transform: scale(0.94); }
+    .mb-act-skip   { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
+    .mb-act-expand { background: var(--terracotta); color: white; font-size: 16px; width: 62px; height: 62px; }
+    .mb-act-save   { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
+
+    /* Nav dots */
+    #mb-dots-bar {
+      position: absolute; top: 68px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 5px; z-index: 20;
+    }
+    .mb-dot-v {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(255,255,255,0.3); border: none; padding: 0;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .mb-dot-v.on { background: white; transform: scale(1.35); }
+
+    /* Swipe hint overlays */
+    .mbc-swipe-hint {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700;
+      letter-spacing: 3px; border: 3px solid; padding: 8px 18px; border-radius: 8px;
+      opacity: 0; pointer-events: none; transition: opacity 0.15s;
+    }
+    .mbc-swipe-hint.like  { color: #7ddf8c; border-color: #7ddf8c; right: 24px; left: auto; transform: translateY(-50%) rotate(-18deg); }
+    .mbc-swipe-hint.nope  { color: #e05c5c; border-color: #e05c5c; left: 24px; right: auto; transform: translateY(-50%) rotate(18deg); }
+
+    /* Bottom hint row on each card */
+    .mbc-hints-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 10px;
+    }
+    .mbc-hint-swipe {
+      font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 300;
+      color: rgba(255,255,255,0.45); display: flex; align-items: center; gap: 5px;
+    }
+    .mbc-hint-expand {
+      font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 300;
+      color: rgba(255,255,255,0.55); display: flex; align-items: center; gap: 5px;
+    }
+
+    /* Desktop prev/next chevrons — hidden on mobile */
+    .mb-desktop-prev, .mb-desktop-next {
+      display: none;
+      position: absolute; top: 50%; z-index: 25;
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      background: rgba(44,44,44,0.45); backdrop-filter: blur(8px);
+      color: white; font-size: 14px; cursor: pointer;
+      align-items: center; justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+      transform: translateY(-50%);
+    }
+    .mb-desktop-prev { left: 16px; }
+    .mb-desktop-next { right: 16px; }
+    .mb-desktop-prev:hover, .mb-desktop-next:hover {
+      background: rgba(107,79,58,0.7); border-color: var(--terracotta);
+    }
+    @media (min-width: 768px) {
+      .mb-desktop-prev, .mb-desktop-next { display: flex; }
+      #mb-actions { display: none; } /* on desktop use chevrons only */
+    }
+
+    /* Loading card */
+    .mbc-loading {
+      position: absolute; inset: 0;
+      background: var(--charcoal);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px;
+    }
+    .mbc-loading .spin {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.15); border-top-color: var(--terracotta);
+      animation: spin 0.85s linear infinite;
+    }
+    .mbc-loading p {
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* Generate card */
+    #mb-gen-card {
+      position: absolute; inset: 0; z-index: 5;
+      background: var(--off-white);
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      padding: 32px 24px;
+    }
+    #mb-gen-card.visible { display: flex; }
+    .gen-label {
+      font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500;
+      letter-spacing: 2px; text-transform: uppercase; color: var(--taupe);
+      margin-bottom: 18px;
+    }
+    .gen-title {
+      font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 500;
+      color: var(--charcoal); text-align: center; margin-bottom: 20px; line-height: 1.2;
+    }
+    .gen-title em { font-style: italic; color: var(--brown); }
+    .gen-chips {
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+      margin-bottom: 20px; max-width: 380px;
+    }
+    .gen-chip {
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 400;
+      color: var(--taupe); background: var(--cream);
+      border: 1px solid rgba(158,140,126,0.2);
+      padding: 7px 14px; border-radius: 20px; cursor: pointer;
+      transition: all 0.18s; white-space: nowrap;
+    }
+    .gen-chip:hover, .gen-chip.on { background: var(--beige); border-color: var(--brown); color: var(--brown); }
+    .gen-row { display: flex; gap: 8px; width: 100%; max-width: 380px; }
+    .gen-input {
+      flex: 1; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300;
+      padding: 10px 14px; border: 1.5px solid var(--light-taupe);
+      border-radius: 10px; background: var(--off-white); color: var(--charcoal);
+      outline: none; transition: border-color 0.2s;
+    }
+    .gen-input:focus { border-color: var(--brown); }
+    .gen-input::placeholder { color: var(--light-taupe); }
+    .gen-btn {
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      background: var(--brown); color: white; border: none;
+      padding: 10px 20px; border-radius: 10px; cursor: pointer;
+      transition: background 0.2s; flex-shrink: 0;
+    }
+    .gen-btn:hover { background: var(--charcoal); }
+    .gen-btn:disabled { opacity: 0.5; pointer-events: none; }
+    .gen-suggestions {
+      width: 100%; max-width: 380px; margin-top: 6px;
+      background: white; border: 1px solid rgba(158,140,126,0.18);
+      border-radius: 10px; overflow: hidden; box-shadow: var(--shadow);
+      display: none; flex-direction: column;
+    }
+    .gen-suggestion {
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 300;
+      color: var(--charcoal); padding: 10px 14px; cursor: pointer;
+      border-bottom: 1px solid rgba(158,140,126,0.08); transition: background 0.15s;
+    }
+    .gen-suggestion:last-child { border: none; }
+    .gen-suggestion:hover { background: var(--beige); }
+
+    /* Expand sheet */
+    #mb-expand-sheet {
+      position: fixed; inset: 0; z-index: 400;
+      background: var(--off-white);
+      display: none; flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.4,0,0.2,1);
+    }
+    #mb-expand-sheet.open { display: flex; transform: translateY(0); }
+    .exp-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px 10px; flex-shrink: 0;
+      border-bottom: 1px solid rgba(158,140,126,0.1);
+    }
+    .exp-close {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(44,44,44,0.07); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--charcoal); font-size: 13px;
+    }
+    .exp-goal {
+      font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500;
+      color: var(--charcoal); flex: 1; padding: 0 12px;
+    }
+    /* Brand tabs breadcrumb */
+    .exp-brands {
+      display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto;
+      flex-shrink: 0; scrollbar-width: none;
+      border-bottom: 1px solid rgba(158,140,126,0.1);
+    }
+    .exp-brands::-webkit-scrollbar { display: none; }
+    .exp-brand-chip {
+      font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500;
+      padding: 6px 14px; border-radius: 20px; cursor: pointer; white-space: nowrap;
+      border: 1.5px solid rgba(158,140,126,0.2); background: none; color: var(--taupe);
+      transition: all 0.18s; flex-shrink: 0;
+    }
+    .exp-brand-chip.active { background: var(--brown); border-color: var(--brown); color: white; }
+    .exp-brand-chip.soon { opacity: 0.5; cursor: default; }
+    /* Products grid */
+    .exp-body { flex: 1; overflow-y: auto; padding: 16px; }
+    .exp-products-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+    }
+    .exp-product {
+      background: var(--cream); border-radius: 12px; overflow: hidden;
+      border: 1px solid rgba(158,140,126,0.1); box-shadow: 0 2px 8px rgba(44,44,44,0.05);
+    }
+    .exp-product__img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: var(--light-taupe); }
+    .exp-product__img-ph { width: 100%; aspect-ratio: 1; background: var(--beige); display: flex; align-items: center; justify-content: center; color: var(--light-taupe); font-size: 24px; }
+    .exp-product__info { padding: 10px; }
+    .exp-product__name { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 400; color: var(--charcoal); margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .exp-product__price { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: var(--brown); margin-bottom: 8px; }
+    .exp-product__btns { display: flex; gap: 6px; }
+    .exp-buy-btn {
+      flex: 1; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600;
+      background: var(--brown); color: white; border: none;
+      padding: 6px 0; border-radius: 8px; cursor: pointer; text-align: center;
+      text-decoration: none; display: block; transition: background 0.2s;
+    }
+    .exp-buy-btn:hover { background: var(--charcoal); }
+    .exp-cmp-btn {
+      font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 400;
+      color: var(--taupe); background: none; border: 1px solid var(--light-taupe);
+      padding: 6px 8px; border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; gap: 3px; transition: all 0.2s;
+    }
+    .exp-cmp-btn:hover { border-color: var(--brown); color: var(--brown); }
+    .exp-footer {
+      padding: 12px 16px 24px; flex-shrink: 0;
+      border-top: 1px solid rgba(158,140,126,0.1);
+    }
+    .exp-buy-all {
+      display: block; width: 100%; padding: 13px; text-align: center;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      background: var(--charcoal); color: white; border: none;
+      border-radius: 12px; cursor: pointer; transition: background 0.2s;
+    }
+    .exp-buy-all:hover { background: var(--brown); }
+    .exp-coming-soon {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 24px; text-align: center;
+    }
+    .exp-coming-soon p { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 300; color: var(--taupe); }
 
     /* ── ANIMATIONS ── */
     .fade-up { opacity:0; transform:translateY(20px); transition:opacity 0.7s ease,transform 0.7s ease; }
@@ -535,38 +755,107 @@
   <div id="phase-report">
 
     <!-- ══════════════════════════════════════════════
-         HERO — profile image + greeting
+         HERO — compact strip
     ══════════════════════════════════════════════ -->
-    <section class="report-hero" id="hero-section">
-      <div class="report-hero-bg"></div>
-      <div class="report-hero-shape" style="width:400px;height:400px;top:10%;right:-5%;background:var(--terracotta)"></div>
-      <div class="report-hero-inner fade-up">
-        <div>
-          <div class="section-eyebrow">Your Style Profile</div>
-          <h1 id="hero-title">Here's What<br><em>Works For You</em></h1>
-          <p class="report-hero-summary" id="hero-summary">
-            Based on your selected goals and visual analysis, we've mapped a style direction designed to feel natural rather than prescribed.
-          </p>
-        </div>
-        <div class="hero-single-img" id="hero-single-img">
-          <div class="hero-img-placeholder" id="hero-img-placeholder">
+    <section id="hero-section" style="padding:var(--nav-h) 0 0;">
+      <div style="max-width:1280px;margin:0 auto;padding:32px 48px 28px;display:flex;align-items:center;gap:24px;">
+        <div class="hero-single-img" id="hero-single-img" style="width:72px;height:72px;border-radius:50%;flex-shrink:0;overflow:hidden;box-shadow:var(--shadow);">
+          <div class="hero-img-placeholder" id="hero-img-placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--light-taupe);color:var(--taupe);font-size:28px;">
             <i class="fas fa-user-circle"></i>
-            <span>Loading your photo…</span>
           </div>
-          <img id="hero-profile-img" src="" alt="Your profile photo" style="display:none;">
+          <img id="hero-profile-img" src="" alt="Your profile photo" style="display:none;width:100%;height:100%;object-fit:cover;">
+        </div>
+        <div>
+          <div class="section-eyebrow" style="margin-bottom:4px;">Your Style Profile</div>
+          <h1 id="hero-title" style="font-family:'Playfair Display',Georgia,serif;font-size:clamp(22px,2.5vw,30px);font-weight:500;letter-spacing:-0.4px;line-height:1.15;">Here's What <em style="font-style:italic;color:var(--brown);">Works For You</em></h1>
         </div>
       </div>
+      <div style="border-bottom:1px solid rgba(158,140,126,0.12);"></div>
     </section>
+<!-- ══ MOOD BOARDS — fullscreen tinder ══ -->
+    <section id="mb-section">
+      <div id="mb-header">
+        <div class="mb-header-row">
+          <div>
+            <div class="mb-eyebrow">Style Direction</div>
+            <h2>Mood <em>Boards</em></h2>
+          </div>
+          <button class="mb-reset-btn" onclick="mbReset()" title="Restart from beginning">
+            <i class="fas fa-redo-alt"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="mb-dots-bar"></div>
+      <div id="mb-stack"><!-- cards injected here --></div>
+
+      <!-- Generate card (shown when all boards swiped) -->
+      <div id="mb-gen-card">
+        <div class="gen-label">Style Direction</div>
+        <h3 class="gen-title">Generate a<br><em>new outfit</em></h3>
+        <div class="gen-chips" id="gen-chips-wrap"></div>
+        <div class="gen-row">
+          <input class="gen-input" id="gen-input" type="text" placeholder="Describe an occasion…"
+            oninput="genInputChange(this)" onblur="setTimeout(hideGenSugg,200)">
+          <button class="gen-btn" id="gen-btn" onclick="doGenerate()">Generate</button>
+        </div>
+        <div class="gen-suggestions" id="gen-sugg"></div>
+      </div>
+
+      <!-- Desktop chevrons (hidden on mobile) -->
+      <button class="mb-desktop-prev" onclick="mbSwipeCard(-1)" title="Previous">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="mb-desktop-next" onclick="mbSwipeCard(1)" title="Next">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+
+      <!-- Bottom action bar -->
+      <div id="mb-actions">
+        <button class="mb-act-btn mb-act-skip"  onclick="mbSwipeCard(-1)" title="Skip">
+          <i class="fas fa-times"></i>
+        </button>
+        <button class="mb-act-btn mb-act-expand" onclick="mbExpandCurrent()" title="View outfit">
+          <i class="fas fa-arrow-up"></i>
+        </button>
+        <button class="mb-act-btn mb-act-save" onclick="mbSaveCurrent(this)" title="Save">
+          <i class="far fa-heart"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Expand sheet -->
+    <div id="mb-expand-sheet">
+      <div class="exp-header">
+        <button class="exp-close" onclick="closeExpand()"><i class="fas fa-times"></i></button>
+        <div class="exp-goal" id="exp-goal"></div>
+      </div>
+      <div class="exp-brands" id="exp-brands"></div>
+      <div class="exp-body" id="exp-body"></div>
+      <div class="exp-footer" id="exp-footer"></div>
+    </div>
+
+    <!-- Expand sheet -->
+    <div id="mb-expand-sheet">
+      <div class="exp-header">
+        <button class="exp-close" onclick="closeExpand()"><i class="fas fa-times"></i></button>
+        <div class="exp-goal" id="exp-goal"></div>
+      </div>
+      <div class="exp-brands" id="exp-brands"></div>
+      <div class="exp-body" id="exp-body"></div>
+      <div class="exp-footer" id="exp-footer"></div>
+    </div>
 
     <!-- ══════════════════════════════════════════════
          SNAPSHOT — always visible, no collapse
     ══════════════════════════════════════════════ -->
-    <section class="report-section fade-up" id="snapshot-section">
+    <section class="report-section fade-up" id="snapshot-section" style="padding-top:40px;">
       <div class="confidence-tag sans"><i class="fas fa-chart-simple"></i> AI-generated · personalised to you</div>
       <h2 class="section-title">Quick <em>Snapshot</em></h2>
       <p class="section-lead">A concise overview of your features, tone, and style direction — framed as guidance, not rules.</p>
       <div class="snapshot-grid" id="snapshot-grid"></div>
     </section>
+
 
     <!-- ══════════════════════════════════════════════
          COLOR INTELLIGENCE — collapsible
@@ -634,35 +923,17 @@
     </div>
 
     <!-- ══════════════════════════════════════════════
-         MOOD BOARDS — collapsible, swipeable cards
-    ══════════════════════════════════════════════ -->
-    <div class="collapsible-section fade-up" id="section-moodboards">
-      <button class="collapsible-trigger" data-target="section-moodboards" aria-expanded="false">
-        <div class="collapsible-trigger-left">
-          <span class="collapsible-trigger-label">Style Direction</span>
-          <span class="collapsible-trigger-title">Your Style <em>Mood Boards</em></span>
-        </div>
-        <span class="collapsible-chevron"><i class="fas fa-chevron-down"></i></span>
-      </button>
-      <div class="collapsible-body">
-        <div class="collapsible-inner">
-          <p class="section-lead">Three looks built around your goals — real outfits, real products, ready to shop.</p>
-          <div id="mood-boards-container">
-            <!-- Filled by renderMoodBoards() -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════
          FIT CHECK CTA
     ══════════════════════════════════════════════ -->
-    <section class="fit-check-cta fade-up" style="margin-top:80px;">
-      <div class="fit-check-icon"><i class="fas fa-camera-retro"></i></div>
-      <h2 class="section-title" style="margin-bottom:12px">Try <em>Fit Check</em></h2>
-      <p class="section-lead" style="margin:0 auto 28px">Upload or scan an outfit anytime for instant feedback — calibrated to your profile.</p>
-      <button type="button" class="btn-final" onclick="alert('Fit Check — coming soon.')">Try Fit Check</button>
-    </section>
+    <div style="padding:80px 48px 0;max-width:1200px;margin:0 auto;">
+      <div class="fade-up" style="background:var(--cream);border-radius:20px;box-shadow:var(--shadow-md);padding:52px 40px;text-align:center;border:1px solid rgba(158,140,126,0.1);">
+        <div class="fit-check-icon"><i class="fas fa-camera-retro"></i></div>
+        <h2 class="section-title" style="margin-bottom:10px;">Try <em>Fit Check</em></h2>
+        <p class="section-lead" style="margin:0 auto 10px;">Scan any outfit — yours, an influencer's, anything you find — and get instant feedback calibrated to your profile.</p>
+        <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--light-taupe);margin-bottom:24px;">Coming soon</p>
+        <button type="button" class="btn-final" onclick="fitCheckNotify(this)">Notify Me When Ready</button>
+      </div>
+    </div>
 
     <!-- ══════════════════════════════════════════════
          FINAL CTA
@@ -684,29 +955,9 @@
   </div>
 
   <!-- Mood board overlay + compare modal — appended to body, never inside a card -->
-  <div class="mb-overlay" id="mb-overlay" onclick="handleOverlayClick(event)"></div>
 
-  <div class="compare-modal" id="compare-modal">
-    <div class="compare-modal__product-img-wrap">
-      <div class="compare-modal__product-img-ph"><i class="fas fa-tshirt"></i></div>
-    </div>
-    <div class="compare-modal__inner">
 
-      <div class="compare-modal__title">Price Comparison</div>
-      <div class="compare-modal__subtitle"></div>
-      <div class="compare-store-row">
-        <span class="compare-store-name"></span>
-        <div class="compare-bar-wrap"><div class="compare-bar"></div></div>
-        <span class="compare-store-status"></span>
-      </div>
-      <div class="compare-message"></div>
-      <div class="compare-result">
-        <strong style="color:var(--brown);">Comparison complete.</strong><br>
-        Cross-store price comparison is currently unavailable. We're working on bringing you real-time pricing across all brands — check back soon!
-      </div>
-      <button class="compare-close" onclick="closeCompare()">Got it</button>
-    </div>
-  </div>
+  <!-- compare sheet injected dynamically -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -890,9 +1141,8 @@
         // Step 3 — render
         renderSnapshotCards(manifest, skinResult);
 
-        // Step 4 — save (non-blocking)
-        if (accountId) saveUserMetadata(accountId, manifest, skinResult);
-        saveSnapshotToReport(reportId, manifest, skinResult);
+        // Step 4 — save all face + skin fields to style_reports (non-blocking)
+        saveSnapshotFields(reportId, manifest, skinResult);
 
       } catch (err) {
         console.error('[Snapshot] Pipeline failed:', err);
@@ -1033,62 +1283,81 @@
     //  ⑨  DB SAVE HELPERS
     // ════════════════════════════════════════════════════════════════
 
-    async function saveSnapshotToReport(reportId, manifest, skin) {
-      if (!reportId) return;
+    // saveSnapshotToReport merged into saveSnapshotFields above
 
-      const update = {};
-      if (skin?.skin_tone || manifest?.skin?.type?.value)
-        update.skin_tone = skin?.skin_tone || manifest.skin.type.value;
-      if (skin?.undertone)
-        update.undertone = skin.undertone;
-      if (manifest?.eyes?.glasses?.value)
-        update.accessories = `Glasses: ${manifest.eyes.glasses.value}`;
+    async function saveSnapshotFields(reportId, manifest, skin) {
+      // Saves all face analysis + skin data directly into style_reports
+      if (!reportId || !manifest) return;
 
-      if (Object.keys(update).length === 0) return;
+      const s   = manifest?.skin ?? {};
+      const fs  = manifest?.face_shape ?? {};
+      const g   = manifest?.gender ?? {};
+      const e   = manifest?.eyes ?? {};
+      const eb  = manifest?.eyebrows ?? {};
+      const h   = manifest?.hair ?? {};
+      const hat = manifest?.hat ?? {};
+      const n   = manifest?.nose ?? {};
+      const mo  = manifest?.moustache ?? {};
+      const ma  = manifest?.mask ?? {};
+      const mu  = manifest?.mouth ?? {};
+      const em  = manifest?.emotion ?? {};
 
-      const { error } = await db.from('style_reports').update(update).eq('id', reportId);
-      if (error) console.error('[style_reports] Snapshot save failed:', error.message);
-      else       console.log('[style_reports] Snapshot saved ✓', Object.keys(update));
-    }
+      const update = {
+        // Skin (from skin_tone_analyzer)
+        skin_tone:   skin?.skin_tone      || s.type?.value || '',
+        undertone:   skin?.undertone      || '',
+        accessories: e.glasses?.value ? `Glasses: ${e.glasses.value}` : '',
 
-    async function saveUserMetadata(accountId, manifest, skin) {
-      if (!accountId || !manifest) return;
-
-      const s = manifest?.skin ?? {}, fs = manifest?.face_shape ?? {}, g = manifest?.gender ?? {};
-      const e = manifest?.eyes ?? {}, eb = manifest?.eyebrows ?? {}, h = manifest?.hair ?? {};
-      const hat = manifest?.hat ?? {}, n = manifest?.nose ?? {}, mo = manifest?.moustache ?? {};
-      const ma = manifest?.mask ?? {}, mu = manifest?.mouth ?? {}, em = manifest?.emotion ?? {};
-
-      const row = {
-        account_id: accountId,
-        source: manifest?._source ?? '', image_count: String(manifest?._image_count ?? ''),
-        skin_type: skin?.skin_tone || s.type?.value || '', skin_type_confidence: s.type?.confidence ?? '',
-        skin_raw_type_id: String(s.raw_type_id ?? ''),
-        face_shape: fs.value ?? '', face_shape_confidence: fs.confidence ?? '',
-        gender: g.value ?? '', gender_confidence: g.confidence ?? '',
-        age: String(manifest?.age ?? ''),
-        eye_glasses: e.glasses?.value ?? '', eye_glasses_confidence: e.glasses?.confidence ?? '',
-        eye_open: e.open?.value ?? '', eye_open_confidence: e.open?.confidence ?? '',
-        eye_eyelid: e.eyelid?.value ?? '', eye_eyelid_confidence: e.eyelid?.confidence ?? '',
-        eye_size: e.size?.value ?? '', eye_size_confidence: e.size?.confidence ?? '',
-        eyebrow_density: eb.density?.value ?? '', eyebrow_density_confidence: eb.density?.confidence ?? '',
-        eyebrow_curve: eb.curve?.value ?? '', eyebrow_curve_confidence: eb.curve?.confidence ?? '',
-        eyebrow_length: eb.length?.value ?? '', eyebrow_length_confidence: eb.length?.confidence ?? '',
-        hair_length: h.length?.value ?? '', hair_length_confidence: h.length?.confidence ?? '',
-        hair_fringe: h.fringe?.value ?? '', hair_fringe_confidence: h.fringe?.confidence ?? '',
-        hair_color: h.color?.value ?? '', hair_color_confidence: h.color?.confidence ?? '',
-        hat_style: hat.style?.value ?? '', hat_style_confidence: hat.style?.confidence ?? '',
-        hat_color: hat.color?.value ?? '', hat_color_confidence: hat.color?.confidence ?? '',
-        nose: n.value ?? '', nose_confidence: n.confidence ?? '',
-        moustache: mo.value ?? '', moustache_confidence: mo.confidence ?? '',
-        mask: ma.value ?? '', mask_confidence: ma.confidence ?? '',
-        mouth: mu.value ?? '', mouth_confidence: mu.confidence ?? '',
-        emotion: em.value ?? '', emotion_confidence: em.confidence ?? '',
+        // Face analysis fields
+        source:                  manifest?._source          ?? '',
+        image_count:             String(manifest?._image_count ?? ''),
+        skin_type:               skin?.skin_tone || s.type?.value || '',
+        skin_type_confidence:    s.type?.confidence          ?? '',
+        skin_raw_type_id:        String(s.raw_type_id        ?? ''),
+        face_shape:              fs.value                    ?? '',
+        face_shape_confidence:   fs.confidence               ?? '',
+        gender:                  g.value                     ?? '',
+        gender_confidence:       g.confidence                ?? '',
+        age:                     String(manifest?.age        ?? ''),
+        eye_glasses:             e.glasses?.value            ?? '',
+        eye_glasses_confidence:  e.glasses?.confidence       ?? '',
+        eye_open:                e.open?.value               ?? '',
+        eye_open_confidence:     e.open?.confidence          ?? '',
+        eye_eyelid:              e.eyelid?.value             ?? '',
+        eye_eyelid_confidence:   e.eyelid?.confidence        ?? '',
+        eye_size:                e.size?.value               ?? '',
+        eye_size_confidence:     e.size?.confidence          ?? '',
+        eyebrow_density:         eb.density?.value           ?? '',
+        eyebrow_density_confidence: eb.density?.confidence   ?? '',
+        eyebrow_curve:           eb.curve?.value             ?? '',
+        eyebrow_curve_confidence: eb.curve?.confidence       ?? '',
+        eyebrow_length:          eb.length?.value            ?? '',
+        eyebrow_length_confidence: eb.length?.confidence     ?? '',
+        hair_length:             h.length?.value             ?? '',
+        hair_length_confidence:  h.length?.confidence        ?? '',
+        hair_fringe:             h.fringe?.value             ?? '',
+        hair_fringe_confidence:  h.fringe?.confidence        ?? '',
+        hair_color:              h.color?.value              ?? '',
+        hair_color_confidence:   h.color?.confidence         ?? '',
+        hat_style:               hat.style?.value            ?? '',
+        hat_style_confidence:    hat.style?.confidence       ?? '',
+        hat_color:               hat.color?.value            ?? '',
+        hat_color_confidence:    hat.color?.confidence       ?? '',
+        nose:                    n.value                     ?? '',
+        nose_confidence:         n.confidence                ?? '',
+        moustache:               mo.value                    ?? '',
+        moustache_confidence:    mo.confidence               ?? '',
+        mask:                    ma.value                    ?? '',
+        mask_confidence:         ma.confidence               ?? '',
+        mouth:                   mu.value                    ?? '',
+        mouth_confidence:        mu.confidence               ?? '',
+        emotion:                 em.value                    ?? '',
+        emotion_confidence:      em.confidence               ?? '',
       };
 
-      const { error } = await db.from('user_metadata').upsert(row, { onConflict: 'account_id' });
-      if (error) console.error('[user_metadata] Save failed:', error.message);
-      else       console.log('[user_metadata] Saved ✓');
+      const { error } = await db.from('style_reports').update(update).eq('id', reportId);
+      if (error) console.error('[style_reports] Face/skin save failed:', error.message);
+      else       console.log('[style_reports] Face + skin fields saved ✓');
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -1296,385 +1565,467 @@
     // ════════════════════════════════════════════════════════════════
 
 
-    // ─── Shared mood board helpers (used by report.html & view_report.html) ───
 
-    let _mbDeckIndex = 0;
-    let _mbBoards    = [];
-    let _mbExpanded  = null;
+    // ════════════════════════════════════════════════════════════════
+    //  MOOD BOARD — inline slider (no modal needed)
+    // ════════════════════════════════════════════════════════════════
 
-    // BRANDS config — Amazon live, others coming soon
-    const BRANDS = [
-      { id: 'amazon',    label: 'Amazon',    cls: 'amazon', live: true },
-      { id: 'zara',      label: 'Zara',      cls: '',       live: false },
-      { id: 'uniqlo',    label: 'Uniqlo',    cls: '',       live: false },
-      { id: 'walmart',   label: 'Walmart',   cls: '',       live: false },
-      { id: 'lululemon', label: 'lululemon', cls: '',       live: false },
-      { id: 'gap',       label: 'Gap',       cls: '',       live: false },
-      { id: 'asos',      label: 'ASOS',      cls: '',       live: false },
+const CHIPS = ['Running fit','Date night','Work casual','Beach day','City weekend',
+                   'Gym session','Sunday brunch','Evening out','Smart casual','Creative work'];
+    const SUGGESTIONS = ['Board meeting look','Summer picnic','Coffee shop afternoon',
+                         'Gallery opening','First date','Weekend hiking','Rooftop dinner',
+                         'Yoga class','Airport travel','Night out with friends'];
+    const BRANDS_EXP = [
+      {id:'amazon',label:'Amazon',live:true},
+      {id:'zara',label:'Zara',live:false},{id:'uniqlo',label:'Uniqlo',live:false},
+      {id:'walmart',label:'Walmart',live:false},{id:'lululemon',label:'lululemon',live:false},
+      {id:'gap',label:'Gap',live:false},{id:'asos',label:'ASOS',live:false},
+      {id:'hm',label:'H&M',live:false},
     ];
+    const CMP_STORES = ['Zara','Uniqlo','Walmart','Lululemon','Gap','ASOS','H&M'];
+    const CMP_MSGS   = ['Comparing prices…','Finding best matches…','Contrasting quality…','Generating report…'];
 
-    function buildMoodBoardCard(board, idx) {
-      const imgHtml = board.image_url
-        ? `<img class="mb-card__img" src="${board.image_url}" alt="${board.title}" loading="lazy">`
-        : `<div class="mb-card__img-placeholder"><i class="fas fa-tshirt"></i></div>`;
+    let _boards       = [];
+    let _curIdx       = 0;
+    let _cmpTimer     = null;
+    let _expandBoard  = null;
 
+    function renderMoodBoards(boards) {
+      _boards = [...boards];
+      _curIdx = 0;
+      buildChips();
+      if (!boards.length) { showGenCard(); return; }
+      buildStack();
+      buildDots();
+    }
+
+    function buildChips() {
+      const wrap = document.getElementById('gen-chips-wrap');
+      if (!wrap) return;
+      wrap.innerHTML = CHIPS.map(c =>
+        `<button class="gen-chip" onclick="pickChip(this,'${c}')">${c}</button>`
+      ).join('');
+    }
+
+    function buildStack() {
+      const stack = document.getElementById('mb-stack');
+      stack.innerHTML = '';
+      // render all cards, only top one visible
+      _boards.forEach((b, i) => {
+        stack.insertAdjacentHTML('afterbegin', buildCardHTML(b, i)); // afterbegin = top of stack
+      });
+      updateStackVisuals();
+    }
+
+    function buildCardHTML(board, idx) {
+      const img = board.image_url
+        ? `<img class="mbc-img" src="${board.image_url}" alt="${board.goal}" loading="lazy">`
+        : `<div class="mbc-img-ph"><i class="fas fa-tshirt"></i></div>`;
       return `
-        <div class="mb-card" data-idx="${idx}" id="mb-card-${idx}">
-          ${imgHtml}
-          <div class="mb-card__body">
-            <div class="mb-card__goal">${board.goal}</div>
-            <div class="mb-card__title">${board.title}</div>
-            <div class="mb-card__occasion">${board.occasion || ''}</div>
-            <div class="mb-card__expand-hint"><i class="fas fa-expand-alt"></i> Tap to explore outfit</div>
+        <div class="mbc" id="mbc-${idx}" data-idx="${idx}">
+          ${img}
+          <div class="mbc-swipe-hint like">SAVE</div>
+          <div class="mbc-swipe-hint nope">SKIP</div>
+          <div class="mbc-bottom">
+            <div class="mbc-goal">${board.goal}</div>
+            <div class="mbc-hints-row">
+              <span class="mbc-hint-swipe"><i class="fas fa-arrow-left" style="font-size:9px;"></i> Skip</span>
+              <span class="mbc-hint-expand"><i class="fas fa-arrow-up" style="font-size:9px;"></i> Expand</span>
+              <span class="mbc-hint-swipe"><i class="fas fa-arrow-right" style="font-size:9px;"></i> Save</span>
+            </div>
           </div>
         </div>`;
     }
 
-    function buildExpandedModal(board) {
-      const imgHtml = board.image_url
-        ? `<img class="mb-expanded-img" src="${board.image_url}" alt="${board.title}">`
-        : `<div class="mb-expanded-img-ph"><i class="fas fa-tshirt"></i></div>`;
+    function buildDots() {
+      const bar = document.getElementById('mb-dots-bar');
+      if (!bar) return;
+      bar.innerHTML = _boards.map((_, i) =>
+        `<button class="mb-dot-v${i === _curIdx ? ' on' : ''}" onclick="mbGoToCard(${i})"></button>`
+      ).join('');
+    }
 
-      const pieces = (board.pieces ?? []).filter(p => p.name);
-
-      const amazonPieces = pieces.map(p => `
-        <div class="mb-piece">
-          ${p.image_url
-            ? `<img class="mb-piece__img" src="${p.image_url}" alt="${p.name}" loading="lazy">`
-            : `<div class="mb-piece__img" style="display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--light-taupe);"><i class="fas fa-tag"></i></div>`}
-          <div class="mb-piece__info">
-            <div class="mb-piece__name">${p.name}</div>
-            ${p.price ? `<div class="mb-piece__price">$${parseFloat(p.price).toFixed(2)}</div>` : ''}
-          </div>
-          <div class="mb-piece__actions">
-            ${p.url ? `<a class="mb-piece__checkout" href="${p.url}" target="_blank" rel="noopener">Checkout</a>` : ''}
-            <button class="mb-piece__compare" onclick="openCompare('${(p.name||'').replace(/'/g,'')}', '${p.image_url||''}', null)">
-              <i class="fas fa-magic"></i> Compare
-            </button>
-          </div>
-        </div>`).join('');
-
-      const brandSections = BRANDS.map((b, i) => {
-        if (b.live) {
-          return `
-            <div class="mb-brand-section is-open" id="brand-${b.id}">
-              <div class="mb-brand-header" onclick="toggleBrand('brand-${b.id}')">
-                <div class="mb-brand-left">
-                  <span class="mb-brand-logo ${b.cls}">${b.label}</span>
-                  <span class="mb-brand-badge live">Live</span>
-                </div>
-                <i class="fas fa-chevron-down mb-brand-chevron"></i>
-              </div>
-              <div class="mb-brand-body">
-                ${amazonPieces || '<p style="font-family:Inter,sans-serif;font-size:13px;color:var(--taupe);padding:8px 0;">No products found.</p>'}
-              </div>
-            </div>`;
+    function updateStackVisuals() {
+      // Cards are inserted afterbegin so DOM order = newest first = top of stack
+      const cards = document.querySelectorAll('.mbc:not(.mbc-gone)');
+      cards.forEach((c, i) => {
+        c.style.zIndex = cards.length - i;
+        if (i === 0) {
+          c.style.transform = '';
+          c.style.opacity = '1';
+        } else if (i === 1) {
+          c.style.transform = 'scale(0.95) translateY(16px)';
+          c.style.opacity = '0.7';
         } else {
-          return `
-            <div class="mb-brand-section" id="brand-${b.id}">
-              <div class="mb-brand-header" onclick="brandComingSoon('${b.label}')">
-                <div class="mb-brand-left">
-                  <span class="mb-brand-logo">${b.label}</span>
-                  <span class="mb-brand-badge soon">Coming Soon</span>
-                </div>
-                <i class="fas fa-chevron-right mb-brand-chevron"></i>
-              </div>
-            </div>`;
+          c.style.transform = 'scale(0.9) translateY(28px)';
+          c.style.opacity = '0';
         }
-      }).join('');
-
-      // Total price + store logos
-      const total = (board.pieces ?? []).reduce((s, p) => s + (parseFloat(p.price) || 0), 0);
-      const totalStr = total > 0 ? `$${total.toFixed(2)}` : null;
-
-      const allStores = [
-        { id:'amazon',    live:true  }, { id:'zara',      live:false },
-        { id:'uniqlo',    live:false }, { id:'walmart',   live:false },
-        { id:'lululemon', live:false }, { id:'gap',       live:false },
-        { id:'asos',      live:false }, { id:'hm',        live:false },
-        { id:'nike',      live:false }, { id:'adidas',    live:false },
-        { id:'target',    live:false }, { id:'nordstrom', live:false },
-        { id:'macys',     live:false },
-      ];
-      const logosHtml = allStores.map(s => `
-        <div class="mb-store-logo-item ${s.live ? 'is-live' : ''}" title="${s.id}">
-          <img src="assets/logos/${s.id}.png" alt="${s.id}" onerror="this.parentElement.style.display='none'">
-        </div>`).join('');
-
-      return `
-        <div class="mb-expanded-modal" id="mb-modal">
-          <div class="mb-expanded-modal__close">
-            <button onclick="closeMBModal()" aria-label="Close"><i class="fas fa-times"></i></button>
-          </div>
-          ${imgHtml}
-          <div class="mb-expanded-body">
-            <div class="mb-expanded-goal">${board.goal}</div>
-            <div class="mb-expanded-title">${board.title}</div>
-            <div class="mb-expanded-desc">${board.occasion || board.description || ''}</div>
-          </div>
-          <div class="mb-brands">${brandSections}</div>
-          ${totalStr ? `<button class="mb-buy-outfit">Buy Whole Outfit &nbsp;${totalStr}</button>` : ''}
-          <div class="mb-store-logos">
-            <div class="mb-store-logos-label">Available on</div>
-            <div class="mb-store-logos-grid">${logosHtml}</div>
-          </div>
-        </div>`;
-    }
-
-    function renderMoodBoardDeck(container, boards) {
-      _mbDeckIndex = 0;
-      const cards = boards.map((b, i) => buildMoodBoardCard(b, i)).join('');
-      container.innerHTML = `
-        <div class="mb-deck" id="mb-deck">${cards}</div>
-        <div class="mb-controls">
-          <button class="mb-btn" title="Skip" onclick="mbSwipe('left')"><i class="fas fa-times"></i></button>
-          <span class="mb-counter" id="mb-counter">1 / ${boards.length}</span>
-          <button class="mb-btn" title="Save" onclick="mbSwipe('right')"><i class="fas fa-heart"></i></button>
-        </div>`;
-
-      document.querySelectorAll('.mb-card').forEach(card => {
-        card.addEventListener('click', e => {
-          if (e.target.closest('.mb-piece__checkout') || e.target.closest('.mb-piece__compare')) return;
-          const idx = parseInt(card.dataset.idx);
-          if (idx === _mbDeckIndex) openMBModal(idx);
-        });
+      });
+      // Update dots
+      document.querySelectorAll('.mb-dot-v').forEach((d, i) => {
+        d.classList.toggle('on', i === _curIdx);
       });
     }
 
-    function openMBModal(idx) {
-      // Remove any existing modal
-      document.getElementById('mb-modal')?.remove();
-      document.getElementById('mb-overlay')?.classList.add('is-visible');
+    function mbSwipeCard(dir) {
+      // dir: 1 = save (right), -1 = skip (left)
+      const topCard = document.querySelector('.mbc:not(.mbc-gone)');
+      if (!topCard) return;
+      const flyX = dir > 0 ? '120%' : '-120%';
+      const rot  = dir > 0 ? '15deg' : '-15deg';
+      topCard.style.transition = 'transform 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.38s';
+      topCard.style.transform  = `translateX(${flyX}) rotate(${rot})`;
+      topCard.style.opacity    = '0';
+      topCard.classList.add('mbc-gone');
+      _curIdx++;
+      setTimeout(() => {
+        updateStackVisuals();
+        const remaining = document.querySelectorAll('.mbc:not(.mbc-gone)').length;
+        if (remaining === 0) showGenCard();
+      }, 380);
+    }
 
-      const board = _mbBoards[idx];
+    window.mbReset = function() {
+      // Restore all swiped cards
+      document.querySelectorAll('.mbc').forEach(card => {
+        if (card.dataset.idx === '-1') return; // skip loading cards
+        card.classList.remove('mbc-gone');
+        card.style.transform  = '';
+        card.style.opacity    = '1';
+        card.style.transition = '';
+      });
+      _curIdx = 0;
+      hideGenCard();
+      updateStackVisuals();
+    };
+
+    window.mbGoToCard = function(idx) {
+      // Reset all gone cards up to idx
+      document.querySelectorAll('.mbc').forEach((c, i) => {
+        // Cards are rendered in reverse (afterbegin), so card idx 0 is last DOM element
+        const cardIdx = parseInt(c.dataset.idx);
+        if (cardIdx >= idx) {
+          c.classList.remove('mbc-gone');
+          c.style.transform = '';
+          c.style.opacity   = '1';
+          c.style.transition = '';
+        }
+      });
+      _curIdx = idx;
+      hideGenCard();
+      updateStackVisuals();
+    };
+
+    function showGenCard() {
+      document.getElementById('mb-gen-card').classList.add('visible');
+    }
+    function hideGenCard() {
+      document.getElementById('mb-gen-card').classList.remove('visible');
+    }
+
+    function mbExpandCurrent() {
+      const top = document.querySelector('.mbc:not(.mbc-gone)');
+      if (!top) return;
+      const idx = parseInt(top.dataset.idx);
+      const board = _boards[idx];
       if (!board) return;
+      openExpand(board);
+    }
 
-      // Inject modal into body (not inside card — avoids z-index issues)
-      document.body.insertAdjacentHTML('beforeend', buildExpandedModal(board));
-      _mbExpanded = idx;
+    function mbSaveCurrent(btn) {
+      // Mark as saved with filled heart
+      btn.innerHTML = '<i class="fas fa-heart" style="color:#e05c5c"></i>';
+      btn.style.pointerEvents = 'none';
+      // Swipe right then reset the button for the next card
+      mbSwipeCard(1);
+      setTimeout(() => {
+        btn.innerHTML = '<i class="far fa-heart"></i>';
+        btn.style.pointerEvents = '';
+      }, 420); // after swipe animation
+    }
+
+    // ── Expand sheet ──────────────────────────────────────────
+    function openExpand(board) {
+      _expandBoard = board;
+      document.getElementById('exp-goal').textContent = board.goal;
+      renderExpBrands('amazon');
+      document.getElementById('mb-expand-sheet').classList.add('open');
       document.body.style.overflow = 'hidden';
     }
 
-    function closeMBModal() {
-      document.getElementById('mb-modal')?.remove();
-      document.getElementById('mb-overlay')?.classList.remove('is-visible');
+    function renderExpBrands(activeBrand) {
+      const brands = document.getElementById('exp-brands');
+      brands.innerHTML = BRANDS_EXP.map(b => `
+        <button class="exp-brand-chip${b.id === activeBrand ? ' active' : ''}${!b.live ? ' soon' : ''}"
+          onclick="${b.live ? `selectExpBrand('${b.id}')` : `showComingSoon('${b.label}')`}">
+          ${b.label}
+        </button>`).join('');
+      renderExpProducts(activeBrand);
+    }
+
+    function renderExpProducts(brandId) {
+      const body   = document.getElementById('exp-body');
+      const footer = document.getElementById('exp-footer');
+      if (brandId !== 'amazon') {
+        body.innerHTML = `
+          <div class="exp-coming-soon">
+            <p>${BRANDS_EXP.find(b=>b.id===brandId)?.label || ''} integration coming soon.</p>
+          </div>`;
+        footer.innerHTML = '';
+        return;
+      }
+      const pieces = (_expandBoard?.pieces ?? []).filter(p => p.name);
+      const total  = pieces.reduce((s, p) => s + (parseFloat(p.price) || 0), 0);
+      body.innerHTML = `
+        <div class="exp-products-grid">
+          ${pieces.map(p => `
+            <div class="exp-product">
+              ${p.image_url
+                ? `<img class="exp-product__img" src="${p.image_url}" alt="${p.name}" loading="lazy">`
+                : `<div class="exp-product__img-ph"><i class="fas fa-tag"></i></div>`}
+              <div class="exp-product__info">
+                <div class="exp-product__name">${p.name}</div>
+                ${p.price ? `<div class="exp-product__price">$${parseFloat(p.price).toFixed(2)}</div>` : ''}
+                <div class="exp-product__btns">
+                  ${p.url ? `<a class="exp-buy-btn" href="${p.url}" target="_blank" rel="noopener">Buy</a>` : ''}
+                  <button class="exp-cmp-btn" onclick="openCompare('${(p.name||'').replace(/'/g,'')}','${p.image_url||''}')">
+                    <i class="fas fa-magic"></i> Compare
+                  </button>
+                </div>
+              </div>
+            </div>`).join('')}
+        </div>`;
+      footer.innerHTML = total > 0
+        ? `<button class="exp-buy-all">Buy Whole Outfit &nbsp;$${total.toFixed(2)}</button>`
+        : '';
+    }
+
+    window.selectExpBrand = function(id) {
+      document.querySelectorAll('.exp-brand-chip').forEach(c => c.classList.remove('active'));
+      document.querySelector(`.exp-brand-chip[onclick*="${id}"]`)?.classList.add('active');
+      renderExpProducts(id);
+    };
+
+    window.closeExpand = function() {
+      document.getElementById('mb-expand-sheet').classList.remove('open');
       document.body.style.overflow = '';
-      _mbExpanded = null;
-    }
-
-    window.mbSwipe = function(direction) {
-      const deck  = document.getElementById('mb-deck');
-      if (!deck) return;
-      const cards = [...deck.querySelectorAll('.mb-card:not(.is-swiped-left):not(.is-swiped-right)')];
-      if (!cards.length) return;
-      cards[0].classList.add(direction === 'left' ? 'is-swiped-left' : 'is-swiped-right');
-      const remaining = deck.querySelectorAll('.mb-card:not(.is-swiped-left):not(.is-swiped-right)').length;
-      const total = deck.querySelectorAll('.mb-card').length;
-      _mbDeckIndex = total - remaining;
-      document.getElementById('mb-counter').textContent = `${total - remaining + 1} / ${total}`;
-      [...deck.querySelectorAll('.mb-card:not(.is-swiped-left):not(.is-swiped-right)')].forEach((c, i) => {
-        c.style.zIndex    = 3 - i;
-        c.style.transform = i === 0 ? '' : i === 1 ? 'translateX(16px) translateY(8px) scale(0.97)' : 'translateX(28px) translateY(16px) scale(0.94)';
-      });
     };
 
-    window.toggleBrand = function(id) {
-      document.getElementById(id)?.classList.toggle('is-open');
-    };
-
-    window.brandComingSoon = function(name) {
-      // Brief toast
-      const t = document.createElement('div');
-      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2C;color:white;font-family:Inter,sans-serif;font-size:13px;font-weight:400;padding:10px 20px;border-radius:20px;z-index:9999;opacity:0;transition:opacity 0.2s;';
-      t.textContent = `${name} — coming soon`;
+    window.showComingSoon = function(name) {
+      const t = Object.assign(document.createElement('div'), { textContent: `${name} — coming soon` });
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2C;color:white;font-family:Inter,sans-serif;font-size:13px;padding:10px 20px;border-radius:20px;z-index:9999;opacity:0;transition:opacity 0.2s;pointer-events:none;';
       document.body.appendChild(t);
-      requestAnimationFrame(() => { t.style.opacity = '1'; });
-      setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2000);
+      requestAnimationFrame(() => t.style.opacity = '1');
+      setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 1800);
     };
 
-    // openCompare defined below as shared logic
-
-    window.closeCompare = function() {
-      document.getElementById('compare-modal')?.classList.remove('is-open');
-      // Don't close overlay if MB modal is open
-      if (!document.getElementById('mb-modal')) {
-        document.getElementById('mb-overlay')?.classList.remove('is-visible');
-      }
+    // ── Generate new ──────────────────────────────────────────
+    window.pickChip = function(el, text) {
+      document.querySelectorAll('.gen-chip').forEach(c => c.classList.remove('on'));
+      el.classList.add('on');
+      const inp = document.getElementById('gen-input');
+      if (inp) inp.value = text;
+      hideGenSugg();
     };
-
-    window.closeMBModal = closeMBModal;
-    window.openMBModal  = openMBModal;
-
-    window.handleOverlayClick = function(e) {
-      if (e.target === document.getElementById('mb-overlay')) {
-        if (document.getElementById('compare-modal')?.classList.contains('is-open')) {
-          closeCompare();
-        } else {
-          closeMBModal();
-        }
-      }
+    window.genInputChange = function(inp) {
+      const val = inp.value.toLowerCase().trim();
+      const sugg = document.getElementById('gen-sugg');
+      if (!val) { hideGenSugg(); return; }
+      const hits = SUGGESTIONS.filter(s => s.toLowerCase().includes(val));
+      if (!hits.length) { hideGenSugg(); return; }
+      sugg.innerHTML = hits.map(s =>
+        `<div class="gen-suggestion" onclick="pickSugg('${s}')">${s}</div>`).join('');
+      sugg.style.display = 'flex';
     };
-
-
-    // ── Compare modal shared logic ────────────────────────
-    const _STORES = ['Zara','Uniqlo','Walmart','Lululemon','Gap','ASOS','H&M'];
-    const _MSGS   = ['Comparing prices…','Finding best matches…','Contrasting quality…','Generating report…'];
-    let _compareTimer = null;
-
-    window.openCompare = function(productName, productImgUrl, totalPrice) {
-      const modal = document.getElementById('compare-modal');
-      if (!modal) return;
-
-      // Product image
-      const imgWrap = modal.querySelector('.compare-modal__product-img-wrap');
-      if (imgWrap) {
-        imgWrap.innerHTML = productImgUrl
-          ? `<img class="compare-modal__product-img" src="${productImgUrl}" alt="${productName}">`
-          : `<div class="compare-modal__product-img-ph"><i class="fas fa-tshirt"></i></div>`;
-      }
-
-      modal.querySelector('.compare-modal__subtitle').textContent = productName;
-      modal.classList.add('is-open');
-      document.getElementById('mb-overlay').classList.add('is-visible');
-      _runCompare(modal);
+    window.pickSugg = function(text) {
+      const inp = document.getElementById('gen-input');
+      if (inp) inp.value = text;
+      hideGenSugg();
     };
-
-    function _runCompare(modal) {
-      clearInterval(_compareTimer);
-      const row   = modal.querySelector('.compare-store-row');
-      const bar   = modal.querySelector('.compare-bar');
-      const name  = modal.querySelector('.compare-store-name');
-      const stat  = modal.querySelector('.compare-store-status');
-      const msg   = modal.querySelector('.compare-message');
-      const result = modal.querySelector('.compare-result');
-
-      // Reset
-      bar.style.transition = 'none';
-      bar.style.width = '0%';
-      stat.textContent = '';
-      result.style.display = 'none';
-      msg.textContent = _MSGS[0];
-
-      let storeIdx = 0;
-      let msgIdx   = 0;
-
-      function nextStore() {
-        if (storeIdx >= _STORES.length) {
-          // All done
-          clearInterval(_compareTimer);
-          bar.style.width = '0%';
-          name.textContent = '';
-          stat.textContent = '';
-          msg.textContent = '';
-          result.style.display = 'block';
-          return;
-        }
-        // Update store label + rotate message
-        name.textContent = _STORES[storeIdx];
-        msgIdx = (storeIdx) % _MSGS.length;
-        msg.textContent = _MSGS[msgIdx];
-        stat.textContent = '…';
-        // Animate bar
-        requestAnimationFrame(() => {
-          bar.style.transition = 'width 1.6s cubic-bezier(0.4,0,0.2,1)';
-          bar.style.width = `${70 + Math.random() * 28}%`;
-        });
-        setTimeout(() => {
-          bar.style.transition = 'width 0.4s ease';
-          bar.style.width = '100%';
-          stat.textContent = 'Done';
-          setTimeout(() => {
-            bar.style.transition = 'none';
-            bar.style.width = '0%';
-            storeIdx++;
-            nextStore();
-          }, 400);
-        }, 1800);
-      }
-
-      nextStore();
+    function hideGenSugg() {
+      const s = document.getElementById('gen-sugg');
+      if (s) s.style.display = 'none';
     }
+    window.hideGenSugg = hideGenSugg;
 
-    window.closeCompare = function() {
-      clearInterval(_compareTimer);
-      document.getElementById('compare-modal')?.classList.remove('is-open');
-      if (!document.getElementById('mb-modal')) {
-        document.getElementById('mb-overlay')?.classList.remove('is-visible');
+    window.doGenerate = async function() {
+      const inp = document.getElementById('gen-input');
+      const btn = document.getElementById('gen-btn');
+      const goal = inp?.value.trim();
+      if (!goal || !reportId) { inp?.focus(); return; }
+
+      btn.disabled = true; btn.textContent = '…';
+      inp.disabled = true;
+
+      // Show loading card on top of stack
+      const stack = document.getElementById('mb-stack');
+      const loadId = `mbc-loading-${Date.now()}`;
+      stack.insertAdjacentHTML('afterbegin', `
+        <div class="mbc" id="${loadId}" data-idx="-1">
+          <div class="mbc-loading">
+            <div class="spin"></div>
+            <p>Creating your outfit…</p>
+          </div>
+        </div>`);
+      hideGenCard();
+
+      try {
+        const { data, error } = await db.functions.invoke('generate_mood_board', {
+          body: { style_report_id: reportId, goal },
+        });
+        if (error) throw error;
+        if (data?.mood_board) {
+          const board = data.mood_board;
+          _boards.push(board);
+          const newIdx = _boards.length - 1;
+          // Replace loading card with real card
+          document.getElementById(loadId)?.remove();
+          // Insert at afterbegin so it sits on top of the stack
+          stack.insertAdjacentHTML('afterbegin', buildCardHTML(board, newIdx));
+          _curIdx = newIdx;
+          // Hide gen card — it will reappear only after ALL cards (including new one) are swiped
+          hideGenCard();
+          // Add dot
+          const dotsBar = document.getElementById('mb-dots-bar');
+          if (dotsBar) dotsBar.insertAdjacentHTML('beforeend',
+            `<button class="mb-dot-v" onclick="mbGoToCard(${newIdx})"></button>`);
+          updateStackVisuals();
+          inp.value = '';
+          document.querySelectorAll('.gen-chip').forEach(c => c.classList.remove('on'));
+        }
+      } catch (err) {
+        console.error('[MBGenerate]', err);
+        document.getElementById(loadId)?.remove();
+        showGenCard();
+      } finally {
+        btn.disabled = false; btn.textContent = 'Generate';
+        inp.disabled = false;
       }
     };
 
-    async function renderMoodBoards() {
-      if (!reportId) return;
+    // ── Touch/swipe support ───────────────────────────────────
+    (function initSwipe() {
+      let startX = 0, startY = 0, dragging = false, dragCard = null;
+      document.getElementById('mb-stack').addEventListener('touchstart', e => {
+        dragCard = e.target.closest('.mbc:not(.mbc-gone)');
+        if (!dragCard) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        dragging = true;
+        dragCard.style.transition = 'none';
+      }, {passive:true});
+      document.getElementById('mb-stack').addEventListener('touchmove', e => {
+        if (!dragging || !dragCard) return;
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        if (Math.abs(dy) > Math.abs(dx) * 1.5) { dragging = false; return; }
+        const rot = dx * 0.08;
+        dragCard.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+        // Show hints
+        const like = dragCard.querySelector('.mbc-swipe-hint.like');
+        const nope = dragCard.querySelector('.mbc-swipe-hint.nope');
+        if (like) like.style.opacity = dx > 40 ? Math.min((dx-40)/60,1) : 0;
+        if (nope) nope.style.opacity = dx < -40 ? Math.min((-dx-40)/60,1) : 0;
+      }, {passive:true});
+      document.getElementById('mb-stack').addEventListener('touchend', e => {
+        if (!dragging || !dragCard) return;
+        dragging = false;
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 80) {
+          mbSwipeCard(dx > 0 ? 1 : -1);
+        } else {
+          dragCard.style.transition = 'transform 0.3s, opacity 0.3s';
+          dragCard.style.transform = '';
+          const like = dragCard.querySelector('.mbc-swipe-hint.like');
+          const nope = dragCard.querySelector('.mbc-swipe-hint.nope');
+          if (like) like.style.opacity = 0;
+          if (nope) nope.style.opacity = 0;
+        }
+        dragCard = null;
+      }, {passive:true});
+      // Click on top card = expand
+      document.getElementById('mb-stack').addEventListener('click', e => {
+        const card = e.target.closest('.mbc:not(.mbc-gone)');
+        if (!card || e.target.closest('.mb-act-btn')) return;
+        const topCard = document.querySelector('.mbc:not(.mbc-gone)');
+        if (card === topCard) mbExpandCurrent();
+      });
+    })();
 
-      const container = document.getElementById('mood-boards-container');
+    // ── Compare bottom sheet ──────────────────────────────────
 
-      // Get goals from profile or re-fetch report
-      let goals = profile.goals ?? [];
+        async function generateInitialBoards() {
+      const goals = [
+        ...(profile.goals ?? []),
+      ];
       if (!goals.length) {
-        const { data: rep } = await db
-          .from('style_reports')
-          .select('goal_1, goal_2, goal_3')
-          .eq('id', reportId).single();
-        goals = [rep?.goal_1, rep?.goal_2, rep?.goal_3].filter(Boolean);
+        const { data: rep } = await db.from('style_reports').select('goal_1,goal_2,goal_3').eq('id', reportId).single();
+        if (rep) { if (rep.goal_1) goals.push(rep.goal_1); if (rep.goal_2) goals.push(rep.goal_2); if (rep.goal_3) goals.push(rep.goal_3); }
       }
+      if (!goals.length) return;
 
-      if (!goals.length) {
-        container.innerHTML = `<p class="sans" style="color:var(--taupe);text-align:center;padding:40px 0;font-size:14px;font-weight:300;">No goals found for this report.</p>`;
+      const stack = document.getElementById('mb-stack');
+      const dotsBar = document.getElementById('mb-dots-bar');
+
+      // Check if any boards already exist in DB
+      const { data: existing } = await db.from('mood_boards')
+        .select('id, title, description, goal, occasion, colors, image_url')
+        .eq('style_report_id', reportId)
+        .order('created_at', { ascending: true });
+
+      if (existing?.length) {
+        // Load pieces for each board
+        const mbIds = existing.map(b => b.id);
+        const { data: pieces } = await db.from('pieces').select('*').in('mood_board_id', mbIds);
+        const boards = existing.map(b => ({
+          ...b, pieces: (pieces ?? []).filter(p => p.mood_board_id === b.id)
+        }));
+        renderMoodBoards(boards);
         return;
       }
 
-      // Resolve accountId
-      let accountId = profile.accountId || null;
-      if (!accountId) {
-        const r = await auth.getUser();
-        if (r.ok && r.data) {
-          const { data: acct } = await db.from('accounts').select('id').eq('auth_id', r.data.id).single();
-          if (acct) accountId = acct.id;
-        }
-      }
-
-      // Show generating state
-      container.innerHTML = `
-        <div class="mb-generating">
-          <div class="mb-generating__spinner"></div>
-          <p class="mb-generating__label">Generating mood boards for your goals…</p>
-        </div>`;
-
-      // Generate boards one by one — each updates the UI as it arrives
-      const boards = [];
+      // Generate fresh — one per goal, show as they arrive
       for (let i = 0; i < Math.min(goals.length, 3); i++) {
         const goal = goals[i];
-        console.log(`[MoodBoards] Generating board ${i + 1}/${goals.length}: "${goal}"`);
-
-        container.innerHTML = `
-          <div class="mb-generating">
-            <div class="mb-generating__spinner"></div>
-            <p class="mb-generating__label">Creating board ${i + 1} of ${Math.min(goals.length, 3)}: <em>${goal}</em></p>
-          </div>`;
+        const loadId = `mbc-loading-${Date.now()}`;
+        if (i === 0) {
+          // Show loading state on the gen card area
+          const genCard = document.getElementById('mb-gen-card');
+          if (genCard) {
+            genCard.classList.remove('visible');
+            stack.insertAdjacentHTML('afterbegin', `
+              <div class="mbc" id="${loadId}" data-idx="-1">
+                <div class="mbc-loading"><div class="spin"></div><p>Creating outfit ${i+1} of ${Math.min(goals.length,3)}…</p></div>
+              </div>`);
+          }
+        } else {
+          // Update existing loading card label
+          const existing_load = stack.querySelector('.mbc-loading p');
+          if (existing_load) existing_load.textContent = `Creating outfit ${i+1} of ${Math.min(goals.length,3)}…`;
+        }
 
         try {
           const { data, error } = await db.functions.invoke('generate_mood_board', {
             body: { style_report_id: reportId, goal },
           });
           if (error) throw error;
-          if (data?.mood_board) boards.push(data.mood_board);
-          console.log(`[MoodBoards] Board ${i + 1} done: "${data?.mood_board?.title}"`);
+          if (data?.mood_board) {
+            _boards.push(data.mood_board);
+            const idx = _boards.length - 1;
+            document.getElementById(loadId)?.remove();
+            stack.insertAdjacentHTML('afterbegin', buildCardHTML(data.mood_board, idx));
+            if (dotsBar) dotsBar.insertAdjacentHTML('beforeend',
+              `<button class="mb-dot-v${idx===0?' on':''}" onclick="mbGoToCard(${idx})"></button>`);
+            updateStackVisuals();
+            buildChips();
+          }
         } catch (err) {
-          console.error(`[MoodBoards] Board ${i + 1} failed:`, err);
+          console.error(`[MB] Board ${i+1} failed:`, err);
+          document.getElementById(loadId)?.remove();
         }
       }
-
-      _mbBoards = boards;
-
-      if (boards.length === 0) {
-        container.innerHTML = `<p class="sans" style="color:var(--taupe);text-align:center;padding:40px 0;font-size:14px;font-weight:300;">Could not generate mood boards. Please try again.</p>`;
-        return;
-      }
-
-      renderMoodBoardDeck(container, boards);
+      if (_boards.length === 0) showGenCard();
     }
-
-
 
     // ════════════════════════════════════════════════════════════════
     //  ⑪  BOOT
@@ -1708,7 +2059,9 @@
       renderColorIntelligence();
       renderJewelry();
       renderEyewear();
-      renderMoodBoards();
+      // Tinder MB: fetch goals then generate boards
+      renderMoodBoards([]);  // show gen card immediately while generating
+      generateInitialBoards();
     }
 
     init();
