@@ -2,6 +2,8 @@
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import { goto } from '$app/navigation';
   import BrandChips from '$lib/BrandChips.svelte';
+  import FitCheck from '$lib/FitCheck.svelte';
+  import { track } from '$lib/analytics';
   import type { MoodBoard, Piece } from '$lib/types';
 
   let { data } = $props();
@@ -12,8 +14,13 @@
   const displayPieces = board.pieces ?? [];
   const totalPrice = displayPieces.reduce((s: number, p: any) => s + (p.price ?? 0), 0);
 
+  // Get accountId from local storage for analytics (non-blocking, best effort)
+  const accountId = typeof localStorage !== 'undefined'
+    ? (() => { try { return null; } catch { return null; } })()
+    : null;
+
   async function onBrandSelect(brand: { id: string; name: string }) {
-    // Navigate straight to the compare page — board copying + product search happens there
+    track(supabase, accountId, 'mood_board_comparisons');
     goto(`/outfit/compare/${board.slug}?stores=${brand.name.toLowerCase()}`);
   }
 </script>
@@ -32,8 +39,12 @@
   <!-- STICKY BRAND STRIP -->
   <div class="brand-strip">
     <div class="brand-strip__inner">
-      <span class="brand-strip__label">Compare this outfit at another store</span>
-      <BrandChips onselect={onBrandSelect} />
+      <div class="strip-row">
+        <FitCheck />
+        <div class="strip-divider"></div>
+        <span class="brand-strip__label">Compare at</span>
+        <BrandChips onselect={onBrandSelect} />
+      </div>
     </div>
   </div>
 
@@ -75,6 +86,7 @@
             href={piece.slug ? `/outfit/product/${piece.slug}` : (piece.url ?? '#')}
             target={piece.slug ? '_self' : '_blank'}
             rel={piece.slug ? '' : 'noopener sponsored'}
+            onclick={() => track(supabase, accountId, 'buy_clicks')}
           >
             <!-- Image -->
             <div class="piece-row__img-wrap">
@@ -124,11 +136,9 @@
     padding: 10px var(--page-px) 8px;
   }
   .brand-strip__inner { max-width: var(--max-w); margin: 0 auto; }
-  .brand-strip__label {
-    display: flex; align-items: center; gap: 8px;
-    font-size: var(--text-xs); color: var(--clr-text-muted);
-    margin-bottom: 8px; font-weight: 400;
-  }
+  .strip-row { display: flex; align-items: center; gap: 10px; }
+  .strip-divider { width: 1px; height: 24px; background: var(--clr-border); flex-shrink: 0; }
+  .brand-strip__label { font-size: var(--text-xs); color: var(--clr-text-muted); white-space: nowrap; flex-shrink: 0; }
   .brand-strip__label strong { color: var(--clr-charcoal); font-weight: 600; }
   .clear-btn {
     background: none; border: none; cursor: pointer;

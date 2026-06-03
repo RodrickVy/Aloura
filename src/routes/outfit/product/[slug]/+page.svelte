@@ -2,6 +2,7 @@
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import BrandChips from '$lib/BrandChips.svelte';
   import { goto } from '$app/navigation';
+  import { track } from '$lib/analytics';
   import type { Piece } from '$lib/types';
 
   let { data } = $props();
@@ -36,6 +37,7 @@
       if (!found?.slug) throw new Error('No slug returned');
 
       // Navigate to compare page
+      track(supabase, null, 'piece_comparisons');
       goto(`/outfit/product/compare/${originalPiece.slug}--vs--${found.slug}`);
     } catch {
       searchError = `No match found at ${brand.name}. Try another store.`;

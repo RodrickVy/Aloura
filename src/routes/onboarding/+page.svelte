@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import { goto } from '$app/navigation';
+  import { track } from '$lib/analytics';
 
   let { data } = $props();
   const supabase = createSupabaseBrowserClient();
@@ -113,6 +114,7 @@
       if (rErr) throw rErr;
 
       if (typeof localStorage !== 'undefined') localStorage.setItem('aloura_report_id', report.id);
+      track(supabase, accountId, 'report_generated');
       goto(`/report/${report.id}`);
     } catch (e: any) {
       error = e.message ?? 'Something went wrong. Please try again.';

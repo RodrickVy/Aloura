@@ -2,6 +2,7 @@
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
+  import { track } from '$lib/analytics';
 
   let { data } = $props();
   const supabase = createSupabaseBrowserClient();
@@ -65,7 +66,12 @@
         if (e) throw e;
         if (authData.user) {
           const { data: existing } = await supabase.from('accounts').select('id').eq('auth_id', authData.user.id).maybeSingle();
-          if (!existing) await supabase.from('accounts').insert({ auth_id: authData.user.id, name: name.trim(), email: email.trim().toLowerCase() });
+          if (!existing) {
+            await supabase.from('accounts').insert({ auth_id: authData.user.id, name: name.trim(), email: email.trim().toLowerCase() });
+            // track sign up — get new account id
+            const { data: newAcc } = await supabase.from('accounts').select('id').eq('auth_id', authData.user.id).maybeSingle();
+            track(supabase, newAcc?.id, 'sign_ups');
+          }
           await redirectAfterAuth(authData.user.id);
         }
       } else {

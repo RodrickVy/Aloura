@@ -1,6 +1,9 @@
 <script lang="ts">
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import { onMount } from 'svelte';
+  import SearchBar from '$lib/SearchBar.svelte';
+  import FitCheck from '$lib/FitCheck.svelte';
+  import { track } from '$lib/analytics';
   import type { MoodBoard, Piece } from '$lib/types';
 
   let { data } = $props();
@@ -92,6 +95,7 @@
   async function generate() {
     if (!goal.trim() && !uploadedB64) return;
     loading = true;
+    track(supabase, accountId, 'outfit_search_hits');
     try {
       const store = selectedBrands.size ? BRANDS.filter(b => selectedBrands.has(b.id)).map(b => b.name).join(', ') : '';
       const body: Record<string, any> = { account_id: accountId, goal: goal.trim() || 'general outfit', store };
@@ -102,6 +106,7 @@
       if (!result?.mood_board) throw new Error('No board returned');
 
       boards = [result.mood_board, ...boards];
+      track(supabase, accountId, 'mood_boards_made');
     } catch (e) {
       console.error('[generate]', e);
     } finally {
@@ -141,45 +146,16 @@
 
       <!-- Search bar + fit check -->
       <div class="search-bar-group">
-        <div class="search-inner">
-          <!-- Plus / upload on left -->
-          <label class="upload-btn" title="Add image">
-            {#if uploadedB64}
-              <img src="data:image/*;base64,{uploadedB64}" alt="preview" class="upload-preview-thumb" />
-              <button
-                class="upload-clear"
-                type="button"
-                onclick={(e) => { e.preventDefault(); uploadedB64 = null; uploadedType = null; uploadedName = null; }}
-              >×</button>
-            {:else}
-              <i class="fas fa-plus"></i>
-            {/if}
-            <input type="file" accept="image/*" style="display:none" onchange={handleFileUpload} />
-          </label>
-
-          <textarea
-            class="search-input"
-            placeholder="Date night, casual work look, gym outfit…"
-            bind:value={goal}
-            rows={1}
-            onkeydown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generate(); } }}
-          ></textarea>
-
-          <button class="search-btn" onclick={generate} disabled={loading || (!goal.trim() && !uploadedB64)}>
-            {#if loading}
-              <span class="btn-spinner"></span>
-            {:else}
-              <i class="fas fa-arrow-right"></i>
-            {/if}
-          </button>
-        </div>
-
-        <!-- Fit Check button -->
-        <label class="fitcheck-btn" title="Fit Check — upload an outfit photo">
-          <i class="fas fa-camera"></i>
-          <span>Fit Check</span>
-          <input type="file" accept="image/*" style="display:none" onchange={handleFileUpload} />
-        </label>
+        <SearchBar
+          bind:value={goal}
+          loading={loading}
+          imageAttached={!!uploadedB64}
+          imageName={uploadedName ?? ''}
+          onsubmit={generate}
+          onimage={(b64, type, name) => { uploadedB64 = b64; uploadedType = type; uploadedName = name; }}
+          onclearimage={() => { uploadedB64 = null; uploadedType = null; uploadedName = null; }}
+        />
+        <FitCheck {accountId} />
       </div>
 
       <!-- Brand filter chips -->
@@ -192,6 +168,7 @@
               const next = new Set(selectedBrands);
               next.has(brand.id) ? next.delete(brand.id) : next.add(brand.id);
               selectedBrands = next;
+              track(supabase, accountId, 'store_filter_used');
             }}
           >
             <img src={brand.logo} alt={brand.name} class="brand-chip__logo" />
@@ -221,7 +198,7 @@
         {#each boards as board, i}
           {@const imgs = (board.pieces ?? []).filter(p => p.image_url).slice(0, 4).map(p => p.image_url)}
           {@const count = imgs.length}
-          <a class="board-card" href={boardHref(board)}>
+          <a class="board-card" href={boardHref(board)} onclick={() => track(supabase, accountId, 'outfit_checkout_hits')}>
             <!-- Collage -->
             <div class="collage" class:collage--1={count === 1} class:collage--2={count === 2} class:collage--3={count === 3} class:collage--4={count >= 4}>
               {#if count === 0}
@@ -265,58 +242,6 @@
   }
 
   .search-bar-group { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-
-  .search-inner {
-    flex: 1; display: flex; align-items: center; gap: 10px;
-    background: var(--clr-cream); border: 1.5px solid var(--clr-light-taupe);
-    border-radius: var(--radius-full); padding: 8px 10px 8px 14px;
-    transition: border-color var(--dur-base);
-  }
-  .search-inner:focus-within { border-color: var(--clr-brown); }
-
-  /* Plus / upload trigger */
-  .upload-btn {
-    display: flex; align-items: center; justify-content: center;
-    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-    background: var(--clr-beige); cursor: pointer;
-    color: var(--clr-taupe); font-size: 13px;
-    transition: background var(--dur-fast), color var(--dur-fast);
-    position: relative;
-  }
-  .upload-btn:hover { background: var(--clr-light-taupe); color: var(--clr-charcoal); }
-  .upload-preview-thumb { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; }
-  .upload-clear {
-    position: absolute; top: -4px; right: -4px; width: 14px; height: 14px;
-    border-radius: 50%; background: var(--clr-charcoal); color: white;
-    border: none; cursor: pointer; font-size: 9px; line-height: 1;
-    display: flex; align-items: center; justify-content: center;
-  }
-
-  .search-input {
-    flex: 1; background: none; border: none; outline: none;
-    font-family: var(--font-body); font-size: var(--text-base);
-    font-weight: 300; color: var(--clr-charcoal); resize: none; line-height: 1.5;
-  }
-
-  .search-btn {
-    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
-    background: var(--clr-charcoal); color: white; border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; transition: background var(--dur-base);
-  }
-  .search-btn:hover:not(:disabled) { background: var(--clr-brown); }
-  .search-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-  /* Fit Check button */
-  .fitcheck-btn {
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    flex-shrink: 0; cursor: pointer; padding: 6px 10px;
-    border-radius: var(--radius-md); transition: background var(--dur-fast);
-    color: var(--clr-taupe);
-  }
-  .fitcheck-btn:hover { background: var(--clr-beige); color: var(--clr-charcoal); }
-  .fitcheck-btn i { font-size: 18px; }
-  .fitcheck-btn span { font-size: 9px; font-weight: 500; letter-spacing: 0.04em; white-space: nowrap; }
 
   /* ── Brand chips — Material Design filter style ── */
   .brands-scroll {

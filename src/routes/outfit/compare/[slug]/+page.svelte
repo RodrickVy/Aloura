@@ -2,6 +2,8 @@
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import FitCheck from '$lib/FitCheck.svelte';
+  import { track } from '$lib/analytics';
 
   let { data } = $props();
   const supabase = createSupabaseBrowserClient();
@@ -54,8 +56,9 @@
     return cols;
   }
 
-  let columns    = $state<Column[]>(buildColumns());
+  let columns     = $state<Column[]>(buildColumns());
   let addingStore = $state<string | null>(null);
+  const accountId = original.account_id ?? null;
   let sortByPrice = $state(false);
 
   // Sort columns by total price (cheapest first), keeping original always first
@@ -138,6 +141,7 @@
   }
 
   async function addStore(brand: { id: string; name: string }) {
+    track(supabase, accountId, 'mood_board_comparisons');
     const storeName = brand.name.toLowerCase();
 
     // Already in columns — remove it
@@ -214,21 +218,25 @@
       <!-- Title -->
       <div class="board-title">{original.title}</div>
 
-      <div class="chips-scroll">
-        {#each BRANDS as brand}
-          <button
-            class="chip"
-            class:active={isActive(brand.name)}
-            disabled={addingStore === brand.id}
-            onclick={() => addStore(brand)}
-          >
-            <img src={brand.logo} alt={brand.name} class="chip__logo" />
-            <span class="chip__name">{brand.name}</span>
-            {#if isActive(brand.name)}
-              <span class="chip__x">×</span>
-            {/if}
-          </button>
-        {/each}
+      <div class="strip-row">
+        <FitCheck />
+        <div class="strip-divider"></div>
+        <div class="chips-scroll">
+          {#each BRANDS as brand}
+            <button
+              class="chip"
+              class:active={isActive(brand.name)}
+              disabled={addingStore === brand.id}
+              onclick={() => addStore(brand)}
+            >
+              <img src={brand.logo} alt={brand.name} class="chip__logo" />
+              <span class="chip__name">{brand.name}</span>
+              {#if isActive(brand.name)}
+                <span class="chip__x">×</span>
+              {/if}
+            </button>
+          {/each}
+        </div>
       </div>
     </div>
   </div>
@@ -261,6 +269,7 @@
               href={piece.slug ? `/outfit/product/${piece.slug}` : (piece.url ?? '#')}
               target={piece.slug ? '_self' : '_blank'}
               rel={piece.slug ? '' : 'noopener sponsored'}
+              onclick={() => track(supabase, accountId, 'buy_clicks')}
             >
               <div class="piece-img-wrap">
                 {#if piece.image_url}
@@ -374,8 +383,12 @@
 
   .board-title { font-family: var(--font-display); font-size: clamp(16px, 3vw, 22px); font-weight: 500; color: var(--clr-charcoal); margin-bottom: 10px; }
 
+  /* Strip row */
+  .strip-row { display: flex; align-items: center; gap: 10px; }
+  .strip-divider { width: 1px; height: 24px; background: var(--clr-border); flex-shrink: 0; }
+
   /* Chips */
-  .chips-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .chips-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; flex: 1; }
   .chips-scroll::-webkit-scrollbar { display: none; }
 
   /* Sort bar */
