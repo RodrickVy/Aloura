@@ -6,19 +6,19 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ── Primary Meta ── -->
-  <title>Aloura — Your Personal Style Intelligence</title>
+  <title>Aloura — Know What Works For You</title>
   <meta name="description" content="Upload your photos and receive a personalized style report — your best colors, accessories, silhouettes, and curated outfit mood boards. Fashion that actually works for you.">
   <meta name="keywords" content="personal style, outfit recommendations, color analysis, fashion AI, style profile, what to wear, outfit ideas">
   <meta name="author" content="Aloura">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://alouraui.web.app/">
+  <link rel="canonical" href="https://www.aloura.co/">
 
   <!-- ── Open Graph ── -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://alouraui.web.app/">
-  <meta property="og:title" content="Aloura — Your Personal Style Intelligence">
+  <meta property="og:url" content="https://www.aloura.co/">
+  <meta property="og:title" content="Aloura — Know What Works For You">
   <meta property="og:description" content="Upload your photos. Get a personalized style report — colors, accessories, fits, and outfit mood boards curated for you.">
-  <meta property="og:image" content="https://alouraui.web.app/assets/trendy_glasses.jpg">
+  <meta property="og:image" content="https://www.aloura.co/og-image.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:site_name" content="Aloura">
@@ -27,9 +27,9 @@
   <!-- ── Twitter Card ── -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@aloura">
-  <meta name="twitter:title" content="Aloura — Your Personal Style Intelligence">
+  <meta name="twitter:title" content="Aloura — Know What Works For You">
   <meta name="twitter:description" content="Upload your photos. Get a personalized style report — colors, accessories, fits, and outfit mood boards curated for you.">
-  <meta name="twitter:image" content="https://alouraui.web.app/assets/trendy_glasses.jpg">
+  <meta name="twitter:image" content="https://www.aloura.co/og-image.jpg">
 
   <!-- ── Favicon / PWA ── -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -38,8 +38,6 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#FDFBF8">
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- ── Structured Data ── -->
   <script type="application/ld+json">
@@ -187,12 +185,13 @@
       background: var(--clr-light-taupe);
       margin-left: -8px;
       overflow: hidden;
-      font-size: 10px;
-      color: white;
+      font-size: 8px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
       display: flex;
       align-items: center;
       justify-content: center;
-      /* color: var(--clr-taupe); */
+      color: var(--clr-off-white);
     }
 
     .hero__avatar:first-child { margin-left: 0; }
@@ -214,7 +213,6 @@
       color: var(--clr-text-primary);
       font-weight: 500;
     }
-
 
     /* Collage — compact on mobile, full height on desktop */
     .hero__collage {
@@ -510,10 +508,14 @@
       max-width: 400px;
       margin: 0 auto var(--space-8);
     }
-    .hero__collage-badge { display: none; }
-    .hero__lead { font-size: 14px; }
 
     /* ─── RESPONSIVE ─── */
+
+    /* Mobile — collage badge hidden at small height, lead slightly smaller */
+    .hero__collage-badge { display: none; }
+
+    .hero__lead { font-size: 14px; }
+
     @media (min-width: 640px) {
       .hero__cta-group { flex-direction: row; }
       .hero__collage-grid { height: 280px; }
@@ -532,9 +534,9 @@
 
       .hero__content { flex: 1; }
 
-  
       .hero__collage { flex: 1; }
-      .hero__collage-grid { height: 400px; gap: 10px;}
+
+      .hero__collage-grid { height: 400px; gap: 10px; }
 
       .hero__shape--3 { display: block; }
 
@@ -568,7 +570,7 @@
           <li><a href="#what-you-get" class="nav__link">What you get</a></li>
         </ul>
 
-        <a href="./signup.html" class="btn btn--primary" style="font-size: var(--text-xs); padding: 10px 20px; letter-spacing: 0.04em;">
+        <a href="/signup.html" class="btn btn--primary" style="font-size: var(--text-xs); padding: 10px 20px; letter-spacing: 0.04em;">
           Get your profile
         </a>
       </div>
@@ -591,19 +593,19 @@
 
           <!-- Left: Copy -->
           <div class="hero__content">
-            <div class="eyebrow hero__eyebrow">Style intelligence</div>
+            <div class="eyebrow hero__eyebrow">Made for you</div>
 
             <h1 class="hero__headline">
-              Fashion that<br>actually <em>works</em><br>for you.
+              Dress like you<br>know what <em>works</em><br>for you.
             </h1>
 
             <p class="hero__lead">
-              Upload your photos, tell us your goals, and receive a personalized style report. No more guessing.
+              Upload a few photos, tell us your goals. We'll show you your best colors, the right accessories, and outfit boards built around your look.
             </p>
 
             <div class="hero__cta-group">
-              <a href="./signup.html" class="btn btn--accent btn--lg">
-                Check my style profile
+              <a href="/signup.html" class="btn btn--accent btn--lg">
+                Get my style breakdown
                 <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
               </a>
               <a href="#how-it-works" class="btn btn--ghost btn--lg">
@@ -619,8 +621,8 @@
                 <div class="hero__avatar hero__avatar--d">AL</div>
               </div>
               <div class="hero__proof-text">
-                <strong>600+ style profiles to go</strong>
-                Join! it's free
+                <strong>600+ profiles and counting</strong>
+                Free to start
               </div>
             </div>
           </div>
@@ -637,14 +639,14 @@
               </div>
               <div class="hero__collage-cell">
                 <img
-                  src="assets/jacket_sat.jpg"
+                  src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=400&h=300&fit=crop"
                   alt="Style inspiration"
                   loading="eager"
                 >
               </div>
               <div class="hero__collage-cell">
                 <img
-                  src="assets/jack_hanged.jpg"
+                  src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&h=300&fit=crop"
                   alt="Curated outfit"
                   loading="eager"
                 >
@@ -657,8 +659,8 @@
                 <i class="fa-solid fa-sparkles"></i>
               </div>
               <div class="hero__collage-badge-text">
-                <strong>Style report ready</strong>
-                <span>Personalized in under a minute</span>
+                <strong>Ready in under a minute</strong>
+                <span>No subscription needed</span>
               </div>
             </div>
           </div>
@@ -674,46 +676,44 @@
       <div class="container">
 
         <div class="hiw__header animate-fade-up">
-          <div class="eyebrow" style="justify-content: center; margin-bottom: var(--space-3);">The process</div>
+          <div class="eyebrow" style="justify-content: center; margin-bottom: var(--space-3);">How it works</div>
           <h2 class="heading-lg" id="hiw-heading" style="text-align: center;">
-            Three steps to your<br><em class="text-italic">style profile</em>
+            Three steps.<br><em class="text-italic">One honest answer.</em>
           </h2>
         </div>
 
         <div class="hiw__steps">
-
-            <div class="hiw__step animate-fade-up" style="transition-delay: 0.1s;">
-            <div class="hiw__step-icon" aria-hidden="true">
-              <i class="fa-solid fa-sliders"></i>
-            </div>
-            <div class="hiw__step-content">
-              <div class="hiw__step-num">01</div>
-              <h3 class="hiw__step-title">Tell us your goals</h3>
-              <p class="hiw__step-desc">Improving confidence? Dressing more professionally? Looking better on dates? Pick three goals and we'll tailor everything to what matters to you.</p>
-            </div>
-          </div>
 
           <div class="hiw__step animate-fade-up">
             <div class="hiw__step-icon" aria-hidden="true">
               <i class="fa-solid fa-camera"></i>
             </div>
             <div class="hiw__step-content">
-              <div class="hiw__step-num">02</div>
+              <div class="hiw__step-num">01</div>
               <h3 class="hiw__step-title">Upload your photos</h3>
-              <p class="hiw__step-desc">Share one to three photos of yourself — face visible. That's everything we need to begin your personal analysis.</p>
+              <p class="hiw__step-desc">Three photos is enough. Just make sure your face is visible — that's it.</p>
             </div>
           </div>
 
-        
+          <div class="hiw__step animate-fade-up" style="transition-delay: 0.1s;">
+            <div class="hiw__step-icon" aria-hidden="true">
+              <i class="fa-solid fa-sliders"></i>
+            </div>
+            <div class="hiw__step-content">
+              <div class="hiw__step-num">02</div>
+              <h3 class="hiw__step-title">Tell us your goals</h3>
+              <p class="hiw__step-desc">Pick three goals — confidence, work, dating, whatever it is. Everything in your report is shaped around them.</p>
+            </div>
+          </div>
 
           <div class="hiw__step animate-fade-up" style="transition-delay: 0.2s;">
             <div class="hiw__step-icon" aria-hidden="true">
-             <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <i class="fa-solid fa-sparkles"></i>
             </div>
             <div class="hiw__step-content">
               <div class="hiw__step-num">03</div>
               <h3 class="hiw__step-title">Get your style report</h3>
-              <p class="hiw__step-desc">Receive a full personalized report — your best colors, accessories, frame shapes, silhouettes, and curated outfit mood boards.</p>
+              <p class="hiw__step-desc">Your report covers colors, accessories, eyewear, and outfit boards — all specific to how you actually look.</p>
             </div>
           </div>
 
@@ -728,13 +728,10 @@
       <div class="container">
 
         <div class="wyg__header animate-fade-up">
-          <div class="eyebrow" style="margin-bottom: var(--space-3);">Your report includes</div>
+          <div class="eyebrow" style="margin-bottom: var(--space-3);">What's in your report</div>
           <h2 class="heading-lg" id="wyg-heading" style="max-width: 440px;">
-            Everything you need to<br><em class="text-italic">dress with intention</em>
+            Specific to you.<br><em class="text-italic">Not generic advice.</em>
           </h2>
-          <p class="lead" style="margin-top: var(--space-4); max-width: 480px;">
-            No more guessing what works. Your report is specific to your appearance and goals — not generic advice.
-          </p>
         </div>
 
         <div class="wyg__grid">
@@ -745,7 +742,7 @@
             </div>
             <div>
               <h3 class="wyg__item-title">Color intelligence</h3>
-              <p class="wyg__item-desc">Your best colors, accent shades, colors to avoid, and high-contrast pairings — based on your skin tone and undertone.</p>
+              <p class="wyg__item-desc">Your best colors, what to pair them with, and what to avoid — based on your actual skin tone and undertone.</p>
             </div>
           </div>
 
@@ -755,7 +752,7 @@
             </div>
             <div>
               <h3 class="wyg__item-title">Jewelry & accessories</h3>
-              <p class="wyg__item-desc">Metals, chain styles, watch recommendations, and leather tones that complement your features and aesthetic.</p>
+              <p class="wyg__item-desc">Which metals, chain weights, and leather tones actually work with your coloring.</p>
             </div>
           </div>
 
@@ -765,7 +762,7 @@
             </div>
             <div>
               <h3 class="wyg__item-title">Eyewear & frames</h3>
-              <p class="wyg__item-desc">Frame shapes, proportions, and materials that suit your face structure — for glasses and sunglasses alike.</p>
+              <p class="wyg__item-desc">Shapes and proportions that suit your face — for everyday glasses and sunglasses.</p>
             </div>
           </div>
 
@@ -775,7 +772,7 @@
             </div>
             <div>
               <h3 class="wyg__item-title">Outfit mood boards</h3>
-              <p class="wyg__item-desc">Scenario-based curated looks you can swipe through — styled for your goals, proportions, and palette. Real outfits, not abstract inspiration.</p>
+              <p class="wyg__item-desc">Swipeable outfit boards for real situations — styled around your goals, your palette, and your body.</p>
             </div>
           </div>
 
@@ -805,7 +802,7 @@
           </h2>
 
           <p class="lead fit-check__desc">
-            Scan any outfit — yours or one you've spotted online — and get instant feedback on fit, color harmony, and proportion against your style profile.
+            Scan any outfit — yours, or one you've seen online — and see how it stacks up against your profile.
           </p>
 
           <button
@@ -815,11 +812,11 @@
             aria-label="Notify me when Fit Check launches"
           >
             <i class="fa-regular fa-bell" aria-hidden="true"></i>
-            Notify me when it's ready
+            Let me know when it's ready
           </button>
 
           <p class="text-faint" style="margin-top: var(--space-4); font-size: var(--text-xs);">
-            We're measuring interest — no commitment required.
+            No commitment. Just a heads-up when it's live.
           </p>
         </div>
 
@@ -833,20 +830,20 @@
       <div class="container" style="max-width: 640px;">
 
         <div class="cta-band__eyebrow animate-fade-up">
-          <i class="fa-solid fa-sparkles" aria-hidden="true"></i>
-          Free to start
+          
+          Free · No subscription
         </div>
 
         <h2 class="cta-band__headline animate-fade-up" id="cta-heading">
-          Your style,<br><em>finally</em> decoded.
+          Start knowing<br>what <em>works</em> for you.
         </h2>
 
         <p class="cta-band__lead animate-fade-up">
-          Upload your photos, pick your goals, and receive a personalized report in under a minute. No subscription. No guesswork.
+          Upload a few photos, pick your goals, get your report. Free, no subscription.
         </p>
 
-        <a href="./signup.html" class="btn btn--accent btn--lg animate-fade-up">
-          Check my style profile
+        <a href="/signup.html" class="btn btn--accent btn--lg animate-fade-up">
+          Get my style breakdown
           <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
         </a>
 
@@ -863,7 +860,7 @@
 
       <div>
         <div class="footer__logo">Aloura<span>.</span></div>
-        <p class="footer__tagline">Your personal style intelligence.</p>
+        <p class="footer__tagline">Know what works for you.</p>
       </div>
 
       <nav aria-label="Footer navigation">
@@ -898,9 +895,9 @@
       <div class="modal__icon" aria-hidden="true">
         <i class="fa-solid fa-camera-retro"></i>
       </div>
-      <h3 class="modal__title" id="modal-title">Fit Check is coming</h3>
+      <h3 class="modal__title" id="modal-title">You're on the list</h3>
       <p class="modal__body">
-        We're actively building it. By clicking Notify Me, you've registered your interest — we'll let you know the moment it's live. Thank you for being here early.
+        We'll send you a message the moment Fit Check is ready. Thanks for the interest.
       </p>
       <button type="button" class="btn btn--primary btn--full" id="modal-close" aria-label="Close">
         Got it

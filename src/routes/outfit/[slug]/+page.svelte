@@ -1,0 +1,207 @@
+<script lang="ts">
+  import { createSupabaseBrowserClient } from '$lib/supabase';
+  import { goto } from '$app/navigation';
+  import BrandChips from '$lib/BrandChips.svelte';
+  import type { MoodBoard, Piece } from '$lib/types';
+
+  let { data } = $props();
+  const supabase = createSupabaseBrowserClient();
+
+  const board: MoodBoard = data.board;
+
+  const displayPieces = board.pieces ?? [];
+  const totalPrice = displayPieces.reduce((s: number, p: any) => s + (p.price ?? 0), 0);
+
+  async function onBrandSelect(brand: { id: string; name: string }) {
+    // Navigate straight to the compare page — board copying + product search happens there
+    goto(`/outfit/compare/${board.slug}?stores=${brand.name.toLowerCase()}`);
+  }
+</script>
+
+<svelte:head>
+  <title>{board.title} — Aloura Outfit</title>
+  <meta name="description" content={board.description ?? `A curated outfit for ${board.occasion} from Aloura.`} />
+  <meta property="og:title"       content="{board.title} — Aloura" />
+  <meta property="og:description" content={board.description ?? ''} />
+  {#if board.image_url}<meta property="og:image" content={board.image_url} />{/if}
+  <link rel="canonical" href="https://www.aloura.co/outfit/{board.slug}" />
+</svelte:head>
+
+<div class="outfit-page">
+
+  <!-- STICKY BRAND STRIP -->
+  <div class="brand-strip">
+    <div class="brand-strip__inner">
+      <span class="brand-strip__label">Compare this outfit at another store</span>
+      <BrandChips onselect={onBrandSelect} />
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- HERO -->
+    <div class="outfit-hero">
+      {#if board.image_url}
+        <img src={board.image_url} alt={board.title} class="outfit-hero__img" />
+      {/if}
+      <div class="outfit-hero__info">
+        <h1 class="outfit-title" style="margin-bottom:var(--space-5)">{board.title}</h1>
+        <div class="outfit-meta">
+          <div class="outfit-meta__item">
+            <span class="outfit-meta__label">Est. total</span>
+            <span class="outfit-meta__value">${totalPrice.toFixed(0)}</span>
+          </div>
+          <div class="outfit-meta__item">
+            <span class="outfit-meta__label">Pieces</span>
+            <span class="outfit-meta__value">{displayPieces.length}</span>
+          </div>
+        </div>
+        {#if board.colors?.length}
+          <div class="outfit-colors">
+            {#each board.colors as hex}
+              <div class="outfit-color-dot" style="background:{hex}" title={hex}></div>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    </div>
+
+    <!-- PIECES LIST -->
+    <section class="pieces-section">
+      <div class="pieces-list">
+        {#each displayPieces as piece, i}
+          <a
+            class="piece-row"
+            href={piece.slug ? `/outfit/product/${piece.slug}` : (piece.url ?? '#')}
+            target={piece.slug ? '_self' : '_blank'}
+            rel={piece.slug ? '' : 'noopener sponsored'}
+          >
+            <!-- Image -->
+            <div class="piece-row__img-wrap">
+              {#if piece.image_url}
+                <img src={piece.image_url} alt={piece.name ?? ''} class="piece-row__img" loading="lazy" />
+              {:else}
+                <div class="piece-row__img piece-row__img--ph"><i class="fas fa-tshirt"></i></div>
+              {/if}
+            </div>
+
+            <!-- Info -->
+            <div class="piece-row__info">
+              <div class="piece-row__brand">
+                {piece.store ?? 'Online'}
+                {#if piece.compared}<span class="compared-badge">compared</span>{/if}
+              </div>
+              <div class="piece-row__name">{piece.name ?? 'Item'}</div>
+              {#if piece.style && piece.style !== piece.store}
+                <div class="piece-row__style">{piece.style}</div>
+              {/if}
+            </div>
+
+            <!-- Price + caret -->
+            <div class="piece-row__right">
+              {#if piece.price}
+                <span class="piece-row__price">${piece.price.toFixed(0)}</span>
+              {/if}
+              <i class="fas fa-chevron-right piece-row__caret"></i>
+            </div>
+          </a>
+        {/each}
+      </div>
+    </section>
+
+
+  </div>
+</div>
+
+<style>
+  .outfit-page { padding-top: var(--nav-h); padding-bottom: var(--space-20); }
+
+  /* ── Brand strip ── */
+  .brand-strip {
+    position: sticky; top: var(--nav-h); z-index: 100;
+    background: rgba(253,251,248,0.96); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--clr-border);
+    padding: 10px var(--page-px) 8px;
+  }
+  .brand-strip__inner { max-width: var(--max-w); margin: 0 auto; }
+  .brand-strip__label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: var(--text-xs); color: var(--clr-text-muted);
+    margin-bottom: 8px; font-weight: 400;
+  }
+  .brand-strip__label strong { color: var(--clr-charcoal); font-weight: 600; }
+  .clear-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: var(--text-xs); color: var(--clr-terracotta);
+    font-family: var(--font-body); padding: 0; margin-left: 4px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .strip-spinner {
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid var(--clr-light-taupe); border-top-color: var(--clr-terracotta);
+    animation: spin 0.8s linear infinite; flex-shrink: 0;
+  }
+
+  /* ── Hero ── */
+  .outfit-hero { display: flex; flex-direction: column; gap: var(--space-8); padding-top: var(--space-10); margin-bottom: var(--space-12); }
+  .outfit-hero__img { width: 100%; max-width: 360px; border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); object-fit: cover; aspect-ratio: 3/4; }
+  .outfit-title { font-family: var(--font-display); font-size: clamp(20px, 3vw, 28px); font-weight: 500; line-height: 1.2; letter-spacing: -0.3px; color: var(--clr-charcoal); }
+
+  .outfit-meta { display: flex; gap: var(--space-5); margin-top: var(--space-4); }
+  .outfit-meta__item { display: flex; flex-direction: column; gap: 2px; }
+  .outfit-meta__label { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--clr-text-muted); font-weight: 500; }
+  .outfit-meta__value { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 500; }
+  .outfit-colors { display: flex; gap: var(--space-2); margin-top: var(--space-4); flex-wrap: wrap; }
+  .outfit-color-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--clr-off-white); box-shadow: var(--shadow-sm); }
+
+  /* ── Pieces list ── */
+  .pieces-section { margin-bottom: var(--space-16); }
+  .section-title { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 500; margin-bottom: var(--space-6); }
+  .compare-error { font-size: var(--text-sm); color: #a33020; margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
+
+  .pieces-list { display: flex; flex-direction: column; border: 1px solid var(--clr-border); border-radius: var(--radius-xl); overflow: hidden; }
+
+  .piece-row {
+    display: flex; align-items: center; gap: var(--space-4);
+    padding: var(--space-4); text-decoration: none; color: inherit;
+    border-bottom: 1px solid var(--clr-border);
+    transition: background var(--dur-fast);
+  }
+  .piece-row:last-child { border-bottom: none; }
+  .piece-row:hover { background: var(--clr-cream); }
+
+  .piece-row__img-wrap { flex-shrink: 0; }
+  .piece-row__img {
+    width: 64px; height: 64px; border-radius: var(--radius-md);
+    object-fit: cover; display: block;
+  }
+  .piece-row__img--ph {
+    background: var(--clr-light-taupe); display: flex; align-items: center;
+    justify-content: center; color: var(--clr-taupe); font-size: 20px;
+  }
+  .piece-row__skeleton { background: var(--clr-light-taupe); animation: shimmer 1.2s ease infinite; }
+
+  .piece-row__info { flex: 1; min-width: 0; }
+  .piece-row__brand {
+    font-size: var(--text-xs); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--clr-taupe); margin-bottom: 3px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .piece-row__name { font-size: var(--text-sm); font-weight: 500; color: var(--clr-charcoal); line-height: 1.4; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .piece-row__style { font-size: var(--text-xs); font-weight: 300; color: var(--clr-text-muted); }
+
+  .piece-row__right { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
+  .piece-row__price { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 500; color: var(--clr-charcoal); }
+  .piece-row__caret { font-size: 11px; color: var(--clr-light-taupe); }
+
+  .compared-badge {
+    background: rgba(196,144,106,0.12); color: var(--clr-terracotta);
+    border-radius: 999px; padding: 2px 8px; font-size: 9px;
+    font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+
+  /* ── CTA ── */
+  .outfit-cta { background: var(--clr-beige); border-radius: var(--radius-xl); padding: var(--space-12); text-align: center; }
+
+  @media (min-width: 640px) { .outfit-hero { flex-direction: row; align-items: flex-start; } }
+</style>

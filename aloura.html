@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aloura — Discover Outfits</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sand:     #F7F3EE;
+      --cream:    #FBF8F4;
+      --off:      #FDFBF8;
+      --charcoal: #1E1E1E;
+      --brown:    #6B4F3A;
+      --taupe:    #9E8C7E;
+      --mist:     #E8E0D8;
+      --accent:   #C4906A;
+      --r: 14px;
+    }
+    html { scroll-behavior: smooth; }
+    /* Profile avatar — fixed bottom right */
+    .profile-avatar {
+      position: fixed; bottom: 24px; right: 20px; z-index: 300;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      cursor: pointer; background: none; border: none; padding: 0;
+      text-decoration: none;
+    }
+    .profile-avatar__circle {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: var(--charcoal); border: 2.5px solid var(--off);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .profile-avatar:hover .profile-avatar__circle {
+      transform: scale(1.07);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.22);
+    }
+    .profile-avatar__circle img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .profile-avatar__circle i {
+      font-size: 20px; color: rgba(255,255,255,0.7);
+    }
+    .profile-avatar__label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px; font-weight: 500;
+      color: var(--taupe); letter-spacing: 0.05em;
+    }
+
+        body { font-family: 'DM Sans', sans-serif; background: var(--sand); color: var(--charcoal); min-height: 100vh; overflow-x: hidden; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(247,243,238,0.95); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(158,140,126,0.15);
+      padding: 10px 16px;
+    }
+
+    /* ── SEARCH ROW ── */
+    .search-row { display: flex; flex-direction: column; gap: 10px; }
+    .search-row.hidden { display: none; }
+
+    /* ChatGPT-style search box */
+    .search-box {
+      display: flex; align-items: flex-end; gap: 0;
+      background: #fff; border: 1.5px solid var(--mist);
+      border-radius: 18px; padding: 8px 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      min-height: 52px;
+    }
+    .search-box:focus-within { border-color: var(--brown); box-shadow: 0 0 0 3px rgba(107,79,58,0.1); }
+
+    /* Plus / attach button inside box */
+    .sb-plus {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 1.5px solid var(--mist); background: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--taupe); font-size: 14px;
+      flex-shrink: 0; transition: all 0.15s; align-self: flex-end;
+    }
+    .sb-plus:hover { border-color: var(--brown); color: var(--brown); }
+    .sb-plus.has-image { background: var(--brown); border-color: var(--brown); color: white; }
+
+    /* Image thumbnail inside search box */
+    .sb-thumb-wrap {
+      position: relative; margin: 0 8px 0 6px;
+      flex-shrink: 0; align-self: flex-end;
+      display: none;
+    }
+    .sb-thumb-wrap.visible { display: block; }
+    .sb-thumb {
+      width: 40px; height: 40px; border-radius: 8px;
+      object-fit: cover; display: block; border: 1.5px solid var(--mist);
+    }
+    .sb-thumb-remove {
+      position: absolute; top: -5px; right: -5px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--charcoal); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 8px;
+    }
+
+    /* Text input */
+    .sb-input {
+      flex: 1; border: none; outline: none; background: none;
+      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 400;
+      color: var(--charcoal); resize: none; line-height: 1.5;
+      min-height: 32px; max-height: 120px; padding: 4px 8px;
+      align-self: flex-end;
+    }
+    .sb-input::placeholder { color: #b0a89e; }
+
+    /* Send / search button */
+    .sb-send {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--charcoal); border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: white; font-size: 13px;
+      flex-shrink: 0; align-self: flex-end;
+      transition: background 0.18s; opacity: 0.3;
+    }
+    .sb-send.active { opacity: 1; }
+    .sb-send:hover { background: var(--brown); }
+
+    /* Fit Check button — separated, distinct */
+    .fit-check-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 9px 14px; border-radius: 22px;
+      border: 1.5px solid rgba(107,79,58,0.25);
+      background: rgba(107,79,58,0.04); cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+      color: var(--brown); transition: all 0.18s; align-self: flex-start;
+      width: fit-content;
+    }
+    .fit-check-btn:hover { background: rgba(107,79,58,0.09); border-color: var(--brown); }
+    .fit-check-btn i { font-size: 14px; }
+
+    /* Hidden file input */
+    #file-input { display: none; }
+
+    /* ── CHIPS ROW ── */
+    .chips-row {
+      display: flex; gap: 7px; align-items: center;
+      overflow-x: auto; padding: 4px 0 0;
+      scrollbar-width: none;
+    }
+    .chips-row::-webkit-scrollbar { display: none; }
+    .chip {
+      display: flex; align-items: center; gap: 5px;
+      height: 32px; padding: 0 11px;
+      border: 1.5px solid var(--mist); border-radius: 16px;
+      background: #fff; cursor: pointer; flex-shrink: 0;
+      font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
+      color: var(--charcoal); white-space: nowrap;
+      transition: all 0.15s; user-select: none;
+    }
+    .chip.selected { background: var(--charcoal); border-color: var(--charcoal); color: white; }
+    .chip.selected .chip-logo { filter: brightness(10); }
+    .chip:hover:not(.selected) { border-color: var(--taupe); }
+    .chip-logo { width: 14px; height: 14px; border-radius: 2px; object-fit: contain; }
+    .chip-logo-ph { width: 14px; height: 14px; border-radius: 2px; background: var(--mist); display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 700; color: var(--taupe); }
+    .chip.selected .chip-logo-ph { background: rgba(255,255,255,0.2); color: white; }
+
+    /* ── DETAIL HEADER ── */
+    .detail-row {
+      display: none; align-items: center; gap: 10px;
+      padding-bottom: 8px;
+    }
+    .detail-row.visible { display: flex; }
+    .back-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1.5px solid var(--mist); background: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--charcoal); font-size: 12px; flex-shrink: 0;
+      transition: all 0.18s;
+    }
+    .back-btn:hover { border-color: var(--brown); color: var(--brown); }
+    .detail-heading h1 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 500; }
+    .detail-heading .by { font-size: 10px; font-weight: 300; color: var(--taupe); margin-top: 1px; }
+
+    /* ── MAIN ── */
+    .main { padding: 16px; }
+
+    /* ── GENERATING STATE ── */
+    .generating-card {
+      background: linear-gradient(135deg, var(--cream), var(--sand));
+      border: 1px solid var(--mist); border-radius: 16px;
+      padding: 48px 24px; text-align: center; margin-bottom: 16px;
+    }
+    .gen-spinner { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--mist); border-top-color: var(--accent); animation: spin 0.9s linear infinite; margin: 0 auto 14px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .gen-label { font-size: 14px; font-weight: 300; color: var(--taupe); }
+
+    /* ── MASONRY GRID ── */
+    .grid-view { display: none; }
+    .grid-view.visible { display: block; }
+    .masonry { columns: 2; column-gap: 10px; }
+    @media (min-width: 640px) { .masonry { columns: 3; } }
+    @media (min-width: 900px) { .masonry { columns: 4; } }
+
+    .board-card {
+      break-inside: avoid; margin-bottom: 10px;
+      border-radius: 14px; overflow: hidden; background: #fff;
+      cursor: pointer; box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .board-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .board-card__img { width: 100%; display: block; object-fit: cover; background: var(--mist); }
+    .board-card__info { padding: 10px 12px 12px; }
+    .board-card__occasion { font-size: 12px; font-weight: 500; margin-bottom: 4px; }
+    .board-card__meta { display: flex; align-items: center; justify-content: space-between; }
+    .board-card__price { font-size: 12px; font-weight: 600; color: var(--brown); }
+    .board-card__count { font-size: 10px; font-weight: 300; color: var(--taupe); }
+    .board-card__store { font-size: 10px; font-weight: 400; color: var(--taupe); margin-top: 3px; }
+
+    /* ── DETAIL VIEW ── */
+    .detail-view { display: none; }
+    .detail-view.visible { display: block; }
+    .pieces-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .piece-card {
+      background: #fff; border-radius: 14px;
+      padding: 14px; display: flex; gap: 13px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+      transition: box-shadow 0.18s;
+    }
+    .piece-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.09); }
+    .piece-img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; background: var(--mist); flex-shrink: 0; }
+    .piece-img-ph { width: 80px; height: 80px; border-radius: 10px; background: var(--mist); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--taupe); }
+    .piece-info { flex: 1; min-width: 0; }
+    .piece-store { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
+    .piece-name { font-size: 13px; color: var(--charcoal); line-height: 1.4; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .piece-price { font-size: 14px; font-weight: 600; margin-bottom: 9px; }
+    .piece-actions { display: flex; gap: 7px; }
+    .piece-btn { padding: 6px 13px; border-radius: 18px; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .piece-btn--buy { background: var(--charcoal); color: white; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+    .piece-btn--buy:hover { background: var(--brown); }
+    .piece-btn--compare { background: none; border: 1.5px solid var(--mist); color: var(--taupe); }
+    .piece-btn--compare:hover { border-color: var(--taupe); color: var(--charcoal); }
+
+    /* Compare loading state */
+    .compare-section { margin-top: 10px; }
+    .compare-loading { display: flex; align-items: center; gap: 8px; padding: 10px 0; font-size: 12px; color: var(--taupe); font-weight: 300; }
+    .compare-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--mist); border-top-color: var(--accent); animation: spin 0.8s linear infinite; flex-shrink: 0; }
+    .compare-result { display: flex; gap: 10px; align-items: center; padding: 8px; background: var(--sand); border-radius: 10px; margin-top: 5px; }
+    .compare-result img { width: 44px; height: 44px; border-radius: 7px; object-fit: cover; background: var(--mist); flex-shrink: 0; }
+    .compare-result-info { flex: 1; min-width: 0; }
+    .compare-result-store { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+    .compare-result-name { font-size: 11px; color: var(--charcoal); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+    .compare-result-price { font-size: 11px; font-weight: 600; color: var(--charcoal); }
+    .compare-result-buy { font-size: 10px; font-weight: 600; color: white; background: var(--brown); border: none; padding: 4px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; flex-shrink: 0; }
+
+    /* ── EMPTY ── */
+    .empty { text-align: center; padding: 56px 24px; font-size: 14px; font-weight: 300; color: var(--taupe); }
+    .empty i { font-size: 28px; margin-bottom: 10px; display: block; color: var(--mist); }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+
+    <!-- Search row -->
+    <div class="search-row" id="search-row">
+
+      <!-- ChatGPT-style search box -->
+      <div class="search-box" id="search-box">
+        <!-- Plus / image attach button -->
+        <button class="sb-plus" id="sb-plus" title="Attach image" aria-label="Upload image">
+          <i class="fas fa-plus"></i>
+        </button>
+        <input type="file" id="file-input" accept="image/*">
+
+        <!-- Image thumbnail (shown after upload) -->
+        <div class="sb-thumb-wrap" id="sb-thumb-wrap">
+          <img class="sb-thumb" id="sb-thumb" src="" alt="Uploaded image">
+          <button class="sb-thumb-remove" id="sb-thumb-remove" aria-label="Remove image">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Text input -->
+        <textarea class="sb-input" id="sb-input"
+          placeholder="Date night, casual work look, gym outfit…"
+          rows="1" aria-label="Search or describe an outfit"></textarea>
+
+        <!-- Send button -->
+        <button class="sb-send" id="sb-send" aria-label="Search">
+          <i class="fas fa-arrow-up"></i>
+        </button>
+      </div>
+
+      <!-- Fit Check — distinct button below search box -->
+      <button class="fit-check-btn" id="fit-check-btn" aria-label="Fit Check — coming soon">
+        <i class="fas fa-camera"></i>
+        Fit Check
+        <span style="font-size:9px;font-weight:400;color:var(--taupe);letter-spacing:0.05em;">· soon</span>
+      </button>
+
+      <!-- Brand chips -->
+      <div class="chips-row" id="chips-row"></div>
+
+    </div>
+
+    <!-- Detail row (shown inside board) -->
+    <div class="detail-row" id="detail-row">
+      <button class="back-btn" id="back-btn" aria-label="Back"><i class="fas fa-arrow-left"></i></button>
+      <div class="detail-heading">
+        <h1 id="detail-title">Outfit</h1>
+        <div class="by">by Aloura</div>
+      </div>
+    </div>
+
+    <!-- Chips always visible in detail too -->
+    <div class="chips-row" id="chips-row-detail" style="margin-top:6px;display:none;"></div>
+
+  </div>
+
+  <div class="main">
+    <div class="grid-view visible" id="grid-view">
+      <div id="masonry" class="masonry"></div>
+    </div>
+    <div class="detail-view" id="detail-view">
+      <div class="pieces-list" id="pieces-list"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    const { createClient } = supabase;
+    const SUPABASE_URL  = 'https://uaydumvwlatbwcqdtluv.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVheWR1bXZ3bGF0YndjcWR0bHV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzM0NTUsImV4cCI6MjA5NTAwOTQ1NX0.nolSdxlP-esK3x8-oEq_e9Ruk8QY-DfULA2BJySd3UY';
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // ── BRANDS ────────────────────────────────────────────────
+    const BRANDS = [
+      { id:'amazon',   name:'Amazon Fashion' },   { id:'asos',    name:'ASOS' },
+      { id:'zara',     name:'Zara' },              { id:'hm',      name:'H&M' },
+      { id:'uniqlo',   name:'Uniqlo' },            { id:'aritzia', name:'Aritzia' },
+      { id:'nike',     name:'Nike' },              { id:'adidas',  name:'Adidas' },
+      { id:'lululemon',name:'Lululemon' },         { id:'shein',   name:'SHEIN' },
+      { id:'fashionnova',name:'Fashion Nova' },    { id:'boohoo',  name:'Boohoo' },
+      { id:'abercrombie',name:'Abercrombie' },     { id:'hollister',name:'Hollister' },
+      { id:'urbanoutfitters',name:'Urban Outfitters' },
+      { id:'ssense',   name:'SSENSE' },            { id:'nordstrom',name:'Nordstrom' },
+      { id:'oldnavy',  name:'Old Navy' },          { id:'gap',     name:'Gap' },
+      { id:'levis',    name:"Levi's" },            { id:'facebook',name:'Facebook Mkt' },
+    ];
+
+    // ── STATE ─────────────────────────────────────────────────
+    let selectedBrand = null; // only one at a time in main search
+    let currentBoard  = null;
+    let uploadedFile  = null;  // File object
+    let uploadedB64   = null;  // base64 string
+    let uploadedType  = null;  // mime type
+    let boards        = [];    // generated boards
+
+    // Get account_id from Supabase session
+    let accountId = null;
+    async function resolveAccount() {
+      const { data: { user } } = await db.auth.getUser();
+      if (!user) return;
+      const { data: acct } = await db.from('accounts').select('id').eq('auth_id', user.id).maybeSingle();
+      if (acct) accountId = acct.id;
+      // Set avatar href + load profile photo
+      const reportId = localStorage.getItem('aloura_report_id');
+      if (reportId) {
+        document.getElementById('profile-avatar').href = `view_report.html?id=${reportId}`;
+        // Load first profile image for avatar
+        const { data: rep } = await db
+          .from('style_reports')
+          .select('profile_image_1_id')
+          .eq('id', reportId)
+          .maybeSingle();
+        if (rep?.profile_image_1_id) {
+          const { data: img } = await db
+            .from('profile_images')
+            .select('image_url')
+            .eq('id', rep.profile_image_1_id)
+            .maybeSingle();
+          if (img?.image_url) {
+            document.getElementById('avatar-circle').innerHTML =
+              `<img src="${img.image_url}" alt="My profile">`;
+          }
+        }
+      }
+    }
+    resolveAccount();
+
+    // ── SEARCH BOX LOGIC ─────────────────────────────────────
+    const sbInput  = document.getElementById('sb-input');
+    const sbSend   = document.getElementById('sb-send');
+    const sbPlus   = document.getElementById('sb-plus');
+    const fileInput = document.getElementById('file-input');
+    const thumbWrap = document.getElementById('sb-thumb-wrap');
+    const thumb     = document.getElementById('sb-thumb');
+
+    // Auto-resize textarea
+    sbInput.addEventListener('input', () => {
+      sbInput.style.height = 'auto';
+      sbInput.style.height = Math.min(sbInput.scrollHeight, 120) + 'px';
+      sbSend.classList.toggle('active', !!sbInput.value.trim() || !!uploadedFile);
+    });
+
+    // Enter to search
+    sbInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSearch(); }
+    });
+    sbSend.addEventListener('click', doSearch);
+
+    // Plus button — open file picker
+    sbPlus.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      uploadedFile = file;
+      uploadedType = file.type;
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        const result = e.target.result;
+        // Get base64 portion
+        uploadedB64 = result.split(',')[1];
+        // Show thumbnail
+        thumb.src = result;
+        thumbWrap.classList.add('visible');
+        sbPlus.classList.add('has-image');
+        sbSend.classList.add('active');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('sb-thumb-remove').addEventListener('click', () => {
+      uploadedFile = uploadedB64 = uploadedType = null;
+      fileInput.value = '';
+      thumbWrap.classList.remove('visible');
+      sbPlus.classList.remove('has-image');
+      sbSend.classList.toggle('active', !!sbInput.value.trim());
+    });
+
+    // ── CHIPS ────────────────────────────────────────────────
+    function renderChips(containerId, onSelect) {
+      const row = document.getElementById(containerId);
+      row.innerHTML = BRANDS.map(b => `
+        <button class="chip${selectedBrand === b.id ? ' selected' : ''}" data-id="${b.id}">
+          <img class="chip-logo" src="assets/logos/${b.id}.png" alt=""
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <span class="chip-logo-ph" style="display:none">${b.name.slice(0,3).toUpperCase()}</span>
+          ${b.name}
+        </button>`).join('');
+      row.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const id   = chip.dataset.id;
+          const name = BRANDS.find(b => b.id === id)?.name ?? '';
+          onSelect(id, name, chip);
+        });
+      });
+    }
+
+    function updateChipUI() {
+      document.querySelectorAll('.chip').forEach(c => {
+        c.classList.toggle('selected', c.dataset.id === selectedBrand);
+      });
+    }
+
+    // Main chips — selecting triggers a new board generation
+    renderChips('chips-row', (id, name, chip) => {
+      if (selectedBrand === id) {
+        selectedBrand = null;
+      } else {
+        selectedBrand = id;
+      }
+      updateChipUI();
+      // Re-generate with new store if there's already a query
+      const q = sbInput.value.trim();
+      if (q || uploadedFile) doSearch();
+    });
+
+    // Detail chips — triggers store comparison
+    renderChips('chips-row-detail', async (id, name) => {
+      if (!currentBoard) return;
+      selectedBrand = (selectedBrand === id) ? null : id;
+      updateChipUI();
+      if (selectedBrand && currentBoard) {
+        await runStoreComparison(currentBoard, name);
+      } else {
+        // Restore original pieces
+        renderPieces(currentBoard);
+      }
+    });
+
+    // ── SEARCH / GENERATE ─────────────────────────────────────
+    async function doSearch() {
+      const goal = sbInput.value.trim();
+      if (!goal && !uploadedFile) return;
+
+      const store = selectedBrand ? (BRANDS.find(b => b.id === selectedBrand)?.name ?? '') : '';
+
+      // Show loading state
+      showGridLoading(goal || 'your style');
+
+      try {
+        const body = {
+          account_id: accountId ?? 'anonymous',
+          goal:       goal || 'general outfit',
+          store,
+          ...(uploadedB64 ? { image_b64: uploadedB64, image_type: uploadedType } : {}),
+        };
+
+        const { data, error } = await db.functions.invoke('aloura_outfit_board_generator', { body });
+        if (error) throw error;
+        if (!data?.mood_board) throw new Error('No board returned');
+
+        // Prepend new board to list
+        boards.unshift(data.mood_board);
+        renderGrid();
+
+      } catch (err) {
+        console.error('[search]', err);
+        document.getElementById('masonry').innerHTML = `
+          <div class="empty" style="column-span:all">
+            <i class="fas fa-exclamation-circle"></i>
+            Couldn't generate an outfit. Check your connection and try again.
+          </div>`;
+      }
+    }
+
+    function showGridLoading(label) {
+      document.getElementById('grid-view').classList.add('visible');
+      document.getElementById('detail-view').classList.remove('visible');
+      document.getElementById('masonry').innerHTML = `
+        <div class="generating-card" style="column-span:all">
+          <div class="gen-spinner"></div>
+          <p class="gen-label">Building your outfit for <em>${label}</em>…</p>
+        </div>`;
+    }
+
+    // ── RENDER GRID ───────────────────────────────────────────
+    function renderGrid() {
+      document.getElementById('grid-view').classList.add('visible');
+      document.getElementById('detail-view').classList.remove('visible');
+      const masonry = document.getElementById('masonry');
+
+      if (!boards.length) {
+        masonry.innerHTML = `<div class="empty" style="column-span:all">
+          <i class="fas fa-tshirt"></i>
+          Type an occasion above or upload an image to get started.
+        </div>`;
+        return;
+      }
+
+      const heights = [240, 300, 260, 340, 220, 280, 320, 200];
+      masonry.innerHTML = boards.map((b, i) => {
+        const h = heights[i % heights.length];
+        const total = (b.pieces ?? []).reduce((s, p) => s + (p.price ?? 0), 0);
+        return `
+          <div class="board-card" data-idx="${i}" role="button" tabindex="0">
+            <img class="board-card__img" src="${b.image_url || ''}" alt="${b.occasion}"
+              loading="lazy" style="height:${h}px" onerror="this.style.background='#E8E0D8'">
+            <div class="board-card__info">
+              <div class="board-card__occasion">${b.occasion || b.goal}</div>
+              <div class="board-card__store">${b.pieces?.[0]?.style || ''}</div>
+              <div class="board-card__meta">
+                <span class="board-card__price">${total > 0 ? '$' + total.toFixed(0) + ' total' : ''}</span>
+                <span class="board-card__count">${(b.pieces ?? []).length} pieces</span>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+
+      masonry.querySelectorAll('.board-card').forEach(card => {
+        const open = () => openBoard(parseInt(card.dataset.idx));
+        card.addEventListener('click', open);
+        card.addEventListener('keydown', e => { if (e.key === 'Enter') open(); });
+      });
+    }
+
+    // ── OPEN BOARD ────────────────────────────────────────────
+    function openBoard(idx) {
+      currentBoard = boards[idx];
+      if (!currentBoard) return;
+      document.getElementById('search-row').classList.add('hidden');
+      document.getElementById('detail-row').classList.add('visible');
+      document.getElementById('chips-row-detail').style.display = 'flex';
+      document.getElementById('detail-title').textContent = currentBoard.occasion || currentBoard.goal;
+      document.getElementById('grid-view').classList.remove('visible');
+      document.getElementById('detail-view').classList.add('visible');
+      selectedBrand = null; updateChipUI();
+      renderPieces(currentBoard);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('back-btn').addEventListener('click', () => {
+      currentBoard = null; selectedBrand = null; updateChipUI();
+      document.getElementById('search-row').classList.remove('hidden');
+      document.getElementById('detail-row').classList.remove('visible');
+      document.getElementById('chips-row-detail').style.display = 'none';
+      document.getElementById('grid-view').classList.add('visible');
+      document.getElementById('detail-view').classList.remove('visible');
+    });
+
+    // ── RENDER PIECES ─────────────────────────────────────────
+    function renderPieces(board, compareMap = {}) {
+      const list = document.getElementById('pieces-list');
+      list.innerHTML = (board.pieces ?? []).map(p => {
+        const comparePiece = compareMap[p.name];
+        const compareHTML = comparePiece === 'loading'
+          ? `<div class="compare-section"><div class="compare-loading"><div class="compare-spin"></div>Finding at ${selectedBrand ? BRANDS.find(b=>b.id===selectedBrand)?.name : 'store'}…</div></div>`
+          : comparePiece
+          ? `<div class="compare-section">
+              <div class="compare-result">
+                <img src="${comparePiece.image_url || ''}" alt="${comparePiece.name}" onerror="this.style.background='#E8E0D8'">
+                <div class="compare-result-info">
+                  <div class="compare-result-store">${comparePiece.store}</div>
+                  <div class="compare-result-name">${comparePiece.name}</div>
+                  <div class="compare-result-price">${comparePiece.price ? '$'+comparePiece.price.toFixed(2) : 'Price TBC'}</div>
+                </div>
+                ${comparePiece.url !== '#' ? `<a class="compare-result-buy" href="${comparePiece.url}" target="_blank" rel="noopener">Buy</a>` : ''}
+              </div>
+            </div>`
+          : '';
+
+        return `
+          <div class="piece-card">
+            ${p.image_url
+              ? `<img class="piece-img" src="${p.image_url}" alt="${p.name}" loading="lazy">`
+              : `<div class="piece-img-ph"><i class="fas fa-tshirt"></i></div>`}
+            <div class="piece-info">
+              <div class="piece-store">${p.store || p.style || 'Online'}</div>
+              <div class="piece-name">${p.name}</div>
+              <div class="piece-price">${p.price ? '$' + parseFloat(p.price).toFixed(2) : ''}</div>
+              <div class="piece-actions">
+                ${p.url && p.url !== '#'
+                  ? `<a class="piece-btn piece-btn--buy" href="${p.url}" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square" style="font-size:9px"></i>Buy</a>`
+                  : ''}
+                <button class="piece-btn piece-btn--compare" onclick="triggerCompare('${p.name.replace(/'/g,"\\'")}')">
+                  <i class="fas fa-magic" style="font-size:9px"></i> Compare
+                </button>
+              </div>
+              ${compareHTML}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── STORE COMPARISON ──────────────────────────────────────
+    async function runStoreComparison(board, storeName) {
+      // Show loading state for all pieces
+      const loadingMap = {};
+      (board.pieces ?? []).forEach(p => { loadingMap[p.name] = 'loading'; });
+      renderPieces(board, loadingMap);
+
+      try {
+        const { data, error } = await db.functions.invoke('outfit_store_comparer', {
+          body: {
+            account_id: accountId ?? 'anonymous',
+            store: storeName,
+            products: (board.pieces ?? []).map(p => ({
+              name: p.name,
+              keywords: p.keywords ?? p.name.split(' '),
+              colors: p.colors ?? [],
+            })),
+          },
+        });
+        if (error) throw error;
+
+        const compareMap = {};
+        (data.products ?? []).forEach((result, i) => {
+          const originalName = board.pieces?.[i]?.name ?? '';
+          compareMap[originalName] = result; // null if not found
+        });
+        renderPieces(board, compareMap);
+
+      } catch (err) {
+        console.error('[compare]', err);
+        renderPieces(board); // fallback to original
+      }
+    }
+
+    // Expose for inline onclick
+    window.triggerCompare = async function(pieceName) {
+      if (!currentBoard || !selectedBrand) {
+        // Show chip hint
+        const hint = document.createElement('div');
+        hint.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2C2C2C;color:white;font-family:DM Sans,sans-serif;font-size:13px;padding:10px 18px;border-radius:20px;z-index:9999;';
+        hint.textContent = 'Select a store chip above to compare';
+        document.body.appendChild(hint);
+        setTimeout(() => hint.remove(), 2200);
+        return;
+      }
+      const storeName = BRANDS.find(b => b.id === selectedBrand)?.name ?? '';
+      await runStoreComparison(currentBoard, storeName);
+    };
+
+    // ── FIT CHECK ────────────────────────────────────────────
+    document.getElementById('fit-check-btn').addEventListener('click', () => {
+      const t = document.createElement('div');
+      t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2C2C2C;color:white;font-family:DM Sans,sans-serif;font-size:13px;padding:10px 18px;border-radius:20px;z-index:9999;';
+      t.textContent = 'Fit Check coming soon — get notified at aloura.app';
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2500);
+    });
+
+    // ── INIT — load existing boards from DB ─────────────────
+    async function loadExistingBoards() {
+      document.getElementById('masonry').innerHTML = `
+        <div class="generating-card" style="column-span:all">
+          <div class="gen-spinner"></div>
+          <p class="gen-label">Loading your boards…</p>
+        </div>`;
+
+      try {
+        // Resolve account first
+        await resolveAccount();
+        if (!accountId) { renderGrid(); return; }
+
+        // Fetch all mood boards for this account, newest first
+        const { data: mbRows, error } = await db
+          .from('mood_boards')
+          .select('id, title, description, goal, occasion, colors, image_url, created_at')
+          .eq('account_id', accountId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        if (!mbRows?.length) { renderGrid(); return; }
+
+        // Fetch all pieces for these boards in one query
+        const mbIds = mbRows.map(b => b.id);
+        const { data: pieces } = await db
+          .from('pieces')
+          .select('*')
+          .in('mood_board_id', mbIds);
+
+        // Merge pieces into boards
+        boards = mbRows.map(b => ({
+          ...b,
+          pieces: (pieces ?? []).filter(p => p.mood_board_id === b.id),
+        }));
+
+        renderGrid();
+      } catch (err) {
+        console.error('[loadBoards]', err);
+        renderGrid(); // show empty state on error
+      }
+    }
+
+    loadExistingBoards();
+  </script>
+  <!-- Profile avatar — bottom right -->
+  <a class="profile-avatar" id="profile-avatar" href="view_report.html" aria-label="View my style profile">
+    <div class="profile-avatar__circle" id="avatar-circle">
+      <i class="fas fa-user"></i>
+    </div>
+    <span class="profile-avatar__label">Profile</span>
+  </a>
+
+</body>
+</html>

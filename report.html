@@ -772,6 +772,17 @@
       </div>
       <div style="border-bottom:1px solid rgba(158,140,126,0.12);"></div>
     </section>
+    <!-- ══════════════════════════════════════════════
+         SNAPSHOT — always visible, no collapse
+    ══════════════════════════════════════════════ -->
+    <section class="report-section fade-up" id="snapshot-section" style="padding-top:40px;">
+      <div class="confidence-tag sans"><i class="fas fa-chart-simple"></i> AI-generated · personalised to you</div>
+      <h2 class="section-title">Quick <em>Snapshot</em></h2>
+      <p class="section-lead">A concise overview of your features, tone, and style direction — framed as guidance, not rules.</p>
+      <div class="snapshot-grid" id="snapshot-grid"></div>
+    </section>
+
+
 <!-- ══ MOOD BOARDS — fullscreen tinder ══ -->
     <section id="mb-section">
       <div id="mb-header">
@@ -834,28 +845,6 @@
       <div class="exp-body" id="exp-body"></div>
       <div class="exp-footer" id="exp-footer"></div>
     </div>
-
-    <!-- Expand sheet -->
-    <div id="mb-expand-sheet">
-      <div class="exp-header">
-        <button class="exp-close" onclick="closeExpand()"><i class="fas fa-times"></i></button>
-        <div class="exp-goal" id="exp-goal"></div>
-      </div>
-      <div class="exp-brands" id="exp-brands"></div>
-      <div class="exp-body" id="exp-body"></div>
-      <div class="exp-footer" id="exp-footer"></div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════
-         SNAPSHOT — always visible, no collapse
-    ══════════════════════════════════════════════ -->
-    <section class="report-section fade-up" id="snapshot-section" style="padding-top:40px;">
-      <div class="confidence-tag sans"><i class="fas fa-chart-simple"></i> AI-generated · personalised to you</div>
-      <h2 class="section-title">Quick <em>Snapshot</em></h2>
-      <p class="section-lead">A concise overview of your features, tone, and style direction — framed as guidance, not rules.</p>
-      <div class="snapshot-grid" id="snapshot-grid"></div>
-    </section>
-
 
     <!-- ══════════════════════════════════════════════
          COLOR INTELLIGENCE — collapsible
@@ -1318,6 +1307,8 @@
         face_shape_confidence:   fs.confidence               ?? '',
         gender:                  g.value                     ?? '',
         gender_confidence:       g.confidence                ?? '',
+        gender_identity:         g.value                     ?? '',
+        race:                    manifest?.race?.value ?? manifest?.ethnicity?.value ?? '',
         age:                     String(manifest?.age        ?? ''),
         eye_glasses:             e.glasses?.value            ?? '',
         eye_glasses_confidence:  e.glasses?.confidence       ?? '',
@@ -1627,7 +1618,7 @@ const CHIPS = ['Running fit','Date night','Work casual','Beach day','City weeken
           <div class="mbc-swipe-hint like">SAVE</div>
           <div class="mbc-swipe-hint nope">SKIP</div>
           <div class="mbc-bottom">
-            <div class="mbc-goal">${board.goal}</div>
+            <div class="mbc-goal"></div>
             <div class="mbc-hints-row">
               <span class="mbc-hint-swipe"><i class="fas fa-arrow-left" style="font-size:9px;"></i> Skip</span>
               <span class="mbc-hint-expand"><i class="fas fa-arrow-up" style="font-size:9px;"></i> Expand</span>
@@ -1684,6 +1675,10 @@ const CHIPS = ['Running fit','Date night','Work casual','Beach day','City weeken
         if (remaining === 0) showGenCard();
       }, 380);
     }
+
+    window.mbExpandCurrent = mbExpandCurrent;
+    window.mbSwipeCard     = mbSwipeCard;
+    window.mbSaveCurrent   = mbSaveCurrent;
 
     window.mbReset = function() {
       // Restore all swiped cards
@@ -2037,11 +2032,9 @@ const CHIPS = ['Running fit','Date night','Work casual','Beach day','City weeken
 
       initScrollObserver();
       initCollapsibles();
-
-      // Fire non-account sections immediately
       renderHeroImage();
 
-      // Resolve accountId — localStorage first, then DB lookup
+      // ── Step 1: Resolve accountId ────────────────────────────
       let accountId = profile.accountId || null;
       if (!accountId) {
         const userResult = await auth.getUser();
@@ -2054,13 +2047,22 @@ const CHIPS = ['Running fit','Date night','Work casual','Beach day','City weeken
       }
       console.log('[Report] accountId:', accountId);
 
-      // All sections run in parallel — each manages its own loader
-      renderSnapshot(accountId);
+      // ── Step 2: Run snapshot pipeline first ──────────────────
+      // This writes skin_tone, undertone, face_shape, hair etc to style_reports
+      // so mood board generation has the full person data available
+      await renderSnapshot(accountId);
+      console.log('[Init] Snapshot complete — starting parallel sections + mood boards');
+
+      // ── Step 3: Run color/jewelry/eyewear in parallel ────────
+      // These read from style_reports — safe to start now that snapshot has written
       renderColorIntelligence();
       renderJewelry();
       renderEyewear();
-      // Tinder MB: fetch goals then generate boards
-      renderMoodBoards([]);  // show gen card immediately while generating
+
+      // ── Step 4: Generate mood boards last ────────────────────
+      // generate_mood_board reads skin_tone, undertone, face_shape etc
+      // which are now guaranteed to be in style_reports
+      renderMoodBoards([]);
       generateInitialBoards();
     }
 
