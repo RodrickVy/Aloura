@@ -91,8 +91,8 @@
   }
 
   const pins = [
-    { src: '/assets/men_glasses.jpg',     label: 'Casual layers',       h: 380 },
-    { src: '/assets/boys_girls_in_fashion.jpg',  label: 'Everyday elegance',   h: 460 },
+    { src: '/assets/man_on_chair.jpg',   label: 'Casual layers',       h: 380 },
+    { src: '/assets/woman_standing.jpg', label: 'Everyday elegance',   h: 460 },
     { src: '/assets/trendy_glasses.jpg', label: 'Eyewear picks',       h: 340 },
   ];
 
@@ -123,6 +123,17 @@
   <title>Aloura — Know What Works For You</title>
   <meta name="description" content="Personalized style intelligence — your best colors, outfit boards, and price comparisons built around how you actually look." />
   <link rel="canonical" href="https://www.aloura.co/" />
+  <meta property="og:title"       content="Aloura — Know What Works For You" />
+  <meta property="og:description" content="Search outfits, find the best prices, and get clothing picks matched to your style." />
+  <meta property="og:image"       content="https://www.aloura.co/assets/man_on_chair.jpg" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://www.aloura.co/" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Aloura — Know What Works For You" />
+  <meta name="twitter:description" content="Search outfits, find the best prices, and get clothing picks matched to your style." />
+  <meta name="twitter:image"       content="https://www.aloura.co/assets/man_on_chair.jpg" />
 </svelte:head>
 
 <svelte:window onkeydown={onKey} />
