@@ -62,7 +62,10 @@
 
       pipelineStatus = '';
       console.log('[pipeline] complete ✓');
-      goto('/discover');
+      // If the user was mid-search before signing up, send them back to it
+      const rt = typeof localStorage !== 'undefined' ? localStorage.getItem('aloura_return_to') : null;
+      if (rt) { localStorage.removeItem('aloura_return_to'); goto(rt); }
+      else goto('/discover');
     } catch (e) {
       console.error('[pipeline] fatal:', e);
       pipelineStatus = '';

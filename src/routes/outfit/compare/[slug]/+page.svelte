@@ -65,8 +65,9 @@
   let sortByPrice = $state(false);
 
   // Auth prompt for logged-out visitors who try to add a store
-  let authOpen   = $state(false);
-  let authPrompt = $state('');
+  let authOpen     = $state(false);
+  let authPrompt   = $state('');
+  let authReturnTo = $state('');
 
   // Sort columns by total price (cheapest first), keeping original always first
   const sortedColumns = $derived(
@@ -132,6 +133,8 @@
             name:     p.name,
             keywords: p.keywords ?? [],
             colors:   p.colors ?? [],
+            url:      p.url ?? undefined,
+            store:    p.store ?? undefined,
           })),
         },
       });
@@ -164,8 +167,11 @@
       return;
     }
 
-    // Adding a new store creates a comparison board — require sign-up
+    // Adding a new store creates a comparison board — require sign-up.
+    // Return them here with the new store already in the URL so it auto-creates.
     if (!isLoggedIn || !accountId) {
+      const stores = [...columns.map(c => c.store), storeName].join(',');
+      authReturnTo = `/outfit/compare/${original.slug}?stores=${stores}`;
       authPrompt = 'Sign up to compare this outfit across stores.';
       authOpen = true;
       return;
@@ -390,7 +396,7 @@
 
 </div>
 
-<AuthModal bind:open={authOpen} mode="signup" prompt={authPrompt} />
+<AuthModal bind:open={authOpen} mode="signup" prompt={authPrompt} returnTo={authReturnTo} />
 
 <style>
   .compare-page { padding-top: var(--nav-h); min-height: 100vh; background: var(--clr-cream); }

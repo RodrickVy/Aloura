@@ -82,14 +82,9 @@
   }
 
   // Auth prompt for logged-out visitors
-  let authOpen   = $state(false);
-  let authPrompt = $state('');
-  function requireAuth(message: string): boolean {
-    if (isLoggedIn && accountId) return true;
-    authPrompt = message;
-    authOpen = true;
-    return false;
-  }
+  let authOpen     = $state(false);
+  let authPrompt   = $state('');
+  let authReturnTo = $state('');
 
   // Image upload state
   let uploadedB64 = $state<string | null>(null);
@@ -113,6 +108,16 @@
     }
 
     await loadBoards();
+
+    // Restore + auto-run a search captured in the URL (e.g. returning from auth)
+    const sp     = new URLSearchParams(window.location.search);
+    const urlMode = sp.get('mode');
+    const urlQ    = sp.get('q');
+    if (urlMode === 'product' || urlMode === 'outfit') searchMode = urlMode;
+    if (urlQ && isLoggedIn && accountId) {
+      goal = urlQ;
+      runSearch();
+    }
   });
 
   async function loadBoards() {
@@ -156,15 +161,38 @@
     }
   }
 
-  // Branch on search mode
+  // Build the URL that captures the current search (internal state, not shared)
+  function buildSearchUrl(): string {
+    const params = new URLSearchParams();
+    params.set('mode', searchMode);
+    if (goal.trim()) params.set('q', goal.trim());
+    return `/discover?${params.toString()}`;
+  }
+
+  // Single entry point: capture to URL, gate, then run.
   function onSearch() {
+    if (!goal.trim() && !uploadedB64) return;
+
+    const target = buildSearchUrl();
+    // Persist the search in the URL so it survives the auth round-trip
+    goto(target, { replaceState: true, noScroll: true, keepFocus: true });
+
+    if (!isLoggedIn || !accountId) {
+      authReturnTo = target;
+      authPrompt = searchMode === 'product' ? 'Sign up to search products.' : 'Sign up to generate your own outfits.';
+      authOpen = true;
+      return;
+    }
+    runSearch();
+  }
+
+  function runSearch() {
     if (searchMode === 'product') productSearch();
     else generate();
   }
 
   async function generate() {
     if (!goal.trim() && !uploadedB64) return;
-    if (!requireAuth('Sign up to generate your own outfits.')) return;
     loading = true;
     startLoadingMessages(OUTFIT_STAGES);
     track(supabase, accountId, 'outfit_search_hits');
@@ -190,7 +218,6 @@
   // ── Product search (SerpAPI direct, server-side) ──────────────
   async function productSearch() {
     if (!goal.trim() && !uploadedB64) return;
-    if (!requireAuth('Sign up to search products.')) return;
     loading = true;
     startLoadingMessages(uploadedB64 ? ['Looking at your image…', ...PRODUCT_STAGES] : PRODUCT_STAGES);
     track(supabase, accountId, 'outfit_search_hits');
@@ -431,7 +458,7 @@
 
 </div>
 
-<AuthModal bind:open={authOpen} mode="signup" prompt={authPrompt} />
+<AuthModal bind:open={authOpen} mode="signup" prompt={authPrompt} returnTo={authReturnTo} />
 
 <style>
   .discover { padding-top: var(--nav-h); min-height: 100vh; }

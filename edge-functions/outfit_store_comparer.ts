@@ -35,6 +35,8 @@ interface InputProduct {
   name:     string;
   keywords: string[];
   colors?:  string[];
+  url?:     string;   // original product url — used to exclude the same listing
+  store?:   string;   // original store — never return a match from the same store
 }
 
 interface ComparedProduct {
@@ -65,6 +67,29 @@ function uuidSuffix(id: string): string {
   return id.replace(/-/g, "").slice(0, 8);
 }
 
+/** Normalise a title for fuzzy duplicate detection. */
+function normTitle(s: string): string {
+  return (s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+/** True if two products are effectively the same listing. */
+function isSameProduct(
+  candidate: Record<string, unknown>,
+  origUrl?: string,
+  origName?: string,
+): boolean {
+  const candUrl  = ((candidate.link as string) ?? (candidate.product_link as string) ?? "").trim();
+  const candName = normTitle(candidate.title as string);
+
+  // Same URL = definitely the same product
+  if (origUrl && candUrl && candUrl === origUrl.trim()) return true;
+
+  // Identical normalised title = same product
+  if (origName && candName && candName === normTitle(origName)) return true;
+
+  return false;
+}
+
 // ─────────────────────────────────────────────────────────────
 //  STEP 1 — Google Shopping search for one product
 // ─────────────────────────────────────────────────────────────
@@ -86,12 +111,24 @@ async function searchStoreForProduct(
   const results = (data.shopping_results ?? []) as Record<string, unknown>[];
   if (!results.length) { console.warn(`[comparer] No results`); return null; }
 
-  // Prefer results from the target store
-  const storeMatch = results.find(r =>
+  const origStore = (product.store ?? "").toLowerCase();
+
+  // Exclude the original listing + anything from the original store (we want a DIFFERENT store)
+  const candidates = results.filter(r => {
+    if (isSameProduct(r, product.url, product.name)) return false;
+    const src = typeof r.source === "string" ? r.source.toLowerCase() : "";
+    if (origStore && src && src.includes(origStore)) return false;
+    return true;
+  });
+
+  if (!candidates.length) { console.warn(`[comparer] Only duplicates found for "${q}"`); return null; }
+
+  // Prefer a candidate actually from the target store
+  const storeMatch = candidates.find(r =>
     typeof r.source === "string" &&
     r.source.toLowerCase().includes(store.toLowerCase())
   );
-  const hit = storeMatch ?? results[0];
+  const hit = storeMatch ?? candidates[0];
 
   const priceRaw = hit.extracted_price ?? hit.price;
   const price    = typeof priceRaw === "number" ? priceRaw

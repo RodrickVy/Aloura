@@ -29,7 +29,7 @@
           account_id: 'anonymous',
           mood_board_id: originalPiece.mood_board_id,
           store: brand.name,
-          products: [{ name: originalPiece.name, keywords: originalPiece.keywords ?? [], colors: originalPiece.colors ?? [] }],
+          products: [{ name: originalPiece.name, keywords: originalPiece.keywords ?? [], colors: originalPiece.colors ?? [], url: originalPiece.url ?? undefined, store: originalPiece.store ?? undefined }],
         },
       });
       if (error) throw error;

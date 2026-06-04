@@ -8,13 +8,20 @@
     mode?:    'signup' | 'signin' | 'forgot';
     /** Optional message shown above the form, e.g. "Sign up to compare prices." */
     prompt?:  string;
+    /** Where to return after auth. Onboarded users go straight here (hard nav so
+     *  the destination re-runs fresh); new users go to onboarding and are returned
+     *  here once their report is ready. */
+    returnTo?: string;
   }
 
   let {
-    open   = $bindable(false),
-    mode   = $bindable<'signup' | 'signin' | 'forgot'>('signup'),
-    prompt = '',
+    open     = $bindable(false),
+    mode     = $bindable<'signup' | 'signin' | 'forgot'>('signup'),
+    prompt   = '',
+    returnTo = '',
   }: Props = $props();
+
+  const RETURN_KEY = 'aloura_return_to';
 
   const supabase = createSupabaseBrowserClient();
 
@@ -32,9 +39,28 @@
 
   async function redirectAfterAuth(userId: string) {
     const { data: account } = await supabase.from('accounts').select('id').eq('auth_id', userId).maybeSingle();
-    if (!account) { goto('/onboarding'); return; }
-    const { data: report } = await supabase.from('style_reports').select('id').eq('account_id', account.id).order('generated_at', { ascending: false }).limit(1).maybeSingle();
-    goto(report ? '/discover' : '/onboarding');
+    let report = null;
+    if (account) {
+      const r = await supabase.from('style_reports').select('id').eq('account_id', account.id).order('generated_at', { ascending: false }).limit(1).maybeSingle();
+      report = r.data;
+    }
+    const onboarded = !!(account && report);
+
+    if (!onboarded) {
+      // New user — remember where they were headed, run onboarding first
+      if (returnTo && typeof localStorage !== 'undefined') localStorage.setItem(RETURN_KEY, returnTo);
+      goto('/onboarding');
+      return;
+    }
+
+    // Existing, onboarded user
+    if (returnTo) {
+      // Hard navigation so the destination re-runs fresh as an authenticated user
+      // (it reads the search from the URL and auto-runs it).
+      window.location.href = returnTo;
+      return;
+    }
+    goto('/discover');
   }
 
   async function sendReset() {

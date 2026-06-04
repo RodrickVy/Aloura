@@ -17,18 +17,21 @@
   const displayPieces = board.pieces ?? [];
   const totalPrice = displayPieces.reduce((s: number, p: any) => s + (p.price ?? 0), 0);
 
-  let authOpen   = $state(false);
-  let authPrompt = $state('');
+  let authOpen     = $state(false);
+  let authPrompt   = $state('');
+  let authReturnTo = $state('');
 
   async function onBrandSelect(brand: { id: string; name: string }) {
-    // Comparing creates a board — gate logged-out visitors
+    const target = `/outfit/compare/${board.slug}?stores=${brand.name.toLowerCase()}`;
+    // Comparing creates a board — gate logged-out visitors, return them here after auth
     if (!isLoggedIn) {
+      authReturnTo = target;
       authPrompt = 'Sign up to compare this outfit across stores.';
       authOpen = true;
       return;
     }
     track(supabase, null, 'mood_board_comparisons');
-    goto(`/outfit/compare/${board.slug}?stores=${brand.name.toLowerCase()}`);
+    goto(target);
   }
 </script>
 
@@ -134,7 +137,7 @@
   </div>
 </div>
 
-<AuthModal bind:open={authOpen} mode="signup" prompt={authPrompt} />
+<AuthModal bind:open={authOpen} mode="signup" prompt={authPrompt} returnTo={authReturnTo} />
 
 <style>
   .outfit-page { padding-top: var(--nav-h); padding-bottom: var(--space-20); }
