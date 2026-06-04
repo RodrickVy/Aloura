@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import BrandChips from '$lib/BrandChips.svelte';
   import FitCheck from '$lib/FitCheck.svelte';
   import AuthModal from '$lib/AuthModal.svelte';
@@ -16,6 +17,13 @@
 
   const displayPieces = board.pieces ?? [];
   const totalPrice = displayPieces.reduce((s: number, p: any) => s + (p.price ?? 0), 0);
+
+  // Social preview image: board image → first piece image → site default (all absolute)
+  const ogImage = $derived(
+    board.image_url
+      || displayPieces.find((p: any) => p.image_url)?.image_url
+      || `${$page.url.origin}/assets/man_on_chair.jpg`
+  );
 
   let authOpen     = $state(false);
   let authPrompt   = $state('');
@@ -38,10 +46,21 @@
 <svelte:head>
   <title>{board.title} — Aloura Outfit</title>
   <meta name="description" content={board.description ?? `A curated outfit for ${board.occasion} from Aloura.`} />
+  <link rel="canonical" href="{$page.url.origin}/outfit/{board.slug}" />
+
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Aloura" />
   <meta property="og:title"       content="{board.title} — Aloura" />
-  <meta property="og:description" content={board.description ?? ''} />
-  {#if board.image_url}<meta property="og:image" content={board.image_url} />{/if}
-  <link rel="canonical" href="https://www.aloura.co/outfit/{board.slug}" />
+  <meta property="og:description" content={board.description ?? `A curated outfit for ${board.occasion} from Aloura.`} />
+  <meta property="og:url"         content="{$page.url.origin}/outfit/{board.slug}" />
+  <meta property="og:image"       content={ogImage} />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="1200" />
+
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="{board.title} — Aloura" />
+  <meta name="twitter:description" content={board.description ?? ''} />
+  <meta name="twitter:image"       content={ogImage} />
 </svelte:head>
 
 <div class="outfit-page">

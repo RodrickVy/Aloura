@@ -1,11 +1,15 @@
 <script lang="ts">
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { track } from '$lib/analytics';
 
   let { data } = $props();
   const supabase = createSupabaseBrowserClient();
+
+  // Absolute social-preview image, derived from the live origin
+  const ogImage = $derived(`${$page.url.origin}/assets/man_on_chair.jpg`);
 
   // ── Modal ─────────────────────────────────────────────────
   let showModal  = $state(false);
@@ -122,18 +126,18 @@
 <svelte:head>
   <title>Aloura — Know What Works For You</title>
   <meta name="description" content="Personalized style intelligence — your best colors, outfit boards, and price comparisons built around how you actually look." />
-  <link rel="canonical" href="https://www.aloura.co/" />
+  <link rel="canonical" href="{$page.url.origin}/" />
   <meta property="og:title"       content="Aloura — Know What Works For You" />
   <meta property="og:description" content="Search outfits, find the best prices, and get clothing picks matched to your style." />
-  <meta property="og:image"       content="https://www.aloura.co/assets/man_on_chair.jpg" />
+  <meta property="og:image"       content={ogImage} />
   <meta property="og:image:width"  content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:type"        content="website" />
-  <meta property="og:url"         content="https://www.aloura.co/" />
+  <meta property="og:url"         content="{$page.url.origin}/" />
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Aloura — Know What Works For You" />
   <meta name="twitter:description" content="Search outfits, find the best prices, and get clothing picks matched to your style." />
-  <meta name="twitter:image"       content="https://www.aloura.co/assets/man_on_chair.jpg" />
+  <meta name="twitter:image"       content={ogImage} />
 </svelte:head>
 
 <svelte:window onkeydown={onKey} />

@@ -3,6 +3,7 @@
   import BrandChips from '$lib/BrandChips.svelte';
   import ShareButton from '$lib/ShareButton.svelte';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import { track } from '$lib/analytics';
   import type { Piece } from '$lib/types';
 
@@ -11,6 +12,8 @@
 
   const originalPiece: Piece = data.piece;
   const board = data.board;
+
+  const ogImage = $derived(originalPiece.image_url || `${$page.url.origin}/assets/man_on_chair.jpg`);
 
   let selectedBrand = $state<string | null>(null);
   let searching = $state(false);
@@ -52,8 +55,18 @@
 <svelte:head>
   <title>{originalPiece.name} — {originalPiece.store ?? 'Aloura'}</title>
   <meta name="description" content="Shop {originalPiece.name} from {originalPiece.store ?? 'top stores'}. Compare prices across stores on Aloura." />
-  {#if originalPiece.image_url}<meta property="og:image" content={originalPiece.image_url} />{/if}
-  <link rel="canonical" href="https://www.aloura.co/outfit/product/{originalPiece.slug}" />
+  <link rel="canonical" href="{$page.url.origin}/outfit/product/{originalPiece.slug}" />
+
+  <meta property="og:type"        content="product" />
+  <meta property="og:site_name"   content="Aloura" />
+  <meta property="og:title"       content="{originalPiece.name} — {originalPiece.store ?? 'Aloura'}" />
+  <meta property="og:description" content="Shop {originalPiece.name} from {originalPiece.store ?? 'top stores'}. Compare prices across stores on Aloura." />
+  <meta property="og:url"         content="{$page.url.origin}/outfit/product/{originalPiece.slug}" />
+  <meta property="og:image"       content={ogImage} />
+
+  <meta name="twitter:card"  content="summary_large_image" />
+  <meta name="twitter:title" content={originalPiece.name} />
+  <meta name="twitter:image" content={ogImage} />
   <script type="application/ld+json">
     {JSON.stringify({
       "@context": "https://schema.org",

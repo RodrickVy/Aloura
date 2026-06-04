@@ -224,12 +224,30 @@
   }
 
   const formatPrice = (n: number) => '$' + n.toFixed(0);
+
+  // Social preview: original board image → first piece image → site default
+  const ogImage = $derived(
+    original.image_url
+      || (original.pieces ?? []).find((p: any) => p.image_url)?.image_url
+      || `${$page.url.origin}/assets/man_on_chair.jpg`
+  );
 </script>
 
 <svelte:head>
   <title>{original.title} — Price Comparison — Aloura</title>
-  <meta name="description" content="Compare {original.title} across {columns.map(c => c.store).join(', ')} on Aloura." />
-  <link rel="canonical" href="https://www.aloura.co/outfit/compare/{original.slug}" />
+  <meta name="description" content="Compare prices for {original.title} across stores on Aloura." />
+  <link rel="canonical" href="{$page.url.origin}/outfit/compare/{original.slug}" />
+
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Aloura" />
+  <meta property="og:title"       content="{original.title} — Price Comparison" />
+  <meta property="og:description" content="Compare prices for {original.title} across stores on Aloura." />
+  <meta property="og:url"         content="{$page.url.origin}{$page.url.pathname}{$page.url.search}" />
+  <meta property="og:image"       content={ogImage} />
+
+  <meta name="twitter:card"  content="summary_large_image" />
+  <meta name="twitter:title" content="{original.title} — Price Comparison" />
+  <meta name="twitter:image" content={ogImage} />
 </svelte:head>
 
 <div class="compare-page">

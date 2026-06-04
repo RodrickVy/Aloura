@@ -16,6 +16,7 @@
 
   // Base piece (first column) — used as source for all comparisons
   const basePiece = data.pieces[0];
+  const ogImage = $derived(basePiece.image_url || `${$page.url.origin}/assets/man_on_chair.jpg`);
 
   async function onBrandSelect(brand: { id: string; name: string }) {
     // Already showing this brand? Deselect (remove that column)
@@ -81,9 +82,20 @@
 </script>
 
 <svelte:head>
-  <title>Compare: {columns.map(c => c.store ?? 'Item').join(' vs ')} — Aloura</title>
-  <meta name="description" content="Compare {basePiece.name} across {columns.map(c => c.store).join(', ')} — prices, availability, and more." />
-  <link rel="canonical" href="https://www.aloura.co{$page.url.pathname}" />
+  <title>Compare: {basePiece.name} — Aloura</title>
+  <meta name="description" content="Compare {basePiece.name} across stores — prices and availability on Aloura." />
+  <link rel="canonical" href="{$page.url.origin}{$page.url.pathname}" />
+
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Aloura" />
+  <meta property="og:title"       content="Compare: {basePiece.name}" />
+  <meta property="og:description" content="Compare {basePiece.name} across stores — prices and availability on Aloura." />
+  <meta property="og:url"         content="{$page.url.origin}{$page.url.pathname}{$page.url.search}" />
+  <meta property="og:image"       content={ogImage} />
+
+  <meta name="twitter:card"  content="summary_large_image" />
+  <meta name="twitter:title" content="Compare: {basePiece.name}" />
+  <meta name="twitter:image" content={ogImage} />
 </svelte:head>
 
 <div class="compare-page">

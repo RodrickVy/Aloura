@@ -36,7 +36,11 @@
   let accountId = $state<string | null>(data.accountId);
   const isLoggedIn = data.isLoggedIn;
   let styleReportId = $state<string | null>(null);
-  let boards = $state<MoodBoard[]>([]);
+
+  // Board feed, grouped: "My Boards" + one row per category (sport)
+  let myBoards = $state<MoodBoard[]>([]);
+  let categoryGroups = $state<{ category: string; image: string | null; boards: MoodBoard[] }[]>([]);
+
   let selectedBrands = $state<Set<string>>(new Set());
   let goal = $state('');
   let loading = $state(false);
@@ -123,12 +127,12 @@
   async function loadBoards() {
     loadingBoards = true;
     try {
-      const cols = 'id,title,description,goal,occasion,colors,image_url,slug,account_id,created_at';
+      const cols = 'id,title,description,goal,occasion,category,colors,image_url,slug,account_id,created_at';
 
       // Public catalogue — official, public, non-comparison boards (visible to everyone, incl. anon)
       const officialQuery = supabase.from('mood_boards').select(cols)
         .eq('public', true).eq('is_official', true).is('comparison_of', null)
-        .order('created_at', { ascending: false }).limit(40);
+        .order('created_at', { ascending: false }).limit(120);
 
       // Logged-in users also see their own boards
       const queries: any[] = [officialQuery];
@@ -143,23 +147,50 @@
       const results = await Promise.all(queries);
       const officialRows = results[0].data ?? [];
       const myRows       = results[1]?.data ?? [];
+      const myIds        = new Set(myRows.map((b: any) => b.id));
 
-      const myIds   = new Set(myRows.map((b: any) => b.id));
       const allRows = [...myRows, ...officialRows.filter((b: any) => !myIds.has(b.id))];
+      if (!allRows.length) { myBoards = []; categoryGroups = []; return; }
 
-      if (!allRows.length) { boards = []; return; }
-
+      // Attach pieces to every board (for the collage + price)
       const mbIds = allRows.map((b: any) => b.id);
       const { data: pieces } = await supabase.from('pieces').select('*').in('mood_board_id', mbIds);
-      boards = allRows.map((b: any) => ({
+      const withPieces = (rows: any[]) => rows.map((b: any) => ({
         ...b,
         style_report_id: '',
         pieces: (pieces ?? []).filter(p => p.mood_board_id === b.id),
       })) as MoodBoard[];
+
+      // "My Boards"
+      myBoards = withPieces(myRows);
+
+      // Category header images (from the categories table, editable in the editor)
+      const { data: cats } = await supabase.from('categories').select('name, image_url');
+      const catImg = new Map<string, string | null>(
+        (cats ?? []).map((c: any) => [c.name.toLowerCase(), c.image_url ?? null])
+      );
+
+      // Group the public catalogue by category (skip ones the user owns — already in My Boards)
+      const publicOnly = withPieces(officialRows.filter((b: any) => !myIds.has(b.id)));
+      const map = new Map<string, MoodBoard[]>();
+      for (const b of publicOnly) {
+        const cat = (b.category ?? 'general').trim() || 'general';
+        if (!map.has(cat)) map.set(cat, []);
+        map.get(cat)!.push(b);
+      }
+      categoryGroups = [...map.entries()]
+        .map(([category, boards]) => ({ category, image: catImg.get(category.toLowerCase()) ?? null, boards }))
+        .sort((a, b) => a.category.localeCompare(b.category));
     } finally {
       loadingBoards = false;
     }
   }
+
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const displayCategory = (c: string) =>
+    c.split(' ').map(w => (w.toLowerCase() === 'fifa' ? 'FIFA' : capitalize(w))).join(' ');
+  const pieceImgs = (b: MoodBoard) => (b.pieces ?? []).filter(p => p.image_url).slice(0, 4).map(p => p.image_url);
+  const hasAnyBoards = $derived(myBoards.length > 0 || categoryGroups.length > 0);
 
   // Build the URL that captures the current search (internal state, not shared)
   function buildSearchUrl(): string {
@@ -205,7 +236,7 @@
       if (error) throw error;
       if (!result?.mood_board) throw new Error('No board returned');
 
-      boards = [result.mood_board, ...boards];
+      myBoards = [result.mood_board as MoodBoard, ...myBoards];
       track(supabase, accountId, 'mood_boards_made');
     } catch (e) {
       console.error('[generate]', e);
@@ -406,57 +437,86 @@
         {/each}
       {/if}
     </div>
-  {:else}
+  {:else if loading}
     <div class="masonry">
-      {#if loading}
-        <div class="generating-card">
-          <div class="spinner"></div>
-          {#key loadingMsg}<p class="loading-msg">{loadingMsg || 'Building your outfit…'}</p>{/key}
-        </div>
+      <div class="generating-card">
+        <div class="spinner"></div>
+        {#key loadingMsg}<p class="loading-msg">{loadingMsg || 'Building your outfit…'}</p>{/key}
+      </div>
+    </div>
+  {:else if loadingBoards && !hasAnyBoards}
+    <div class="rows-wrap"><div class="empty-state"><div class="spinner"></div></div></div>
+  {:else if !hasAnyBoards}
+    <div class="rows-wrap">
+      <div class="empty-state">
+        <i class="fas fa-tshirt"></i>
+        <p>Nothing here yet. Type an occasion above to create your first outfit.</p>
+      </div>
+    </div>
+  {:else}
+    <!-- CATEGORY ROWS -->
+    <div class="rows-wrap">
+      {#if myBoards.length}
+        <section class="cat-row">
+          <h2 class="cat-row__title">My boards</h2>
+          <div class="cat-row__scroll">
+            {#each myBoards as board}
+              {@render boardCard(board)}
+            {/each}
+          </div>
+        </section>
       {/if}
-      {#if loadingBoards && !boards.length}
-        <div class="empty-state"><div class="spinner"></div></div>
-      {:else if !boards.length && !loading}
-        <div class="empty-state">
-          <i class="fas fa-tshirt"></i>
-          <p>Type an occasion above to get started.</p>
-        </div>
-      {:else}
-        {#each boards as board, i}
-          {@const imgs = (board.pieces ?? []).filter(p => p.image_url).slice(0, 4).map(p => p.image_url)}
-          {@const count = imgs.length}
-          <a class="board-card" href={boardHref(board)} onclick={() => track(supabase, accountId, 'outfit_checkout_hits')}>
-            <!-- Collage -->
-            <div class="collage" class:collage--1={count === 1} class:collage--2={count === 2} class:collage--3={count === 3} class:collage--4={count >= 4}>
-              {#if count === 0}
-                <div class="collage__ph"><i class="fas fa-tshirt"></i></div>
-              {:else}
-                {#each imgs as src, ci}
-                  <div class="collage__cell">
-                    <img
-                      src={src ?? ''}
-                      alt="piece {ci + 1}"
-                      loading={i < 6 ? 'eager' : 'lazy'}
-                      onerror={(e) => { (e.target as HTMLImageElement).parentElement!.style.background = '#E8E0D8'; (e.target as HTMLImageElement).style.display = 'none'; }}
-                    />
-                  </div>
-                {/each}
-              {/if}
-            </div>
-            <div class="board-card__info">
-              <div class="board-card__occasion">{board.occasion ?? board.goal ?? board.title}</div>
-              <div class="board-card__meta">
-                <span>{totalPrice(board.pieces ?? []) > 0 ? '$' + totalPrice(board.pieces ?? []).toFixed(0) : ''}</span>
-                <span>{(board.pieces ?? []).length} pieces</span>
-              </div>
-            </div>
-          </a>
-        {/each}
-      {/if}
+
+      {#each categoryGroups as group}
+        <section class="cat-row">
+          <div class="cat-row__head">
+            {#if group.image}
+              <img src={group.image} alt={group.category} class="cat-row__img" />
+            {/if}
+            <h2 class="cat-row__title">{displayCategory(group.category)}</h2>
+          </div>
+          <div class="cat-row__scroll">
+            {#each group.boards as board}
+              {@render boardCard(board)}
+            {/each}
+          </div>
+        </section>
+      {/each}
     </div>
   {/if}
 
 </div>
+
+<!-- Reusable board card -->
+{#snippet boardCard(board: MoodBoard)}
+  {@const imgs = pieceImgs(board)}
+  {@const count = imgs.length}
+  <a class="board-card" href={boardHref(board)} onclick={() => track(supabase, accountId, 'outfit_checkout_hits')}>
+    <div class="collage" class:collage--1={count === 1} class:collage--2={count === 2} class:collage--3={count === 3} class:collage--4={count >= 4}>
+      {#if count === 0}
+        <div class="collage__ph"><i class="fas fa-tshirt"></i></div>
+      {:else}
+        {#each imgs as src, ci}
+          <div class="collage__cell">
+            <img
+              src={src ?? ''}
+              alt="piece {ci + 1}"
+              loading="lazy"
+              onerror={(e) => { (e.target as HTMLImageElement).parentElement!.style.background = '#E8E0D8'; (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          </div>
+        {/each}
+      {/if}
+    </div>
+    <div class="board-card__info">
+      <div class="board-card__occasion">{board.occasion ?? board.goal ?? board.title}</div>
+      <div class="board-card__meta">
+        <span>{totalPrice(board.pieces ?? []) > 0 ? '$' + totalPrice(board.pieces ?? []).toFixed(0) : ''}</span>
+        <span>{(board.pieces ?? []).length} pieces</span>
+      </div>
+    </div>
+  </a>
+{/snippet}
 
 <AuthModal bind:open={authOpen} mode="signup" prompt={authPrompt} returnTo={authReturnTo} />
 
@@ -529,6 +589,22 @@
   .back-btn:hover { color: var(--clr-charcoal); }
 
   .masonry { columns: 2; column-gap: var(--space-3); padding: var(--space-4) var(--page-px); }
+
+  /* ── Category rows ── */
+  .rows-wrap { padding: var(--space-5) 0 var(--space-12); display: flex; flex-direction: column; gap: var(--space-8); }
+  .cat-row__head { display: flex; align-items: center; gap: 10px; margin: 0 var(--page-px) var(--space-3); }
+  .cat-row__img { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; flex-shrink: 0; box-shadow: var(--shadow-sm); }
+  .cat-row__title { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 500; color: var(--clr-charcoal); margin: 0 var(--page-px) var(--space-3); }
+  .cat-row__head .cat-row__title { margin: 0; }
+  .cat-row__scroll {
+    display: flex; gap: var(--space-3);
+    overflow-x: auto; padding: 2px var(--page-px) var(--space-2);
+    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+  }
+  .cat-row__scroll::-webkit-scrollbar { height: 6px; }
+  .cat-row__scroll::-webkit-scrollbar-thumb { background: var(--clr-light-taupe); border-radius: 999px; }
+  .cat-row .board-card { flex: 0 0 auto; width: 200px; scroll-snap-align: start; margin-bottom: 0; }
+
   .board-card {
     break-inside: avoid; display: block; width: 100%; margin-bottom: var(--space-3);
     background: var(--clr-cream); border: none; padding: 0; cursor: pointer;
