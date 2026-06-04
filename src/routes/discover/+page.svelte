@@ -1,8 +1,10 @@
 <script lang="ts">
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   import SearchBar from '$lib/SearchBar.svelte';
   import FitCheck from '$lib/FitCheck.svelte';
+  import AuthModal from '$lib/AuthModal.svelte';
   import { track } from '$lib/analytics';
   import type { MoodBoard, Piece } from '$lib/types';
 
@@ -31,7 +33,8 @@
     { id:'facebook',       name:'Facebook Mkt',   logo:'/assets/logos/facebook.png' },
   ];
 
-  let accountId = $state<string>(data.accountId);
+  let accountId = $state<string | null>(data.accountId);
+  const isLoggedIn = data.isLoggedIn;
   let styleReportId = $state<string | null>(null);
   let boards = $state<MoodBoard[]>([]);
   let selectedBrands = $state<Set<string>>(new Set());
@@ -39,24 +42,74 @@
   let loading = $state(false);
   let loadingBoards = $state(true);
 
+  // Search mode + product results
+  let searchMode = $state<'outfit' | 'product'>('outfit');
+  let productResults = $state<any[]>([]);
+  let showingProducts = $state(false);
+  let defaultBoardId = $state<string | null>(null);
+
+  // Progressive, contextual loading messages
+  let loadingMsg = $state('');
+  let loadingTimer: ReturnType<typeof setInterval> | null = null;
+
+  const OUTFIT_STAGES = [
+    'Reading your style profile…',
+    'Designing your outfit…',
+    'Picking colours that suit you…',
+    'Searching stores for each piece…',
+    'Styling the final look…',
+    'Almost ready…',
+  ];
+  const PRODUCT_STAGES = [
+    'Cross-referencing stores…',
+    'Fetching products…',
+    'Comparing prices…',
+    'Matching your search…',
+    'Almost there…',
+  ];
+
+  function startLoadingMessages(stages: string[]) {
+    let i = 0;
+    loadingMsg = stages[0];
+    loadingTimer = setInterval(() => {
+      i = Math.min(i + 1, stages.length - 1);
+      loadingMsg = stages[i];
+    }, 1600);
+  }
+  function stopLoadingMessages() {
+    if (loadingTimer) { clearInterval(loadingTimer); loadingTimer = null; }
+    loadingMsg = '';
+  }
+
+  // Auth prompt for logged-out visitors
+  let authOpen   = $state(false);
+  let authPrompt = $state('');
+  function requireAuth(message: string): boolean {
+    if (isLoggedIn && accountId) return true;
+    authPrompt = message;
+    authOpen = true;
+    return false;
+  }
+
   // Image upload state
   let uploadedB64 = $state<string | null>(null);
   let uploadedType = $state<string | null>(null);
   let uploadedName = $state<string | null>(null);
 
   onMount(async () => {
-    // accountId already set from server load — no auth checks needed here
-    const { data: rep } = await supabase
-      .from('style_reports')
-      .select('id')
-      .eq('account_id', accountId)
-      .order('generated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    if (accountId) {
+      const { data: rep } = await supabase
+        .from('style_reports')
+        .select('id')
+        .eq('account_id', accountId)
+        .order('generated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (rep) {
-      styleReportId = rep.id;
-      if (typeof localStorage !== 'undefined') localStorage.setItem('aloura_report_id', rep.id);
+      if (rep) {
+        styleReportId = rep.id;
+        if (typeof localStorage !== 'undefined') localStorage.setItem('aloura_report_id', rep.id);
+      }
     }
 
     await loadBoards();
@@ -65,24 +118,35 @@
   async function loadBoards() {
     loadingBoards = true;
     try {
-      // Load public boards from everyone + user's own boards
-      const [{ data: publicRows }, { data: myRows }] = await Promise.all([
-        supabase.from('mood_boards').select('id,title,description,goal,occasion,colors,image_url,slug,account_id,created_at').eq('public', true).is('comparison_of', null).order('created_at', { ascending: false }).limit(40),
-        supabase.from('mood_boards').select('id,title,description,goal,occasion,colors,image_url,slug,account_id,created_at').eq('account_id', accountId).is('comparison_of', null).order('created_at', { ascending: false }),
-      ]);
+      const cols = 'id,title,description,goal,occasion,colors,image_url,slug,account_id,created_at';
 
-      // Merge: user's own first, then public ones they don't own
-      const myIds   = new Set((myRows ?? []).map(b => b.id));
-      const allRows = [
-        ...(myRows ?? []),
-        ...(publicRows ?? []).filter(b => !myIds.has(b.id)),
-      ];
+      // Public catalogue — official, public, non-comparison boards (visible to everyone, incl. anon)
+      const officialQuery = supabase.from('mood_boards').select(cols)
+        .eq('public', true).eq('is_official', true).is('comparison_of', null)
+        .order('created_at', { ascending: false }).limit(40);
+
+      // Logged-in users also see their own boards
+      const queries: any[] = [officialQuery];
+      if (accountId) {
+        queries.push(
+          supabase.from('mood_boards').select(cols)
+            .eq('account_id', accountId).is('comparison_of', null)
+            .order('created_at', { ascending: false })
+        );
+      }
+
+      const results = await Promise.all(queries);
+      const officialRows = results[0].data ?? [];
+      const myRows       = results[1]?.data ?? [];
+
+      const myIds   = new Set(myRows.map((b: any) => b.id));
+      const allRows = [...myRows, ...officialRows.filter((b: any) => !myIds.has(b.id))];
 
       if (!allRows.length) { boards = []; return; }
 
-      const mbIds = allRows.map(b => b.id);
+      const mbIds = allRows.map((b: any) => b.id);
       const { data: pieces } = await supabase.from('pieces').select('*').in('mood_board_id', mbIds);
-      boards = allRows.map(b => ({
+      boards = allRows.map((b: any) => ({
         ...b,
         style_report_id: '',
         pieces: (pieces ?? []).filter(p => p.mood_board_id === b.id),
@@ -92,9 +156,17 @@
     }
   }
 
+  // Branch on search mode
+  function onSearch() {
+    if (searchMode === 'product') productSearch();
+    else generate();
+  }
+
   async function generate() {
     if (!goal.trim() && !uploadedB64) return;
+    if (!requireAuth('Sign up to generate your own outfits.')) return;
     loading = true;
+    startLoadingMessages(OUTFIT_STAGES);
     track(supabase, accountId, 'outfit_search_hits');
     try {
       const store = selectedBrands.size ? BRANDS.filter(b => selectedBrands.has(b.id)).map(b => b.name).join(', ') : '';
@@ -111,6 +183,90 @@
       console.error('[generate]', e);
     } finally {
       loading = false;
+      stopLoadingMessages();
+    }
+  }
+
+  // ── Product search (SerpAPI direct, server-side) ──────────────
+  async function productSearch() {
+    if (!goal.trim() && !uploadedB64) return;
+    if (!requireAuth('Sign up to search products.')) return;
+    loading = true;
+    startLoadingMessages(uploadedB64 ? ['Looking at your image…', ...PRODUCT_STAGES] : PRODUCT_STAGES);
+    track(supabase, accountId, 'outfit_search_hits');
+    try {
+      const store = selectedBrands.size ? BRANDS.filter(b => selectedBrands.has(b.id)).map(b => b.name).join(', ') : '';
+      const res = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: goal.trim(), store, image_b64: uploadedB64 ?? undefined, image_type: uploadedType ?? undefined }),
+      });
+      if (!res.ok) throw new Error('Search failed');
+      const data = await res.json();
+      productResults = data.results ?? [];
+      showingProducts = true;
+    } catch (e) {
+      console.error('[productSearch]', e);
+      productResults = [];
+      showingProducts = true;
+    } finally {
+      loading = false;
+      stopLoadingMessages();
+    }
+  }
+
+  function clearProducts() {
+    showingProducts = false;
+    productResults = [];
+  }
+
+  const slugify = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+  // Click a product → save to default board → open its product page
+  let openingProduct = $state<string | null>(null);
+  async function openProduct(p: any) {
+    if (!accountId) return;
+    openingProduct = p.url;
+    try {
+      // 1. Ensure the user's default "My searches" board exists
+      let boardId = defaultBoardId;
+      if (!boardId) {
+        const { data: existing } = await supabase
+          .from('mood_boards').select('id').eq('account_id', accountId).eq('is_default', true).maybeSingle();
+        if (existing) {
+          boardId = existing.id;
+        } else {
+          const { data: rep } = await supabase
+            .from('style_reports').select('id').eq('account_id', accountId)
+            .order('generated_at', { ascending: false }).limit(1).maybeSingle();
+          const { data: nb, error: nbErr } = await supabase.from('mood_boards').insert({
+            account_id: accountId,
+            style_report_id: rep?.id ?? null,
+            title: 'My searches',
+            is_default: true,
+            public: false,
+            slug: 'my-searches-' + accountId.replace(/-/g, '').slice(0, 8),
+          }).select('id').single();
+          if (nbErr) throw nbErr;
+          boardId = nb.id;
+        }
+        defaultBoardId = boardId;
+      }
+
+      // 2. Save the product as a piece with a slug
+      const pieceSlug = slugify(`${p.store} ${p.name}`.slice(0, 60)) + '-' + Math.random().toString(36).slice(2, 10);
+      const { data: piece, error: pErr } = await supabase.from('pieces').insert({
+        mood_board_id: boardId,
+        name: p.name, title: p.name, price: p.price ?? null,
+        url: p.url, image_url: p.image_url, store: p.store,
+        keywords: p.keywords ?? [], slug: pieceSlug,
+      }).select('slug').single();
+      if (pErr) throw pErr;
+
+      goto(`/outfit/product/${piece.slug}`);
+    } catch (e) {
+      console.error('[openProduct]', e);
+      openingProduct = null;
     }
   }
 
@@ -148,10 +304,11 @@
       <div class="search-bar-group">
         <SearchBar
           bind:value={goal}
+          bind:mode={searchMode}
           loading={loading}
           imageAttached={!!uploadedB64}
           imageName={uploadedName ?? ''}
-          onsubmit={generate}
+          onsubmit={onSearch}
           onimage={(b64, type, name) => { uploadedB64 = b64; uploadedType = type; uploadedName = name; }}
           onclearimage={() => { uploadedB64 = null; uploadedType = null; uploadedName = null; }}
         />
@@ -179,12 +336,55 @@
 
     </div>
 
+  <!-- PRODUCT RESULTS BAR -->
+  {#if showingProducts}
+    <div class="products-bar">
+      <span>{productResults.length} product{productResults.length === 1 ? '' : 's'} found</span>
+      <button class="back-to-boards" onclick={clearProducts}>
+        <i class="fas fa-arrow-left"></i> Back to boards
+      </button>
+    </div>
+  {/if}
+
   <!-- GRID VIEW -->
+  {#if showingProducts}
+    <!-- PRODUCT RESULTS -->
     <div class="masonry">
       {#if loading}
         <div class="generating-card">
           <div class="spinner"></div>
-          <p>Building your outfit for <em>{goal || 'your style'}</em>…</p>
+          {#key loadingMsg}<p class="loading-msg">{loadingMsg || 'Searching products…'}</p>{/key}
+        </div>
+      {:else if !productResults.length}
+        <div class="empty-state"><i class="fas fa-magnifying-glass"></i><p>No products found. Try different keywords.</p></div>
+      {:else}
+        {#each productResults as p}
+          <button class="product-card" onclick={() => openProduct(p)} disabled={openingProduct === p.url}>
+            <div class="product-card__img-wrap">
+              {#if p.image_url}
+                <img src={p.image_url} alt={p.name} loading="lazy" onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              {:else}
+                <div class="product-card__ph"><i class="fas fa-tshirt"></i></div>
+              {/if}
+              {#if openingProduct === p.url}
+                <div class="product-card__loading"><span class="spinner" style="width:22px;height:22px;border-width:2px"></span></div>
+              {/if}
+            </div>
+            <div class="product-card__info">
+              <div class="product-card__store">{p.store}</div>
+              <div class="product-card__name">{p.name}</div>
+              {#if p.price}<div class="product-card__price">${p.price.toFixed(2)}</div>{/if}
+            </div>
+          </button>
+        {/each}
+      {/if}
+    </div>
+  {:else}
+    <div class="masonry">
+      {#if loading}
+        <div class="generating-card">
+          <div class="spinner"></div>
+          {#key loadingMsg}<p class="loading-msg">{loadingMsg || 'Building your outfit…'}</p>{/key}
         </div>
       {/if}
       {#if loadingBoards && !boards.length}
@@ -227,8 +427,11 @@
         {/each}
       {/if}
     </div>
+  {/if}
 
 </div>
+
+<AuthModal bind:open={authOpen} mode="signup" prompt={authPrompt} />
 
 <style>
   .discover { padding-top: var(--nav-h); min-height: 100vh; }
@@ -241,7 +444,28 @@
     padding: 12px var(--page-px) 10px;
   }
 
-  .search-bar-group { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .search-bar-group { display: flex; align-items: flex-end; gap: 10px; margin-bottom: 12px; }
+
+  .loading-msg { animation: msgFade 0.4s var(--ease); }
+  @keyframes msgFade { from { opacity: 0.3; } to { opacity: 1; } }
+
+  /* Product results bar */
+  .products-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px var(--page-px) 0; font-size: var(--text-sm); color: var(--clr-taupe); }
+  .back-to-boards { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; color: var(--clr-brown); }
+  .back-to-boards:hover { text-decoration: underline; }
+
+  /* Product cards */
+  .product-card { break-inside: avoid; display: block; width: 100%; margin-bottom: var(--space-3); background: var(--clr-cream); border: 1px solid var(--clr-border); padding: 0; cursor: pointer; border-radius: var(--radius-lg); overflow: hidden; text-align: left; transition: box-shadow var(--dur-base), transform var(--dur-base); }
+  .product-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .product-card:disabled { opacity: 0.7; cursor: wait; }
+  .product-card__img-wrap { position: relative; aspect-ratio: 1; background: #e8e0d8; }
+  .product-card__img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .product-card__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--clr-taupe); font-size: 28px; }
+  .product-card__loading { position: absolute; inset: 0; background: rgba(255,255,255,0.6); display: flex; align-items: center; justify-content: center; }
+  .product-card__info { padding: var(--space-3); }
+  .product-card__store { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--clr-taupe); margin-bottom: 2px; }
+  .product-card__name { font-size: var(--text-xs); font-weight: 500; color: var(--clr-charcoal); line-height: 1.4; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .product-card__price { font-size: var(--text-sm); font-weight: 600; color: var(--clr-brown); }
 
   /* ── Brand chips — Material Design filter style ── */
   .brands-scroll {

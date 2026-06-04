@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import BrandChips from '$lib/BrandChips.svelte';
+  import ShareButton from '$lib/ShareButton.svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import type { Piece } from '$lib/types';
@@ -134,9 +135,12 @@
       <span>Compare</span>
     </nav>
 
-    <h1 class="page-title">
-      Comparing <em class="text-italic">{basePiece.name}</em>
-    </h1>
+    <div class="page-title-row">
+      <h1 class="page-title">
+        Comparing <em class="text-italic">{basePiece.name}</em>
+      </h1>
+      <ShareButton variant="pill" label="Share comparison" title="Comparing {basePiece.name}" text="Compare this product across stores on Aloura" />
+    </div>
     <p class="page-sub">Select a store above to add it to the comparison.</p>
 
     {#if addError}
@@ -256,7 +260,8 @@
   .breadcrumb i { font-size: 9px; }
   .breadcrumb span { color: var(--clr-charcoal); font-weight: 500; }
 
-  .page-title { font-family: var(--font-display); font-size: clamp(24px, 4vw, 40px); font-weight: 500; margin-bottom: var(--space-2); }
+  .page-title-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-2); flex-wrap: wrap; }
+  .page-title { font-family: var(--font-display); font-size: clamp(24px, 4vw, 40px); font-weight: 500; }
   .page-sub { font-size: var(--text-sm); color: var(--clr-text-muted); margin-bottom: var(--space-8); }
   .add-error { font-size: var(--text-sm); color: #a33020; margin-bottom: var(--space-4); display: flex; align-items: center; gap: 6px; }
 

@@ -1,9 +1,12 @@
-import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
   const { user } = await locals.safeGetSession();
-  if (!user) throw redirect(303, '/');
+
+  // Logged-out visitors are allowed — they see the public catalogue only.
+  if (!user) {
+    return { accountId: null, isLoggedIn: false };
+  }
 
   const { data: account } = await locals.supabase
     .from('accounts')
@@ -11,7 +14,5 @@ export const load: PageServerLoad = async ({ locals }) => {
     .eq('auth_id', user.id)
     .maybeSingle();
 
-  if (!account) throw redirect(303, '/onboarding');
-
-  return { accountId: account.id };
+  return { accountId: account?.id ?? null, isLoggedIn: true };
 };

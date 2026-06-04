@@ -1,6 +1,7 @@
 <script lang="ts">
   interface Props {
     value?:        string;
+    mode?:         'outfit' | 'product';
     loading?:      boolean;
     placeholder?:  string;
     onsubmit:      () => void;
@@ -12,6 +13,7 @@
 
   let {
     value       = $bindable(''),
+    mode        = $bindable<'outfit' | 'product'>('outfit'),
     loading     = false,
     placeholder = 'Date night, casual work look, gym outfit…',
     onsubmit,
@@ -20,6 +22,12 @@
     imageName     = '',
     onclearimage,
   }: Props = $props();
+
+  const ph = $derived(
+    mode === 'product'
+      ? 'Search a product — white linen shirt, chelsea boots…'
+      : placeholder
+  );
 
   function handleFile(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];
@@ -34,6 +42,16 @@
 </script>
 
 <div class="search-wrap">
+  <!-- Mode toggle -->
+  <div class="mode-toggle">
+    <button class="mode-opt" class:active={mode === 'outfit'} onclick={() => mode = 'outfit'}>
+      <i class="fas fa-layer-group"></i> Outfit
+    </button>
+    <button class="mode-opt" class:active={mode === 'product'} onclick={() => mode = 'product'}>
+      <i class="fas fa-tag"></i> Product
+    </button>
+  </div>
+
   <div class="search-inner" class:has-image={imageAttached}>
 
     <!-- Plus / image upload on left -->
@@ -55,7 +73,7 @@
     <!-- Text input -->
     <textarea
       class="search-input"
-      {placeholder}
+      placeholder={ph}
       bind:value
       rows={1}
       onkeydown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onsubmit(); } }}
@@ -79,6 +97,20 @@
 
 <style>
   .search-wrap { width: 100%; }
+
+  .mode-toggle {
+    display: inline-flex; gap: 2px; margin-bottom: 8px;
+    background: var(--clr-beige); border-radius: 999px; padding: 3px;
+  }
+  .mode-opt {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: none; background: none; cursor: pointer;
+    font-family: var(--font-body); font-size: 12px; font-weight: 500;
+    color: var(--clr-taupe); padding: 6px 14px; border-radius: 999px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .mode-opt.active { background: #fff; color: var(--clr-charcoal); box-shadow: var(--shadow-sm); }
+  .mode-opt i { font-size: 11px; }
 
   .search-inner {
     display: flex; align-items: center; gap: 10px;

@@ -2,6 +2,8 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
+  const { user } = await locals.safeGetSession();
+
   const { data: board, error: bErr } = await locals.supabase
     .from('mood_boards')
     .select('*')
@@ -16,5 +18,5 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     .eq('mood_board_id', board.id)
     .order('created_at', { ascending: true });
 
-  return { board: { ...board, pieces: pieces ?? [] } };
+  return { board: { ...board, pieces: pieces ?? [] }, isLoggedIn: !!user };
 };

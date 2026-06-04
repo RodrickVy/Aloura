@@ -5,7 +5,7 @@
 
   const supabase = createSupabaseBrowserClient();
 
-  let state    = $state<'loading' | 'form' | 'success' | 'invalid'>('loading');
+  let pageState = $state<'loading' | 'form' | 'success' | 'invalid'>('loading');
   let password = $state('');
   let confirm  = $state('');
   let showPw   = $state(false);
@@ -18,7 +18,7 @@
     // and that it's a recovery session.
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      state = 'form';
+      pageState = 'form';
     } else {
       // Try to pick up the token from the hash fragment
       const { data, error: e } = await supabase.auth.exchangeCodeForSession(
@@ -26,9 +26,9 @@
       ).catch(() => ({ data: null, error: new Error('no code') }));
 
       if (data?.session) {
-        state = 'form';
+        pageState = 'form';
       } else {
-        state = 'invalid';
+        pageState = 'invalid';
       }
     }
   });
@@ -42,7 +42,7 @@
     try {
       const { error: e } = await supabase.auth.updateUser({ password });
       if (e) throw e;
-      state = 'success';
+      pageState = 'success';
       setTimeout(() => goto('/discover'), 2500);
     } catch (e: any) {
       error = e.message ?? 'Something went wrong. Please try again.';
@@ -61,13 +61,13 @@
   <a href="/" class="reset-logo">Aloura<span>.</span></a>
 
   <div class="reset-card">
-    {#if state === 'loading'}
+    {#if pageState === 'loading'}
       <div class="reset-center">
         <div class="spinner"></div>
         <p class="reset-sub">Verifying your link…</p>
       </div>
 
-    {:else if state === 'invalid'}
+    {:else if pageState === 'invalid'}
       <div class="reset-center">
         <div class="reset-icon reset-icon--warn"><i class="fas fa-exclamation-triangle"></i></div>
         <h1 class="reset-title">Link expired</h1>
@@ -75,7 +75,7 @@
         <a href="/" class="btn btn--primary" style="margin-top:24px">Back to Aloura</a>
       </div>
 
-    {:else if state === 'success'}
+    {:else if pageState === 'success'}
       <div class="reset-center">
         <div class="reset-icon reset-icon--ok"><i class="fas fa-check"></i></div>
         <h1 class="reset-title">Password updated</h1>

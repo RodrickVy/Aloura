@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import BrandChips from '$lib/BrandChips.svelte';
+  import ShareButton from '$lib/ShareButton.svelte';
   import { goto } from '$app/navigation';
   import { track } from '$lib/analytics';
   import type { Piece } from '$lib/types';
@@ -110,15 +111,13 @@
         {:else}
           <div class="product__img product__img--ph"><i class="fas fa-tshirt"></i></div>
         {/if}
-        {#if originalPiece.compared}
-          <div class="compared-tag">Compared result</div>
-        {/if}
       </div>
 
       <!-- Details -->
       <div class="product__details">
-        <div class="product__store">
-          {originalPiece.store ?? 'Online'}
+        <div class="product__store-row">
+          <div class="product__store">{originalPiece.store ?? 'Online'}</div>
+          <ShareButton variant="icon" title={originalPiece.name ?? 'Product'} text="Check out this piece on Aloura" />
         </div>
         <h1 class="product__name">{originalPiece.name ?? originalPiece.name}</h1>
 
@@ -239,7 +238,8 @@
     border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 600;
   }
 
-  .product__store { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--clr-taupe); margin-bottom: var(--space-3); }
+  .product__store-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+  .product__store { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--clr-taupe); }
   .product__name { font-family: var(--font-display); font-size: clamp(22px, 4vw, 36px); font-weight: 500; line-height: 1.2; margin-bottom: var(--space-4); color: var(--clr-charcoal); }
   .product__price { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 600; color: var(--clr-charcoal); margin-bottom: var(--space-4); }
   .product__style { font-size: var(--text-sm); font-weight: 300; color: var(--clr-text-muted); line-height: 1.7; margin-bottom: var(--space-5); }

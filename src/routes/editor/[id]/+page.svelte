@@ -96,7 +96,8 @@
         goal:        board.goal,
         category:    board.category ?? 'general',
         colors:      board.colors ?? [],
-        public:      board.public,
+        public:      board.is_official ? true : board.public, // featured boards must be public
+        is_official: board.is_official ?? false,
         slug,
       }).eq('id', board.id);
 
@@ -237,9 +238,19 @@
         class="public-toggle"
         class:is-public={board.public}
         onclick={() => board.public = !board.public}
+        title="Public boards are viewable by anyone with the link"
       >
         <i class={board.public ? 'fas fa-globe' : 'fas fa-lock'}></i>
         {board.public ? 'Public' : 'Private'}
+      </button>
+      <button
+        class="public-toggle"
+        class:is-public={board.is_official}
+        onclick={() => board.is_official = !board.is_official}
+        title="Featured boards appear in the public Discover feed"
+      >
+        <i class={board.is_official ? 'fas fa-star' : 'fa-regular fa-star'}></i>
+        {board.is_official ? 'Featured' : 'Not featured'}
       </button>
       <button class="btn btn--primary" onclick={saveBoard} disabled={savingBoard}>
         {#if savingBoard}<span class="btn-spin"></span>

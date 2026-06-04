@@ -3,6 +3,8 @@
   import { goto } from '$app/navigation';
   import BrandChips from '$lib/BrandChips.svelte';
   import FitCheck from '$lib/FitCheck.svelte';
+  import AuthModal from '$lib/AuthModal.svelte';
+  import ShareButton from '$lib/ShareButton.svelte';
   import { track } from '$lib/analytics';
   import type { MoodBoard, Piece } from '$lib/types';
 
@@ -10,17 +12,22 @@
   const supabase = createSupabaseBrowserClient();
 
   const board: MoodBoard = data.board;
+  const isLoggedIn = data.isLoggedIn;
 
   const displayPieces = board.pieces ?? [];
   const totalPrice = displayPieces.reduce((s: number, p: any) => s + (p.price ?? 0), 0);
 
-  // Get accountId from local storage for analytics (non-blocking, best effort)
-  const accountId = typeof localStorage !== 'undefined'
-    ? (() => { try { return null; } catch { return null; } })()
-    : null;
+  let authOpen   = $state(false);
+  let authPrompt = $state('');
 
   async function onBrandSelect(brand: { id: string; name: string }) {
-    track(supabase, accountId, 'mood_board_comparisons');
+    // Comparing creates a board — gate logged-out visitors
+    if (!isLoggedIn) {
+      authPrompt = 'Sign up to compare this outfit across stores.';
+      authOpen = true;
+      return;
+    }
+    track(supabase, null, 'mood_board_comparisons');
     goto(`/outfit/compare/${board.slug}?stores=${brand.name.toLowerCase()}`);
   }
 </script>
@@ -56,7 +63,10 @@
         <img src={board.image_url} alt={board.title} class="outfit-hero__img" />
       {/if}
       <div class="outfit-hero__info">
-        <h1 class="outfit-title" style="margin-bottom:var(--space-5)">{board.title}</h1>
+        <div class="outfit-title-row">
+          <h1 class="outfit-title">{board.title}</h1>
+          <ShareButton variant="icon" title={board.title} text="Check out this outfit on Aloura" />
+        </div>
         <div class="outfit-meta">
           <div class="outfit-meta__item">
             <span class="outfit-meta__label">Est. total</span>
@@ -86,7 +96,7 @@
             href={piece.slug ? `/outfit/product/${piece.slug}` : (piece.url ?? '#')}
             target={piece.slug ? '_self' : '_blank'}
             rel={piece.slug ? '' : 'noopener sponsored'}
-            onclick={() => track(supabase, accountId, 'buy_clicks')}
+            onclick={() => track(supabase, null, 'buy_clicks')}
           >
             <!-- Image -->
             <div class="piece-row__img-wrap">
@@ -101,7 +111,6 @@
             <div class="piece-row__info">
               <div class="piece-row__brand">
                 {piece.store ?? 'Online'}
-                {#if piece.compared}<span class="compared-badge">compared</span>{/if}
               </div>
               <div class="piece-row__name">{piece.name ?? 'Item'}</div>
               {#if piece.style && piece.style !== piece.store}
@@ -124,6 +133,8 @@
 
   </div>
 </div>
+
+<AuthModal bind:open={authOpen} mode="signup" prompt={authPrompt} />
 
 <style>
   .outfit-page { padding-top: var(--nav-h); padding-bottom: var(--space-20); }
@@ -155,6 +166,7 @@
   /* ── Hero ── */
   .outfit-hero { display: flex; flex-direction: column; gap: var(--space-8); padding-top: var(--space-10); margin-bottom: var(--space-12); }
   .outfit-hero__img { width: 100%; max-width: 360px; border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); object-fit: cover; aspect-ratio: 3/4; }
+  .outfit-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-5); }
   .outfit-title { font-family: var(--font-display); font-size: clamp(20px, 3vw, 28px); font-weight: 500; line-height: 1.2; letter-spacing: -0.3px; color: var(--clr-charcoal); }
 
   .outfit-meta { display: flex; gap: var(--space-5); margin-top: var(--space-4); }

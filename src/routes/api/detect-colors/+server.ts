@@ -1,7 +1,8 @@
 import { json, error } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY ?? '';
+const ANTHROPIC_API_KEY = env.ANTHROPIC_API_KEY ?? '';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
   const { user } = await locals.safeGetSession();

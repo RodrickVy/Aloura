@@ -2,6 +2,8 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, url, locals }) => {
+  const { user } = await locals.safeGetSession();
+
   // Load original board by slug
   const { data: original, error: oErr } = await locals.supabase
     .from('mood_boards')
@@ -47,9 +49,19 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     }
   }
 
+  // Resolve the viewer's account id (null for anon)
+  let viewerAccountId: string | null = null;
+  if (user) {
+    const { data: acc } = await locals.supabase
+      .from('accounts').select('id').eq('auth_id', user.id).maybeSingle();
+    viewerAccountId = acc?.id ?? null;
+  }
+
   return {
     original: { ...original, pieces: originalPieces ?? [] },
     comparisonBoards,
     storeNames,        // stores requested in URL (some may not have boards yet)
+    isLoggedIn: !!user,
+    viewerAccountId,
   };
 };

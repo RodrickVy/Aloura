@@ -50,6 +50,11 @@ export interface MoodBoard {
   colors: string[] | null;
   image_url: string | null;
   slug: string | null;
+  public?: boolean;
+  is_official?: boolean;
+  category?: string | null;
+  store_name?: string | null;
+  comparison_of?: string | null;
   created_at: string;
   pieces?: Piece[];
 }

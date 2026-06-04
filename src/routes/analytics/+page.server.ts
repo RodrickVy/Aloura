@@ -1,9 +1,12 @@
-import { redirect } from '@sveltejs/kit';
+import { redirect, error } from '@sveltejs/kit';
+import { isAdmin } from '$lib/server/admin';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
   const { user } = await locals.safeGetSession();
   if (!user) throw redirect(303, '/');
+
+  if (!(await isAdmin(locals.supabase))) throw error(404, 'Not found');
 
   // Aggregate analytics across all users
   const { data: rows } = await locals.supabase

@@ -28,8 +28,8 @@ export function track(
   field: AnalyticsField,
 ): void {
   if (!accountId) return;
+  // fire-and-forget — swallow both fulfilled and rejected outcomes
   supabase
     .rpc('increment_analytics', { p_account_id: accountId, p_field: field })
-    .then()
-    .catch(() => {}); // silent — never surface analytics errors to users
+    .then(() => {}, () => {});
 }
