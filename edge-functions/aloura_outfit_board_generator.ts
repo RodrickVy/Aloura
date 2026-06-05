@@ -6,24 +6,17 @@
  *   account_id:  string,
  *   goal:        string,        // text query / occasion
  *   store?:      string,        // e.g. "Zara" — empty = any store
- *   image_b64?:  string,        // base64 encoded image (optional)
- *   image_type?: string,        // e.g. "image/jpeg"
  * }
  *
  * Pipeline:
  *  1. Load first style_report for account_id (colours, undertone, etc.)
- *  2. If image provided → Claude Vision describes the item
- *  3. Claude → outfit concept (3-5 pieces) using style report + goal + image desc
- *  4. SerpAPI Google Shopping → find each piece (with store filter if given)
- *  5. Insert mood_board + pieces rows to get real UUIDs
- *  6. Claude → generate SEO slugs for board + all pieces (single call)
- *  7. Update mood_board + pieces rows with slugs
- *  8. Claude → mannequin image prompt
- *  9. Together.ai FLUX → generate mannequin image
- * 10. Upload image to Supabase Storage, update mood_board image_url
- * 11. Return full board payload (with slugs)
+ *  2. Claude → outfit concept (3-5 pieces) using style report + goal
+ *  3. SerpAPI Google Shopping → find each piece (with store filter if given)
+ *  4. Insert mood_board + pieces rows
+ *  5. Claude → generate SEO slugs for board + all pieces (single call)
+ *  6. Return full board payload (no image — UI builds a collage from pieces)
  *
- * Secrets: ANTHROPIC_API_KEY, TOGETHER_API_KEY, SERP_API_KEY
+ * Secrets: ANTHROPIC_API_KEY, SERP_API_KEY
  */
 
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -31,13 +24,13 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const SUPABASE_URL      = Deno.env.get("SUPABASE_URL")               ?? "";
 const SERVICE_ROLE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")  ?? "";
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY")          ?? "";
-const TOGETHER_API_KEY  = Deno.env.get("TOGETHER_API_KEY")           ?? "";
 const SERP_API_KEY      = Deno.env.get("SERP_API_KEY")               ?? "";
-const STORAGE_BUCKET    = "profile_images";
 
 const CORS = {
   "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-api-version",
+  "Access-Control-Max-Age":       "86400",
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -104,40 +97,7 @@ function fallbackSlugs(
 }
 
 // ─────────────────────────────────────────────────────────────
-//  STEP 1 — Describe uploaded image (if any)
-// ─────────────────────────────────────────────────────────────
-
-async function describeImage(b64: string, mediaType: string): Promise<string> {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type":      "application/json",
-      "x-api-key":         ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model:       "claude-opus-4-5",
-      max_tokens:  400,
-      temperature: 0.2,
-      system: `You are a fashion product analyst. The image likely shows an apparel item or clothing product.
-Describe it in detail — type of garment, colour, fabric texture if visible, silhouette, any branding, and style notes.
-Be specific and accurate. Return only the description, no preamble.`,
-      messages: [{
-        role: "user",
-        content: [
-          { type: "image", source: { type: "base64", media_type: mediaType, data: b64 } },
-          { type: "text",  text: "Describe this clothing item in detail for fashion search purposes." },
-        ],
-      }],
-    }),
-  });
-  if (!res.ok) throw new Error(`Image desc ${res.status}`);
-  const d = await res.json();
-  return (d.content?.[0]?.text ?? "").trim();
-}
-
-// ─────────────────────────────────────────────────────────────
-//  STEP 2 — Generate outfit concept
+//  STEP 1 — Generate outfit concept
 // ─────────────────────────────────────────────────────────────
 
 async function generateOutfitConcept(
@@ -351,115 +311,16 @@ piece_slugs must have exactly ${piecesContext.length} entries in order.`;
 }
 
 // ─────────────────────────────────────────────────────────────
-//  STEP 5 — Build mannequin image prompt
-// ─────────────────────────────────────────────────────────────
-
-async function buildMannequinPrompt(
-  concept: OutfitConcept,
-  products: ShoppingProduct[],
-  personProfile: string,
-): Promise<string> {
-  const pieces = products
-    .filter(p => p.name)
-    .map((p, i) =>
-      `${i + 1}. ${p.name} from ${p.store}` +
-      (p.keywords?.length ? ` (${p.keywords.slice(0, 3).join(", ")})` : "")
-    )
-    .join("\n");
-
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type":      "application/json",
-      "x-api-key":         ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model:       "claude-opus-4-5",
-      max_tokens:  500,
-      temperature: 0.2,
-      messages: [{
-        role: "user",
-        content: `Write an image generation prompt (max 250 words) for a luxury fashion mannequin photo.
-
-MANNEQUIN: Sleek dark articulated mannequin, no face, no human features. Mid-walk stride on a runway platform inside a luxury boutique. Warm pendant lighting, polished marble floor, minimalist boutique background.
-
-OUTFIT to show on mannequin:
-${pieces}
-
-COLOUR PALETTE: ${concept.colors.join(", ")}
-
-STYLE CONTEXT: ${personProfile.split("\n").slice(0, 8).join(", ")}
-
-Write as one paragraph. Start "A sleek dark mannequin wearing...". Describe every garment with fabric and fit. End with: "Luxury boutique interior, warm lighting, polished floor, fashion editorial. No text, no logos."
-
-Return ONLY the prompt.`,
-      }],
-    }),
-  });
-  if (!res.ok) throw new Error(`Prompt build ${res.status}`);
-  const d = await res.json();
-  return (d.content?.[0]?.text ?? "").trim();
-}
-
-// ─────────────────────────────────────────────────────────────
-//  STEP 6 — Generate + upload image
-// ─────────────────────────────────────────────────────────────
-
-async function generateImage(prompt: string): Promise<Uint8Array> {
-  if (!TOGETHER_API_KEY) throw new Error("TOGETHER_API_KEY not set");
-  const res = await fetch("https://api.together.xyz/v1/images/generations", {
-    method: "POST",
-    headers: {
-      "Content-Type":  "application/json",
-      "Authorization": `Bearer ${TOGETHER_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "black-forest-labs/FLUX.1-schnell",
-      prompt, width: 768, height: 1024, steps: 4, n: 1, response_format: "b64_json",
-    }),
-  });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`Together.ai ${res.status}: ${t.slice(0, 200)}`);
-  }
-  const data   = await res.json();
-  const base64 = data.data?.[0]?.b64_json;
-  if (!base64) throw new Error("No image data");
-  const binary = atob(base64);
-  const bytes  = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
-}
-
-async function uploadImage(
-  db: ReturnType<typeof createClient>,
-  bytes: Uint8Array,
-  accountId: string,
-  filename: string,
-): Promise<string> {
-  const path = `${accountId}/boards/${filename}`;
-  const { error } = await db.storage.from(STORAGE_BUCKET).upload(path, bytes, {
-    contentType: "image/png", cacheControl: "3600", upsert: true,
-  });
-  if (error) throw new Error(`Upload failed: ${error.message}`);
-  const { data } = db.storage.from(STORAGE_BUCKET).getPublicUrl(path);
-  return data.publicUrl;
-}
-
-// ─────────────────────────────────────────────────────────────
 //  MAIN HANDLER
 // ─────────────────────────────────────────────────────────────
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   try {
-    const { account_id, goal, store = "", image_b64, image_type } = await req.json() as {
+    const { account_id, goal, store = "" } = await req.json() as {
       account_id:  string;
       goal:        string;
       store?:      string;
-      image_b64?:  string;
-      image_type?: string;
     };
     if (!account_id) throw new Error("account_id required");
     if (!goal)       throw new Error("goal required");
@@ -499,17 +360,9 @@ Deno.serve(async (req: Request) => {
       `Eyewear: ${_v(report.recommended_shapes)}`,
     ].join("\n");
 
-    // ── Describe uploaded image if provided ────────────────────
-    let imageDesc = "";
-    if (image_b64 && image_type) {
-      console.log("[board_gen] Describing uploaded image…");
-      imageDesc = await describeImage(image_b64, image_type);
-      console.log("[board_gen] Image desc:", imageDesc.slice(0, 100));
-    }
-
     // ── Generate outfit concept ────────────────────────────────
     console.log("[board_gen] Generating outfit concept…");
-    const concept = await generateOutfitConcept(goal, personProfile, imageDesc, store);
+    const concept = await generateOutfitConcept(goal, personProfile, "", store);
     console.log(`[board_gen] Concept: "${concept.title}" — ${concept.pieces.length} pieces`);
 
     // ── Search Google Shopping ─────────────────────────────────
@@ -541,7 +394,7 @@ Deno.serve(async (req: Request) => {
         occasion:        concept.occasion,
         goal,
         colors:          concept.colors,
-        image_url:       "",   // filled in after image upload
+        image_url:       null,
       })
       .select()
       .single();
@@ -588,17 +441,7 @@ Deno.serve(async (req: Request) => {
     );
     console.log("[board_gen] Slugs applied ✓");
 
-    // ── Generate mannequin image ───────────────────────────────
-    console.log("[board_gen] Building image prompt…");
-    const imgPrompt  = await buildMannequinPrompt(concept, products, personProfile);
-    console.log("[board_gen] Generating image…");
-    const imageBytes = await generateImage(imgPrompt);
-    const filename   = `${account_id}_${Date.now()}_board.png`;
-    const imageUrl   = await uploadImage(db, imageBytes, account_id, filename);
-    console.log(`[board_gen] Image uploaded → ${imageUrl}`);
-
-    // Update mood_board with final image_url
-    await db.from("mood_boards").update({ image_url: imageUrl }).eq("id", board.id);
+    // No board image — the UI builds a collage from the piece images.
 
     // ── Return ─────────────────────────────────────────────────
     return new Response(
@@ -612,7 +455,7 @@ Deno.serve(async (req: Request) => {
           occasion:    concept.occasion,
           description: concept.description,
           colors:      concept.colors,
-          image_url:   imageUrl,
+          image_url:   null,
           pieces:      products.map((p, i) => ({
             ...p,
             id:   pieceIds[i],

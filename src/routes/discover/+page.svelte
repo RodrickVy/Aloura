@@ -52,6 +52,8 @@
   let showingProducts = $state(false);
   let defaultBoardId = $state<string | null>(null);
 
+  let searchError = $state('');
+
   // Progressive, contextual loading messages
   let loadingMsg = $state('');
   let loadingTimer: ReturnType<typeof setInterval> | null = null;
@@ -113,21 +115,24 @@
 
     await loadBoards();
 
-    // Restore + auto-run a search captured in the URL (e.g. returning from auth)
-    const sp     = new URLSearchParams(window.location.search);
+    // Auto-run a search captured in the URL (?action=search&mode=…&q=…)
+    // Routes through onSearch so logged-out visitors get the sign-up prompt
+    // and logged-in users run immediately.
+    const sp      = new URLSearchParams(window.location.search);
+    const action  = sp.get('action');
     const urlMode = sp.get('mode');
     const urlQ    = sp.get('q');
     if (urlMode === 'product' || urlMode === 'outfit') searchMode = urlMode;
-    if (urlQ && isLoggedIn && accountId) {
+    if (action === 'search' && urlQ) {
       goal = urlQ;
-      runSearch();
+      onSearch();
     }
   });
 
   async function loadBoards() {
     loadingBoards = true;
     try {
-      const cols = 'id,title,description,goal,occasion,category,colors,image_url,slug,account_id,created_at';
+      const cols = 'id,title,description,goal,occasion,category,colors,image_url,slug,account_id,is_official,created_at';
 
       // Public catalogue — official, public, non-comparison boards (visible to everyone, incl. anon)
       const officialQuery = supabase.from('mood_boards').select(cols)
@@ -147,9 +152,13 @@
       const results = await Promise.all(queries);
       const officialRows = results[0].data ?? [];
       const myRows       = results[1]?.data ?? [];
-      const myIds        = new Set(myRows.map((b: any) => b.id));
 
-      const allRows = [...myRows, ...officialRows.filter((b: any) => !myIds.has(b.id))];
+      // Merge unique (a board can appear in both queries if the user owns an official one)
+      const seen = new Set<string>();
+      const allRows = [...officialRows, ...myRows].filter((b: any) => {
+        if (seen.has(b.id)) return false;
+        seen.add(b.id); return true;
+      });
       if (!allRows.length) { myBoards = []; categoryGroups = []; return; }
 
       // Attach pieces to every board (for the collage + price)
@@ -161,8 +170,8 @@
         pieces: (pieces ?? []).filter(p => p.mood_board_id === b.id),
       })) as MoodBoard[];
 
-      // "My Boards"
-      myBoards = withPieces(myRows);
+      // "Saved outfits" = the user's OWN, non-official boards only
+      myBoards = withPieces(myRows.filter((b: any) => !b.is_official));
 
       // Category header images (from the categories table, editable in the editor)
       const { data: cats } = await supabase.from('categories').select('name, image_url');
@@ -170,8 +179,8 @@
         (cats ?? []).map((c: any) => [c.name.toLowerCase(), c.image_url ?? null])
       );
 
-      // Group the public catalogue by category (skip ones the user owns — already in My Boards)
-      const publicOnly = withPieces(officialRows.filter((b: any) => !myIds.has(b.id)));
+      // Category sections = ALL official catalogue boards, grouped by category (regardless of owner)
+      const publicOnly = withPieces(officialRows);
       const map = new Map<string, MoodBoard[]>();
       for (const b of publicOnly) {
         const cat = (b.category ?? 'general').trim() || 'general';
@@ -192,9 +201,20 @@
   const pieceImgs = (b: MoodBoard) => (b.pieces ?? []).filter(p => p.image_url).slice(0, 4).map(p => p.image_url);
   const hasAnyBoards = $derived(myBoards.length > 0 || categoryGroups.length > 0);
 
+  // FIFA section + one-board-per-sport tiles
+  const fifaGroup  = $derived(categoryGroups.find(g => g.category.toLowerCase() === 'fifa 2026') ?? null);
+  const sportTiles = $derived(
+    categoryGroups
+      .filter(g => g.category.toLowerCase() !== 'fifa 2026')
+      .map(g => ({ category: g.category, image: g.image, board: g.boards[0], count: g.boards.length }))
+      .filter(t => t.board)
+  );
+  let sportsExpanded = $state(false);
+
   // Build the URL that captures the current search (internal state, not shared)
   function buildSearchUrl(): string {
     const params = new URLSearchParams();
+    params.set('action', 'search');
     params.set('mode', searchMode);
     if (goal.trim()) params.set('q', goal.trim());
     return `/discover?${params.toString()}`;
@@ -222,24 +242,72 @@
     else generate();
   }
 
+  // Upload the attached image to storage and return a signed URL
+  // (works even if the bucket is private — the edge function fetches it).
+  async function uploadSearchImage(): Promise<string | null> {
+    if (!uploadedB64 || !accountId) return null;
+    const ext  = (uploadedType?.split('/')[1] ?? 'jpg').replace('jpeg', 'jpg');
+    const path = `searches/${accountId}/${Date.now()}.${ext}`;
+    const bytes = Uint8Array.from(atob(uploadedB64), c => c.charCodeAt(0));
+    const { error: upErr } = await supabase.storage.from('profile_images')
+      .upload(path, bytes, { contentType: uploadedType ?? 'image/jpeg', upsert: true });
+    if (upErr) { console.error('[upload]', upErr.message); throw new Error('Image upload failed: ' + upErr.message); }
+    // Signed URL valid for 10 minutes
+    const { data, error: sErr } = await supabase.storage.from('profile_images').createSignedUrl(path, 600);
+    if (sErr || !data?.signedUrl) throw new Error('Could not create signed URL: ' + (sErr?.message ?? 'unknown'));
+    return data.signedUrl;
+  }
+
+  // Analyse the uploaded image via edge function → returns the outfit
+  // description that best matches the typed query (the "highlighted" one).
+  async function analyzeImage(): Promise<string> {
+    const url = await uploadSearchImage();
+    if (!url) throw new Error('image upload failed');
+    const { data, error } = await supabase.functions.invoke('analyse_image_outfit', {
+      body: { image_url: url, hint: goal.trim() },
+    });
+    if (error) throw error;
+    return (data?.description ?? '').trim();
+  }
+
   async function generate() {
     if (!goal.trim() && !uploadedB64) return;
-    loading = true;
-    startLoadingMessages(OUTFIT_STAGES);
+    loading = true; searchError = '';
+    startLoadingMessages(uploadedB64 ? ['Analysing your image…', ...OUTFIT_STAGES] : OUTFIT_STAGES);
     track(supabase, accountId, 'outfit_search_hits');
     try {
       const store = selectedBrands.size ? BRANDS.filter(b => selectedBrands.has(b.id)).map(b => b.name).join(', ') : '';
-      const body: Record<string, any> = { account_id: accountId, goal: goal.trim() || 'general outfit', store };
-      if (uploadedB64) { body.image_b64 = uploadedB64; body.image_type = uploadedType; }
 
-      const { data: result, error } = await supabase.functions.invoke('aloura_outfit_board_generator', { body });
+      // If an image is attached, analyse it first and fold the chosen look into the goal
+      let finalGoal = goal.trim() || 'general outfit';
+      if (uploadedB64) {
+        console.log('[generate] analysing image…');
+        const breakdown = await analyzeImage();
+        console.log('[generate] analysis done, breakdown length:', breakdown.length);
+        if (breakdown) finalGoal = (goal.trim() ? `${goal.trim()}. ` : '') + `Reference look to recreate: ${breakdown}`;
+      }
+
+      console.log('[generate] invoking aloura_outfit_board_generator, goal length:', finalGoal.length);
+      const { data: result, error } = await supabase.functions.invoke('aloura_outfit_board_generator', {
+        body: { account_id: accountId, goal: finalGoal, store },
+      });
+      console.log('[generate] generator returned. error:', error, 'result:', result);
       if (error) throw error;
+      if (!result?.success) throw new Error(result?.error || 'Generator returned no success');
       if (!result?.mood_board) throw new Error('No board returned');
 
-      myBoards = [result.mood_board as MoodBoard, ...myBoards];
+      const board = result.mood_board as MoodBoard;
+      myBoards = [board, ...myBoards];
       track(supabase, accountId, 'mood_boards_made');
-    } catch (e) {
+
+      // Show the result immediately — go to the generated outfit's page
+      if (board.slug) {
+        goto(`/outfit/${board.slug}`);
+        return;
+      }
+    } catch (e: any) {
       console.error('[generate]', e);
+      searchError = e?.message ?? 'Something went wrong generating your outfit.';
     } finally {
       loading = false;
       stopLoadingMessages();
@@ -249,22 +317,31 @@
   // ── Product search (SerpAPI direct, server-side) ──────────────
   async function productSearch() {
     if (!goal.trim() && !uploadedB64) return;
-    loading = true;
-    startLoadingMessages(uploadedB64 ? ['Looking at your image…', ...PRODUCT_STAGES] : PRODUCT_STAGES);
+    loading = true; searchError = '';
+    startLoadingMessages(uploadedB64 ? ['Analysing your image…', ...PRODUCT_STAGES] : PRODUCT_STAGES);
     track(supabase, accountId, 'outfit_search_hits');
     try {
       const store = selectedBrands.size ? BRANDS.filter(b => selectedBrands.has(b.id)).map(b => b.name).join(', ') : '';
-      const res = await fetch('/api/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: goal.trim(), store, image_b64: uploadedB64 ?? undefined, image_type: uploadedType ?? undefined }),
-      });
+
+      // If an image is attached, analyse it first and combine with the typed query
+      let finalQuery = goal.trim();
+      if (uploadedB64) {
+        const breakdown = await analyzeImage();
+        // keep the serp query tight — first ~16 words of the chosen outfit
+        const short = breakdown.split(/\s+/).slice(0, 16).join(' ');
+        finalQuery = [goal.trim(), short].filter(Boolean).join(' ');
+      }
+
+      const params = new URLSearchParams({ q: finalQuery });
+      if (store) params.set('store', store);
+      const res = await fetch(`/api/search?${params.toString()}`);
       if (!res.ok) throw new Error('Search failed');
       const data = await res.json();
       productResults = data.results ?? [];
       showingProducts = true;
-    } catch (e) {
+    } catch (e: any) {
       console.error('[productSearch]', e);
+      searchError = e?.message ?? 'Search failed.';
       productResults = [];
       showingProducts = true;
     } finally {
@@ -358,14 +435,16 @@
   <!-- SEARCH ROW -->
   <div class="search-row">
 
-      <!-- Search bar + fit check -->
+      <!-- Search bar + fit check (Aloura logo inline on desktop) -->
       <div class="search-bar-group">
+        <a href="/" class="discover-logo">Aloura<span>.</span></a>
         <SearchBar
           bind:value={goal}
           bind:mode={searchMode}
           loading={loading}
           imageAttached={!!uploadedB64}
           imageName={uploadedName ?? ''}
+          imagePreview={uploadedB64 ? `data:${uploadedType};base64,${uploadedB64}` : ''}
           onsubmit={onSearch}
           onimage={(b64, type, name) => { uploadedB64 = b64; uploadedType = type; uploadedName = name; }}
           onclearimage={() => { uploadedB64 = null; uploadedType = null; uploadedName = null; }}
@@ -391,6 +470,10 @@
           </button>
         {/each}
       </div>
+
+      {#if searchError}
+        <p class="search-error"><i class="fas fa-exclamation-circle"></i> {searchError}</p>
+      {/if}
 
     </div>
 
@@ -454,12 +537,70 @@
       </div>
     </div>
   {:else}
-    <!-- CATEGORY ROWS -->
     <div class="rows-wrap">
+
+      <!-- FIFA 2026 — teaser grid (2 rows) + view all -->
+      {#if fifaGroup}
+        <section class="feed-section">
+          <div class="feed-section__head">
+            <div class="feed-section__title-wrap">
+              {#if fifaGroup.image}<img src={fifaGroup.image} alt="" class="feed-section__img" />{/if}
+              <h2 class="feed-section__title">{displayCategory(fifaGroup.category)}</h2>
+            </div>
+            {#if fifaGroup.boards.length > 8}
+              <a class="view-all" href="/discover/{encodeURIComponent(fifaGroup.category)}">View all ({fifaGroup.boards.length})</a>
+            {/if}
+          </div>
+          <div class="grid-2row">
+            {#each fifaGroup.boards as board}
+              {@render boardCard(board)}
+            {/each}
+          </div>
+        </section>
+      {/if}
+
+      <!-- SPORTS — one board per sport -->
+      {#if sportTiles.length}
+        <section class="feed-section">
+          <div class="feed-section__head">
+            <h2 class="feed-section__title">Sports</h2>
+            {#if sportTiles.length > 8}
+              <button class="view-all" onclick={() => sportsExpanded = !sportsExpanded}>
+                {sportsExpanded ? 'Show less' : `View all (${sportTiles.length})`}
+              </button>
+            {/if}
+          </div>
+          <div class="grid-2row" class:grid-2row--open={sportsExpanded}>
+            {#each sportTiles as tile}
+              {@const imgs = pieceImgs(tile.board)}
+              {@const count = imgs.length}
+              <a class="board-card" href="/discover/{encodeURIComponent(tile.category)}">
+                <div class="collage" class:collage--1={count === 1} class:collage--2={count === 2} class:collage--3={count === 3} class:collage--4={count >= 4}>
+                  {#if count === 0}
+                    <div class="collage__ph"><i class="fas fa-tshirt"></i></div>
+                  {:else}
+                    {#each imgs as src}
+                      <div class="collage__cell">
+                        <img src={src ?? ''} alt="" loading="lazy" onerror={(e) => { (e.target as HTMLImageElement).parentElement!.style.background = '#E8E0D8'; (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      </div>
+                    {/each}
+                  {/if}
+                </div>
+                <div class="board-card__info">
+                  <div class="board-card__occasion">{displayCategory(tile.category)}</div>
+                  <div class="board-card__meta"><span>{tile.count} board{tile.count === 1 ? '' : 's'}</span></div>
+                </div>
+              </a>
+            {/each}
+          </div>
+        </section>
+      {/if}
+
+      <!-- MY BOARDS -->
       {#if myBoards.length}
-        <section class="cat-row">
-          <h2 class="cat-row__title">My boards</h2>
-          <div class="cat-row__scroll">
+        <section class="feed-section">
+          <div class="feed-section__head"><h2 class="feed-section__title">Saved outfits</h2></div>
+          <div class="grid-2row grid-2row--open">
             {#each myBoards as board}
               {@render boardCard(board)}
             {/each}
@@ -467,21 +608,6 @@
         </section>
       {/if}
 
-      {#each categoryGroups as group}
-        <section class="cat-row">
-          <div class="cat-row__head">
-            {#if group.image}
-              <img src={group.image} alt={group.category} class="cat-row__img" />
-            {/if}
-            <h2 class="cat-row__title">{displayCategory(group.category)}</h2>
-          </div>
-          <div class="cat-row__scroll">
-            {#each group.boards as board}
-              {@render boardCard(board)}
-            {/each}
-          </div>
-        </section>
-      {/each}
     </div>
   {/if}
 
@@ -522,6 +648,7 @@
 
 <style>
   .discover { padding-top: var(--nav-h); min-height: 100vh; }
+  @media (min-width: 768px) { .discover { padding-top: 0; } }
 
   /* ── Search row ── */
   .search-row {
@@ -531,7 +658,17 @@
     padding: 12px var(--page-px) 10px;
   }
 
-  .search-bar-group { display: flex; align-items: flex-end; gap: 10px; margin-bottom: 12px; }
+  .search-bar-group { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .search-error { font-size: var(--text-xs); color: #a33020; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+
+  /* Aloura logo inline with the search — desktop only (mobile uses the top nav) */
+  .discover-logo { display: none; font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--clr-charcoal); letter-spacing: -0.5px; flex-shrink: 0; }
+  .discover-logo span { color: var(--clr-terracotta); }
+
+  @media (min-width: 768px) {
+    .search-row { top: 0; padding-top: 14px; }
+    .discover-logo { display: block; }
+  }
 
   .loading-msg { animation: msgFade 0.4s var(--ease); }
   @keyframes msgFade { from { opacity: 0.3; } to { opacity: 1; } }
@@ -591,22 +728,28 @@
   .masonry { columns: 2; column-gap: var(--space-3); padding: var(--space-4) var(--page-px); }
 
   /* ── Category rows ── */
-  .rows-wrap { padding: var(--space-5) 0 var(--space-12); display: flex; flex-direction: column; gap: var(--space-8); }
-  .cat-row__head { display: flex; align-items: center; gap: 10px; margin: 0 var(--page-px) var(--space-3); }
-  .cat-row__img { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; flex-shrink: 0; box-shadow: var(--shadow-sm); }
-  .cat-row__title { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 500; color: var(--clr-charcoal); margin: 0 var(--page-px) var(--space-3); }
-  .cat-row__head .cat-row__title { margin: 0; }
-  .cat-row__scroll {
-    display: flex; gap: var(--space-3);
-    overflow-x: auto; padding: 2px var(--page-px) var(--space-2);
-    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+  .rows-wrap { padding: var(--space-6) var(--page-px) var(--space-12); display: flex; flex-direction: column; gap: var(--space-10); }
+
+  /* Section header */
+  .feed-section__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); }
+  .feed-section__title-wrap { display: flex; align-items: center; gap: 10px; }
+  .feed-section__img { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; flex-shrink: 0; box-shadow: var(--shadow-sm); }
+  .feed-section__title { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 500; color: var(--clr-charcoal); }
+  .view-all { background: none; border: none; cursor: pointer; font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; color: var(--clr-brown); white-space: nowrap; text-decoration: none; }
+  .view-all:hover { text-decoration: underline; }
+
+  /* 2-row clipped grid: rows beyond 2 collapse to 0 height (any column count) */
+  .grid-2row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-rows: repeat(2, auto);
+    grid-auto-rows: 0;
+    overflow: hidden;
   }
-  .cat-row__scroll::-webkit-scrollbar { height: 6px; }
-  .cat-row__scroll::-webkit-scrollbar-thumb { background: var(--clr-light-taupe); border-radius: 999px; }
-  .cat-row .board-card { flex: 0 0 auto; width: 200px; scroll-snap-align: start; margin-bottom: 0; }
+  .grid-2row--open { grid-template-rows: auto; grid-auto-rows: auto; overflow: visible; }
 
   .board-card {
-    break-inside: avoid; display: block; width: 100%; margin-bottom: var(--space-3);
+    display: block; width: 100%;
     background: var(--clr-cream); border: none; padding: 0; cursor: pointer;
     border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm);
     transition: box-shadow var(--dur-base), transform var(--dur-base);

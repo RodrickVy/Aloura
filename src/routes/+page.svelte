@@ -4,12 +4,23 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { track } from '$lib/analytics';
+  import SearchBar from '$lib/SearchBar.svelte';
 
   let { data } = $props();
   const supabase = createSupabaseBrowserClient();
 
   // Absolute social-preview image, derived from the live origin
   const ogImage = $derived(`${$page.url.origin}/assets/man_on_chair.jpg`);
+
+  // Hero search — takes the visitor to discover, which captures + auto-runs it
+  let heroQuery = $state('');
+  let heroMode  = $state<'outfit' | 'product'>('outfit');
+
+  function heroSearch() {
+    if (!heroQuery.trim()) return;
+    const params = new URLSearchParams({ action: 'search', mode: heroMode, q: heroQuery.trim() });
+    goto(`/discover?${params.toString()}`);
+  }
 
   // ── Modal ─────────────────────────────────────────────────
   let showModal  = $state(false);
@@ -157,9 +168,16 @@
   <section class="hero">
     <h1 class="hero__title">Be more <em>you.</em></h1>
     <p class="hero__sub">Search outfits, find the best prices, and get clothing picks matched to your style.</p>
-    <div class="hero__actions">
-      <button class="pill-btn pill-btn--lg" onclick={() => openModal('signup')}>Get started — it's free</button>
-      <button class="link-btn link-btn--sm" onclick={() => openModal('signin')}>Already have an account?</button>
+    <div class="hero__search">
+      <SearchBar
+        bind:value={heroQuery}
+        bind:mode={heroMode}
+        showImage={false}
+        onsubmit={heroSearch}
+      />
+      <button class="hero__login" onclick={() => openModal('signin')}>
+        Already have an account? <span>Log in</span>
+      </button>
     </div>
   </section>
 
@@ -347,6 +365,11 @@
   @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   .hero__sub { font-size: 16px; font-weight: 300; line-height: 1.8; color: var(--clr-taupe); max-width: 480px; margin: 0 auto 36px; }
   .hero__actions { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .hero__search { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .hero__search :global(.search-wrap) { width: 100%; }
+  .hero__login { background: none; border: none; cursor: pointer; font-family: var(--font-body); font-size: 13px; color: var(--clr-taupe); }
+  .hero__login span { color: var(--clr-brown); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+  .hero__login:hover span { color: var(--clr-charcoal); }
 
   /* ── PINTEREST GRID ── */
   .pin-section { padding: 0 16px 48px; }

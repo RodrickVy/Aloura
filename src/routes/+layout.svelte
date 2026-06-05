@@ -28,7 +28,8 @@
   // Close drawer on route change
   $effect(() => { $page.url.pathname; drawerOpen = false; });
 
-  const isHome = $derived($page.url.pathname === '/');
+  const isHome     = $derived($page.url.pathname === '/');
+  const isDiscover = $derived($page.url.pathname === '/discover');
 
   async function signOut() {
     drawerOpen = false;
@@ -38,8 +39,8 @@
 </script>
 
 {#if !isHome}
-  <!-- NAV -->
-  <nav class="nav" class:scrolled>
+  <!-- NAV (hidden on desktop for /discover — the search row carries the logo there) -->
+  <nav class="nav" class:scrolled class:nav--discover={isDiscover}>
     <div class="nav__inner">
       <a href="/" class="nav__logo">Aloura<span>.</span></a>
 
@@ -128,7 +129,7 @@
   .nav.scrolled { border-color: var(--clr-border); box-shadow: var(--shadow-sm); }
   .nav__inner {
     display: flex; align-items: center; justify-content: space-between;
-    width: 100%; max-width: var(--max-w); margin-inline: auto; padding-inline: var(--page-px);
+    width: 100%; padding-inline: var(--page-px);
   }
   .nav__logo { font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--clr-charcoal); letter-spacing: -0.5px; }
   .nav__logo span { color: var(--clr-terracotta); }
@@ -209,6 +210,8 @@
     .hamburger   { display: none; }
     .drawer      { display: none; }
     .drawer-backdrop { display: none; }
+    /* Discover gets a search-first header on desktop — drop the global bar */
+    .nav--discover { display: none; }
   }
 
   /* ── App footer ── */

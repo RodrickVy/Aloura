@@ -3,7 +3,6 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import BrandChips from '$lib/BrandChips.svelte';
-  import FitCheck from '$lib/FitCheck.svelte';
   import AuthModal from '$lib/AuthModal.svelte';
   import ShareButton from '$lib/ShareButton.svelte';
   import { track } from '$lib/analytics';
@@ -68,12 +67,8 @@
   <!-- STICKY BRAND STRIP -->
   <div class="brand-strip">
     <div class="brand-strip__inner">
-      <div class="strip-row">
-        <FitCheck />
-        <div class="strip-divider"></div>
-        <span class="brand-strip__label">Compare at</span>
-        <BrandChips onselect={onBrandSelect} />
-      </div>
+      <span class="brand-strip__label">Compare this at another store</span>
+      <BrandChips onselect={onBrandSelect} />
     </div>
   </div>
 
@@ -169,10 +164,7 @@
     padding: 10px var(--page-px) 8px;
   }
   .brand-strip__inner { max-width: var(--max-w); margin: 0 auto; }
-  .strip-row { display: flex; align-items: center; gap: 10px; }
-  .strip-divider { width: 1px; height: 24px; background: var(--clr-border); flex-shrink: 0; }
-  .brand-strip__label { font-size: var(--text-xs); color: var(--clr-text-muted); white-space: nowrap; flex-shrink: 0; }
-  .brand-strip__label strong { color: var(--clr-charcoal); font-weight: 600; }
+  .brand-strip__label { display: block; font-size: var(--text-xs); color: var(--clr-text-muted); margin-bottom: 8px; }
   .clear-btn {
     background: none; border: none; cursor: pointer;
     font-size: var(--text-xs); color: var(--clr-terracotta);
