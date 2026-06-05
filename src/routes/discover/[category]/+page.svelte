@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from '$app/stores';
   let { data } = $props();
 
   const displayCategory = (c: string) =>
@@ -7,11 +8,28 @@
   const pieceImgs = (b: any) => (b.pieces ?? []).filter((p: any) => p.image_url).slice(0, 4).map((p: any) => p.image_url);
   const totalPrice = (b: any) => (b.pieces ?? []).reduce((s: number, p: any) => s + (p.price ?? 0), 0);
   const boardHref = (b: any) => (b.slug ? `/outfit/${b.slug}` : '#');
+
+  // Contextual social image: category image → first piece image of the first board → site default
+  const firstPieceImg = data.boards.flatMap((b: any) => pieceImgs(b))[0] ?? null;
+  const ogImage = $derived(data.image || firstPieceImg || `${$page.url.origin}/assets/man_on_chair.jpg`);
+  const title   = displayCategory(data.category);
 </script>
 
 <svelte:head>
-  <title>{displayCategory(data.category)} — Aloura</title>
-  <meta name="description" content="Browse {displayCategory(data.category)} outfit boards on Aloura." />
+  <title>{title} — Aloura</title>
+  <meta name="description" content="Browse {title} outfit boards on Aloura." />
+  <link rel="canonical" href="{$page.url.origin}/discover/{encodeURIComponent(data.category)}" />
+
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Aloura" />
+  <meta property="og:title"       content="{title} — Aloura" />
+  <meta property="og:description" content="Browse {title} outfit boards on Aloura." />
+  <meta property="og:url"         content="{$page.url.origin}/discover/{encodeURIComponent(data.category)}" />
+  <meta property="og:image"       content={ogImage} />
+
+  <meta name="twitter:card"  content="summary_large_image" />
+  <meta name="twitter:title" content="{title} — Aloura" />
+  <meta name="twitter:image" content={ogImage} />
 </svelte:head>
 
 <div class="cat-page">
