@@ -20,7 +20,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   if (!image_b64 || !image_type) throw error(400, 'image required');
 
   const system = `You are a fashion product analyst. Analyse the clothing/outfit in the image.
-Identify garments and footwear (type, colour, material, pattern, fit, notable details) — apparel only, ignore background and people.
+Identify garments and footwear (type, colour, material, pattern, fit, notable details) - apparel only, ignore background and people.
 Respond ONLY with valid JSON, no markdown.`;
 
   const prompt = mode === 'product'

@@ -1,18 +1,15 @@
 <script lang="ts">
-  import { createSupabaseBrowserClient } from '$lib/supabase';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { onMount } from 'svelte';
-  import { track } from '$lib/analytics';
+  import AuthModal from '$lib/AuthModal.svelte';
   import SearchBar from '$lib/SearchBar.svelte';
 
   let { data } = $props();
-  const supabase = createSupabaseBrowserClient();
 
   // Absolute social-preview image, derived from the live origin
   const ogImage = $derived(`${$page.url.origin}/assets/man_on_chair.jpg`);
 
-  // Hero search — takes the visitor to discover, which captures + auto-runs it
+  // Hero search - takes the visitor to discover, which captures + auto-runs it
   let heroQuery = $state('');
   let heroMode  = $state<'outfit' | 'product'>('outfit');
 
@@ -22,88 +19,10 @@
     goto(`/discover?${params.toString()}`);
   }
 
-  // ── Modal ─────────────────────────────────────────────────
-  let showModal  = $state(false);
-  let mode       = $state<'signup' | 'signin' | 'forgot'>('signup');
-  let name       = $state('');
-  let email      = $state('');
-  let password   = $state('');
-  let showPw     = $state(false);
-  let error      = $state('');
-  let success    = $state('');
-  let loading    = $state(false);
-
-  function openModal(m: 'signup' | 'signin') {
-    mode = m; error = ''; success = ''; name = ''; email = ''; password = ''; showModal = true;
-  }
-  function switchMode(m: 'signup' | 'signin' | 'forgot') {
-    mode = m; error = ''; success = '';
-  }
-  function closeModal() { if (!loading) showModal = false; }
-  function onKey(e: KeyboardEvent) { if (e.key === 'Escape') closeModal(); }
-
-  async function redirectAfterAuth(userId: string) {
-    const { data: account } = await supabase.from('accounts').select('id').eq('auth_id', userId).maybeSingle();
-    if (!account) { goto('/onboarding'); return; }
-    const { data: report } = await supabase.from('style_reports').select('id').eq('account_id', account.id).order('generated_at', { ascending: false }).limit(1).maybeSingle();
-    goto(report ? '/discover' : '/onboarding');
-  }
-
-  async function sendReset() {
-    error = ''; success = '';
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { error = 'Enter a valid email.'; return; }
-    loading = true;
-    try {
-      const { error: e } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (e) throw e;
-      success = 'Check your inbox — we sent a reset link.';
-    } catch {
-      error = 'Could not send reset email. Please try again.';
-    } finally {
-      loading = false;
-    }
-  }
-
-  async function submit() {
-    error = '';
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { error = 'Enter a valid email.'; return; }
-    if (password.length < 8) { error = 'Password must be at least 8 characters.'; return; }
-    if (mode === 'signup' && name.trim().length < 2) { error = 'Enter your name.'; return; }
-    loading = true;
-    try {
-      if (mode === 'signup') {
-        const { data: authData, error: e } = await supabase.auth.signUp({
-          email: email.trim().toLowerCase(), password,
-          options: { data: { full_name: name.trim() } },
-        });
-        if (e) throw e;
-        if (authData.user) {
-          const { data: existing } = await supabase.from('accounts').select('id').eq('auth_id', authData.user.id).maybeSingle();
-          if (!existing) {
-            await supabase.from('accounts').insert({ auth_id: authData.user.id, name: name.trim(), email: email.trim().toLowerCase() });
-            // track sign up — get new account id
-            const { data: newAcc } = await supabase.from('accounts').select('id').eq('auth_id', authData.user.id).maybeSingle();
-            track(supabase, newAcc?.id, 'sign_ups');
-          }
-          await redirectAfterAuth(authData.user.id);
-        }
-      } else {
-        const { data: authData, error: e } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
-        if (e) throw e;
-        if (authData.user) await redirectAfterAuth(authData.user.id);
-      }
-    } catch (e: any) {
-      const msg = (e.message ?? '').toLowerCase();
-      if (msg.includes('invalid') || msg.includes('credentials')) error = 'Incorrect email or password.';
-      else if (msg.includes('already registered')) error = 'Account exists. Try signing in.';
-      else if (msg.includes('email not confirmed')) error = 'Check your email to confirm your account.';
-      else error = 'Something went wrong. Please try again.';
-    } finally {
-      loading = false;
-    }
-  }
+  // Auth modal (handles sign in/up + onboarding)
+  let authOpen = $state(false);
+  let authMode = $state<'signup' | 'signin' | 'forgot'>('signup');
+  function openModal(m: 'signup' | 'signin') { authMode = m; authOpen = true; }
 
   const pins = [
     { src: '/assets/man_on_chair.jpg',   label: 'Casual layers',       h: 380 },
@@ -135,10 +54,10 @@
 </script>
 
 <svelte:head>
-  <title>Aloura — Know What Works For You</title>
-  <meta name="description" content="Personalized style intelligence — your best colors, outfit boards, and price comparisons built around how you actually look." />
+  <title>Aloura - Know What Works For You</title>
+  <meta name="description" content="Personalized style intelligence - your best colors, outfit boards, and price comparisons built around how you actually look." />
   <link rel="canonical" href="{$page.url.origin}/" />
-  <meta property="og:title"       content="Aloura — Know What Works For You" />
+  <meta property="og:title"       content="Aloura - Know What Works For You" />
   <meta property="og:description" content="Search outfits, find the best prices, and get clothing picks matched to your style." />
   <meta property="og:image"       content={ogImage} />
   <meta property="og:image:width"  content="1200" />
@@ -146,12 +65,10 @@
   <meta property="og:type"        content="website" />
   <meta property="og:url"         content="{$page.url.origin}/" />
   <meta name="twitter:card"        content="summary_large_image" />
-  <meta name="twitter:title"       content="Aloura — Know What Works For You" />
+  <meta name="twitter:title"       content="Aloura - Know What Works For You" />
   <meta name="twitter:description" content="Search outfits, find the best prices, and get clothing picks matched to your style." />
   <meta name="twitter:image"       content={ogImage} />
 </svelte:head>
-
-<svelte:window onkeydown={onKey} />
 
 <div class="page">
 
@@ -214,7 +131,7 @@
   <section class="features">
     <div class="features__inner">
       {#each [
-        { icon: 'fas fa-palette',  title: 'Color analysis',    desc: 'Your exact palette — best colors, accents, and what to avoid.' },
+        { icon: 'fas fa-palette',  title: 'Color analysis',    desc: 'Your exact palette - best colors, accents, and what to avoid.' },
         { icon: 'fas fa-tshirt',   title: 'Outfit boards',     desc: 'Swipeable outfit boards tailored to your goals and occasions.' },
         { icon: 'fas fa-tag',      title: 'Price comparison',  desc: 'Find the same pieces across stores and see where to get the best deal.' },
         { icon: 'fas fa-glasses',  title: 'Accessories',       desc: 'Metals, chains, and eyewear shapes matched to your face and undertone.' },
@@ -236,80 +153,8 @@
 
 </div>
 
-<!-- ── AUTH MODAL ────────────────────────────────────────── -->
-{#if showModal}
-  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-  <div class="backdrop" onclick={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
-    <div class="modal">
-      <button class="modal__close" onclick={closeModal} aria-label="Close">
-        <i class="fas fa-times"></i>
-      </button>
-
-      <div class="modal__logo">Aloura<span>.</span></div>
-      <h2 class="modal__title">
-        {#if mode === 'signup'}Create your profile
-        {:else if mode === 'signin'}Welcome back
-        {:else}Reset your password{/if}
-      </h2>
-
-      {#if error}
-        <div class="modal__error"><i class="fas fa-exclamation-circle"></i> {error}</div>
-      {/if}
-      {#if success}
-        <div class="modal__success"><i class="fas fa-check-circle"></i> {success}</div>
-      {/if}
-
-      {#if mode === 'forgot'}
-        <!-- ── FORGOT PASSWORD ── -->
-        {#if !success}
-          <form onsubmit={(e) => { e.preventDefault(); sendReset(); }} class="modal__form">
-            <input class="modal__input" type="email" placeholder="Your email address" bind:value={email} autocomplete="email" />
-            <button class="modal__submit" type="submit" disabled={loading}>
-              {#if loading}<span class="modal__spin"></span>
-              {:else}Send reset link{/if}
-            </button>
-          </form>
-        {/if}
-        <p class="modal__switch">
-          <button onclick={() => switchMode('signin')}>
-            <i class="fas fa-arrow-left" style="font-size:10px"></i> Back to sign in
-          </button>
-        </p>
-
-      {:else}
-        <!-- ── SIGN IN / SIGN UP ── -->
-        <form onsubmit={(e) => { e.preventDefault(); submit(); }} class="modal__form">
-          {#if mode === 'signup'}
-            <input class="modal__input" type="text" placeholder="Your name" bind:value={name} autocomplete="name" />
-          {/if}
-          <input class="modal__input" type="email" placeholder="Email" bind:value={email} autocomplete="email" />
-          <div class="modal__pw">
-            <input class="modal__input" type={showPw ? 'text' : 'password'} placeholder="Password (8+ characters)" bind:value={password} autocomplete={mode === 'signup' ? 'new-password' : 'current-password'} />
-            <button type="button" class="modal__pw-eye" onclick={() => showPw = !showPw} tabindex="-1">
-              <i class={showPw ? 'fas fa-eye-slash' : 'fas fa-eye'}></i>
-            </button>
-          </div>
-          {#if mode === 'signin'}
-            <button type="button" class="modal__forgot" onclick={() => switchMode('forgot')}>
-              Forgot password?
-            </button>
-          {/if}
-          <button class="modal__submit" type="submit" disabled={loading}>
-            {#if loading}<span class="modal__spin"></span>
-            {:else}{mode === 'signup' ? 'Create account' : 'Sign in'}{/if}
-          </button>
-        </form>
-
-        <p class="modal__switch">
-          {mode === 'signup' ? 'Already have an account?' : "Don't have an account?"}
-          <button onclick={() => switchMode(mode === 'signup' ? 'signin' : 'signup')}>
-            {mode === 'signup' ? 'Sign in' : 'Sign up free'}
-          </button>
-        </p>
-      {/if}
-    </div>
-  </div>
-{/if}
+<!-- ── AUTH MODAL (sign in/up + onboarding) ──────────────── -->
+<AuthModal bind:open={authOpen} bind:mode={authMode} />
 
 <style>
   /* ── PAGE ── */

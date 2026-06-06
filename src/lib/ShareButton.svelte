@@ -34,7 +34,7 @@
         await navigator.share({ title, text, url: shareUrl });
         return;
       } catch {
-        // user cancelled or unsupported — fall through to copy
+        // user cancelled or unsupported - fall through to copy
       }
     }
 
@@ -44,7 +44,7 @@
       copied = true;
       setTimeout(() => copied = false, 1800);
     } catch {
-      // last resort — do nothing visible
+      // last resort - do nothing visible
     }
   }
 </script>

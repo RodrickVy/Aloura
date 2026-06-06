@@ -9,7 +9,7 @@ interface ProductResult {
   url: string; image_url: string; keywords: string[];
 }
 
-// Pure SerpAPI Google Shopping — raw product data only, no AI enrichment.
+// Pure SerpAPI Google Shopping - raw product data only, no AI enrichment.
 async function serpShopping(query: string, store: string): Promise<ProductResult[]> {
   const q = store ? `${query} ${store}` : query;
   const apiUrl = `https://serpapi.com/search?engine=google_shopping&q=${encodeURIComponent(q)}&api_key=${SERP_API_KEY}&num=20`;

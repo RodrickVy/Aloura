@@ -1,11 +1,11 @@
 /**
  * aloura_outfit_board_generator
- * Supabase Edge Function — Deno / TypeScript
+ * Supabase Edge Function - Deno / TypeScript
  *
  * POST {
  *   account_id:  string,
  *   goal:        string,        // text query / occasion
- *   store?:      string,        // e.g. "Zara" — empty = any store
+ *   store?:      string,        // e.g. "Zara" - empty = any store
  * }
  *
  * Pipeline:
@@ -14,7 +14,7 @@
  *  3. SerpAPI Google Shopping → find each piece (with store filter if given)
  *  4. Insert mood_board + pieces rows
  *  5. Claude → generate SEO slugs for board + all pieces (single call)
- *  6. Return full board payload (no image — UI builds a collage from pieces)
+ *  6. Return full board payload (no image - UI builds a collage from pieces)
  *
  * Secrets: ANTHROPIC_API_KEY, SERP_API_KEY
  */
@@ -97,7 +97,7 @@ function fallbackSlugs(
 }
 
 // ─────────────────────────────────────────────────────────────
-//  STEP 1 — Generate outfit concept
+//  STEP 1 - Generate outfit concept
 // ─────────────────────────────────────────────────────────────
 
 async function generateOutfitConcept(
@@ -110,7 +110,7 @@ async function generateOutfitConcept(
     ? `\nUSER UPLOADED ITEM:\n${imageDesc}\nIncorporate this item or find similar pieces in the outfit.`
     : "";
   const storeContext = store
-    ? `\nPREFERRED STORE: ${store} — prefer pieces findable at ${store}.`
+    ? `\nPREFERRED STORE: ${store} - prefer pieces findable at ${store}.`
     : "";
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -163,7 +163,7 @@ Return ONLY:
 }
 
 // ─────────────────────────────────────────────────────────────
-//  STEP 3 — Google Shopping search for one piece
+//  STEP 3 - Google Shopping search for one piece
 // ─────────────────────────────────────────────────────────────
 
 async function searchGoogleShopping(
@@ -210,7 +210,7 @@ async function searchGoogleShopping(
 }
 
 // ─────────────────────────────────────────────────────────────
-//  STEP 4 — Generate SEO slugs via Claude (single call)
+//  STEP 4 - Generate SEO slugs via Claude (single call)
 // ─────────────────────────────────────────────────────────────
 
 async function generateSlugs(
@@ -248,7 +248,7 @@ MOOD BOARD:
 PIECES (${piecesContext.length} total):
 ${JSON.stringify(piecesContext, null, 2)}
 
-Return ONLY this JSON — no markdown, no explanation:
+Return ONLY this JSON - no markdown, no explanation:
 {
   "mood_board_slug": "occasion-style-color-detail",
   "piece_slugs": [
@@ -275,7 +275,7 @@ piece_slugs must have exactly ${piecesContext.length} entries in order.`;
   });
 
   if (!res.ok) {
-    console.warn(`[slugs] Claude ${res.status} — using fallback slugs`);
+    console.warn(`[slugs] Claude ${res.status} - using fallback slugs`);
     return fallbackSlugs(concept, products, boardId, pieceIds);
   }
 
@@ -305,7 +305,7 @@ piece_slugs must have exactly ${piecesContext.length} entries in order.`;
 
     return { mood_board_slug: mbSlug, piece_slugs: pieceSlugs };
   } catch {
-    console.warn("[slugs] Non-JSON from Claude — using fallback slugs");
+    console.warn("[slugs] Non-JSON from Claude - using fallback slugs");
     return fallbackSlugs(concept, products, boardId, pieceIds);
   }
 }
@@ -354,7 +354,7 @@ Deno.serve(async (req: Request) => {
       `Best Colors (USE THESE): ${_j(report.best_colors)}`,
       `Accent Colors: ${_j(report.accent_colors)}`,
       `Neutral Staples: ${_j(report.neutral_staples)}`,
-      `AVOID These Colors: ${_j(report.use_sparingly)} — ${_v(report.use_sparingly_description)}`,
+      `AVOID These Colors: ${_j(report.use_sparingly)} - ${_v(report.use_sparingly_description)}`,
       `Face Shape: ${_v(report.face_shape)}`,
       `Jewellery Metals: ${_v(report.metals)}`,
       `Eyewear: ${_v(report.recommended_shapes)}`,
@@ -363,7 +363,7 @@ Deno.serve(async (req: Request) => {
     // ── Generate outfit concept ────────────────────────────────
     console.log("[board_gen] Generating outfit concept…");
     const concept = await generateOutfitConcept(goal, personProfile, "", store);
-    console.log(`[board_gen] Concept: "${concept.title}" — ${concept.pieces.length} pieces`);
+    console.log(`[board_gen] Concept: "${concept.title}" - ${concept.pieces.length} pieces`);
 
     // ── Search Google Shopping ─────────────────────────────────
     console.log("[board_gen] Searching Google Shopping…");
@@ -441,7 +441,7 @@ Deno.serve(async (req: Request) => {
     );
     console.log("[board_gen] Slugs applied ✓");
 
-    // No board image — the UI builds a collage from the piece images.
+    // No board image - the UI builds a collage from the piece images.
 
     // ── Return ─────────────────────────────────────────────────
     return new Response(

@@ -71,14 +71,14 @@
         <p class="fc-eyebrow">Style Fit Check</p>
         <h2 class="fc-title">Instant style feedback on<br>what you're wearing <em>right now.</em></h2>
         <p class="fc-sub">
-          Show us your current fit and get tailored, on-the-spot styling tips —
+          Show us your current fit and get tailored, on-the-spot styling tips -
           what's working, what to tweak, and how to level it up. This isn't generic
           AI guesswork: it's grounded in real colour theory and styling principles,
           personalised to you.
         </p>
 
         <ul class="fc-steps">
-          <li><span class="fc-step-num">1</span> <div><strong>Allow camera access</strong><br><span>So we can see your outfit — nothing is saved without your say-so.</span></div></li>
+          <li><span class="fc-step-num">1</span> <div><strong>Allow camera access</strong><br><span>So we can see your outfit - nothing is saved without your say-so.</span></div></li>
           <li><span class="fc-step-num">2</span> <div><strong>Prop your phone up &amp; step back</strong><br><span>Stand far enough that your whole outfit, head to shoes, is in frame.</span></div></li>
           <li><span class="fc-step-num">3</span> <div><strong>Get your fit check</strong><br><span>Real, tailored style tips and recommendations in seconds.</span></div></li>
         </ul>
@@ -111,7 +111,7 @@
           <div class="fc-soon">
             <div class="fc-icon fc-icon--soon"><i class="fas fa-wand-magic-sparkles"></i></div>
             <h3 class="fc-soon__title">Fit Check is almost ready</h3>
-            <p class="fc-soon__text">We're putting the final touches on your personal styling engine. It'll be live very soon — thanks for your patience!</p>
+            <p class="fc-soon__text">We're putting the final touches on your personal styling engine. It'll be live very soon - thanks for your patience!</p>
             <button class="fc-cta fc-cta--light" onclick={close}>Got it</button>
           </div>
         </div>

@@ -3,7 +3,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals }) => {
   const { user } = await locals.safeGetSession();
 
-  // Logged-out visitors are allowed — they see the public catalogue only.
+  // Logged-out visitors are allowed - they see the public catalogue only.
   if (!user) {
     return { accountId: null, isLoggedIn: false };
   }

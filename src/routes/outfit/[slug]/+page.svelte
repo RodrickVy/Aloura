@@ -30,7 +30,7 @@
 
   async function onBrandSelect(brand: { id: string; name: string }) {
     const target = `/outfit/compare/${board.slug}?stores=${brand.name.toLowerCase()}`;
-    // Comparing creates a board — gate logged-out visitors, return them here after auth
+    // Comparing creates a board - gate logged-out visitors, return them here after auth
     if (!isLoggedIn) {
       authReturnTo = target;
       authPrompt = 'Sign up to compare this outfit across stores.';
@@ -43,13 +43,13 @@
 </script>
 
 <svelte:head>
-  <title>{board.title} — Aloura Outfit</title>
+  <title>{board.title} - Aloura Outfit</title>
   <meta name="description" content={board.description ?? `A curated outfit for ${board.occasion} from Aloura.`} />
   <link rel="canonical" href="{$page.url.origin}/outfit/{board.slug}" />
 
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="Aloura" />
-  <meta property="og:title"       content="{board.title} — Aloura" />
+  <meta property="og:title"       content="{board.title} - Aloura" />
   <meta property="og:description" content={board.description ?? `A curated outfit for ${board.occasion} from Aloura.`} />
   <meta property="og:url"         content="{$page.url.origin}/outfit/{board.slug}" />
   <meta property="og:image"       content={ogImage} />
@@ -57,7 +57,7 @@
   <meta property="og:image:height" content="1200" />
 
   <meta name="twitter:card"        content="summary_large_image" />
-  <meta name="twitter:title"       content="{board.title} — Aloura" />
+  <meta name="twitter:title"       content="{board.title} - Aloura" />
   <meta name="twitter:description" content={board.description ?? ''} />
   <meta name="twitter:image"       content={ogImage} />
 </svelte:head>

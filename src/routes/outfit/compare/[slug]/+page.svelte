@@ -84,7 +84,7 @@
   import { onMount } from 'svelte';
   onMount(async () => {
     if (!isLoggedIn) {
-      // Drop any requested stores that have no generated board — anon can't create them
+      // Drop any requested stores that have no generated board - anon can't create them
       const pruned = columns.filter(c => c.board_id);
       if (pruned.length !== columns.length) { columns = pruned; updateUrl(); }
       return;
@@ -130,11 +130,12 @@
           mood_board_id: newBoard.id,
           store:         storeName,
           products:      (original.pieces ?? []).map((p: any) => ({
-            name:     p.name,
-            keywords: p.keywords ?? [],
-            colors:   p.colors ?? [],
-            url:      p.url ?? undefined,
-            store:    p.store ?? undefined,
+            name:           p.name,
+            keywords:       p.keywords ?? [],
+            colors:         p.colors ?? [],
+            url:            p.url ?? undefined,
+            store:          p.store ?? undefined,
+            original_price: p.price ?? null,
           })),
         },
       });
@@ -160,14 +161,14 @@
   async function addStore(brand: { id: string; name: string }) {
     const storeName = brand.name.toLowerCase();
 
-    // Already in columns — remove it (allowed for everyone, no write involved)
+    // Already in columns - remove it (allowed for everyone, no write involved)
     if (columns.some(c => c.store === storeName)) {
       columns = columns.filter(c => c.store !== storeName);
       updateUrl();
       return;
     }
 
-    // Adding a new store creates a comparison board — require sign-up.
+    // Adding a new store creates a comparison board - require sign-up.
     // Return them here with the new store already in the URL so it auto-creates.
     if (!isLoggedIn || !accountId) {
       const stores = [...columns.map(c => c.store), storeName].join(',');
@@ -234,19 +235,19 @@
 </script>
 
 <svelte:head>
-  <title>{original.title} — Price Comparison — Aloura</title>
+  <title>{original.title} - Price Comparison - Aloura</title>
   <meta name="description" content="Compare prices for {original.title} across stores on Aloura." />
   <link rel="canonical" href="{$page.url.origin}/outfit/compare/{original.slug}" />
 
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="Aloura" />
-  <meta property="og:title"       content="{original.title} — Price Comparison" />
+  <meta property="og:title"       content="{original.title} - Price Comparison" />
   <meta property="og:description" content="Compare prices for {original.title} across stores on Aloura." />
   <meta property="og:url"         content="{$page.url.origin}{$page.url.pathname}{$page.url.search}" />
   <meta property="og:image"       content={ogImage} />
 
   <meta name="twitter:card"  content="summary_large_image" />
-  <meta name="twitter:title" content="{original.title} — Price Comparison" />
+  <meta name="twitter:title" content="{original.title} - Price Comparison" />
   <meta name="twitter:image" content={ogImage} />
 </svelte:head>
 
@@ -263,7 +264,7 @@
       <!-- Title + share -->
       <div class="title-row">
         <div class="board-title">{original.title}</div>
-        <ShareButton variant="pill" label="Share comparison" title="{original.title} — price comparison" text="Compare prices for this outfit on Aloura" />
+        <ShareButton variant="pill" label="Share comparison" title="{original.title} - price comparison" text="Compare prices for this outfit on Aloura" />
       </div>
 
       <div class="strip-row">
@@ -344,7 +345,7 @@
             <div class="col__store-name" style="text-transform:capitalize">{col.store}</div>
             {#if !col.loading && !col.error}
               <div class="col__total" class:col__total--best={total(col.pieces) < total(original.pieces ?? []) && total(col.pieces) > 0}>
-                {col.pieces.length ? formatPrice(total(col.pieces)) : '—'}
+                {col.pieces.length ? formatPrice(total(col.pieces)) : '-'}
                 {#if total(col.pieces) > 0 && total(col.pieces) < total(original.pieces ?? [])}
                   <span class="save-badge">Save {formatPrice(total(original.pieces ?? []) - total(col.pieces))}</span>
                 {/if}
@@ -380,9 +381,23 @@
                     {/if}
                   </div>
                   <div class="piece-info">
-                    <div class="piece-store">{piece.store ?? col.store}</div>
+                    <div class="piece-store">
+                      {piece.store ?? col.store}
+                      {#if piece.same_store === false}<span class="closest-tag">closest match</span>{/if}
+                    </div>
                     <div class="piece-name">{piece.name}</div>
-                    {#if piece.price}<div class="piece-price">{formatPrice(piece.price)}</div>{/if}
+                    {#if piece.price}
+                      <div class="piece-price-row">
+                        <span class="piece-price">{formatPrice(piece.price)}</span>
+                        {#if piece.price_verdict === 'cheaper' && piece.price_delta != null}
+                          <span class="delta-badge delta-badge--down">Save {formatPrice(Math.abs(piece.price_delta))}</span>
+                        {:else if piece.price_verdict === 'pricier' && piece.price_delta != null}
+                          <span class="delta-badge delta-badge--up">+{formatPrice(piece.price_delta)}</span>
+                        {:else if piece.price_verdict === 'similar'}
+                          <span class="delta-badge delta-badge--same">same price</span>
+                        {/if}
+                      </div>
+                    {/if}
                   </div>
                   <i class="fas fa-chevron-right piece-caret"></i>
                 </a>
@@ -501,7 +516,13 @@
   .piece-info { flex: 1; min-width: 0; }
   .piece-store { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--clr-taupe); margin-bottom: 2px; }
   .piece-name { font-size: 12px; font-weight: 500; color: var(--clr-charcoal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 2px; }
+  .piece-price-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .piece-price { font-size: 13px; font-weight: 600; color: var(--clr-brown); }
+  .delta-badge { font-size: 10px; font-weight: 700; border-radius: 999px; padding: 1px 7px; font-family: var(--font-body); white-space: nowrap; }
+  .delta-badge--down { background: #dcfce7; color: #16a34a; }
+  .delta-badge--up   { background: #fee2e2; color: #dc2626; }
+  .delta-badge--same { background: var(--clr-beige); color: var(--clr-taupe); }
+  .closest-tag { margin-left: 6px; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--clr-brown); background: var(--clr-beige); border-radius: 999px; padding: 1px 6px; }
   .piece-caret { font-size: 10px; color: var(--clr-light-taupe); flex-shrink: 0; }
 
   /* ── Hint column ── */

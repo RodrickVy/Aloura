@@ -90,7 +90,7 @@
 </script>
 
 <svelte:head>
-  <title>Category Editor — Aloura</title>
+  <title>Category Editor - Aloura</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 

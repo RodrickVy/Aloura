@@ -69,7 +69,7 @@
 </script>
 
 <svelte:head>
-  <title>Editor — Aloura</title>
+  <title>Editor - Aloura</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 

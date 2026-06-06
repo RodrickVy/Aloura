@@ -13,7 +13,7 @@
   let loading  = $state(false);
 
   onMount(async () => {
-    // Supabase puts the recovery token in the URL hash — the browser client
+    // Supabase puts the recovery token in the URL hash - the browser client
     // exchanges it automatically. We just need to confirm a session exists
     // and that it's a recovery session.
     const { data: { session } } = await supabase.auth.getSession();
@@ -53,7 +53,7 @@
 </script>
 
 <svelte:head>
-  <title>Reset Password — Aloura</title>
+  <title>Reset Password - Aloura</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -85,7 +85,7 @@
     {:else}
       <!-- FORM -->
       <h1 class="reset-title">Set a new password</h1>
-      <p class="reset-sub" style="margin-bottom:28px">Choose something secure — at least 8 characters.</p>
+      <p class="reset-sub" style="margin-bottom:28px">Choose something secure - at least 8 characters.</p>
 
       {#if error}
         <div class="reset-error"><i class="fas fa-exclamation-circle"></i> {error}</div>

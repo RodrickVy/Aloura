@@ -1,7 +1,7 @@
 /**
  * analytics.ts
  * Fire-and-forget analytics helpers.
- * These NEVER block the UI — errors are swallowed silently.
+ * These NEVER block the UI - errors are swallowed silently.
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -20,7 +20,7 @@ type AnalyticsField =
 
 /**
  * Increment a single analytics counter for a user.
- * Completely non-blocking — call without await.
+ * Completely non-blocking - call without await.
  */
 export function track(
   supabase: SupabaseClient,
@@ -28,7 +28,7 @@ export function track(
   field: AnalyticsField,
 ): void {
   if (!accountId) return;
-  // fire-and-forget — swallow both fulfilled and rejected outcomes
+  // fire-and-forget - swallow both fulfilled and rejected outcomes
   supabase
     .rpc('increment_analytics', { p_account_id: accountId, p_field: field })
     .then(() => {}, () => {});

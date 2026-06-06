@@ -32,7 +32,7 @@
           account_id: 'anonymous',
           mood_board_id: originalPiece.mood_board_id,
           store: brand.name,
-          products: [{ name: originalPiece.name, keywords: originalPiece.keywords ?? [], colors: originalPiece.colors ?? [], url: originalPiece.url ?? undefined, store: originalPiece.store ?? undefined }],
+          products: [{ name: originalPiece.name, keywords: originalPiece.keywords ?? [], colors: originalPiece.colors ?? [], url: originalPiece.url ?? undefined, store: originalPiece.store ?? undefined, original_price: originalPiece.price ?? null }],
         },
       });
       if (error) throw error;
@@ -53,13 +53,13 @@
 </script>
 
 <svelte:head>
-  <title>{originalPiece.name} — {originalPiece.store ?? 'Aloura'}</title>
+  <title>{originalPiece.name} - {originalPiece.store ?? 'Aloura'}</title>
   <meta name="description" content="Shop {originalPiece.name} from {originalPiece.store ?? 'top stores'}. Compare prices across stores on Aloura." />
   <link rel="canonical" href="{$page.url.origin}/outfit/product/{originalPiece.slug}" />
 
   <meta property="og:type"        content="product" />
   <meta property="og:site_name"   content="Aloura" />
-  <meta property="og:title"       content="{originalPiece.name} — {originalPiece.store ?? 'Aloura'}" />
+  <meta property="og:title"       content="{originalPiece.name} - {originalPiece.store ?? 'Aloura'}" />
   <meta property="og:description" content="Shop {originalPiece.name} from {originalPiece.store ?? 'top stores'}. Compare prices across stores on Aloura." />
   <meta property="og:url"         content="{$page.url.origin}/outfit/product/{originalPiece.slug}" />
   <meta property="og:image"       content={ogImage} />
@@ -91,7 +91,7 @@
     <div class="brand-strip__inner">
       <span class="brand-strip__label">
         {#if searching}
-          <span class="strip-spinner"></span> Finding at store — opening comparison…
+          <span class="strip-spinner"></span> Finding at store - opening comparison…
         {:else}
           Compare this at another store
         {/if}

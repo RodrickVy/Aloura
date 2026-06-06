@@ -2,6 +2,7 @@
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import { goto } from '$app/navigation';
   import { track } from '$lib/analytics';
+  import OnboardingSteps from '$lib/OnboardingSteps.svelte';
 
   interface Props {
     open?:    boolean;
@@ -21,8 +22,6 @@
     returnTo = '',
   }: Props = $props();
 
-  const RETURN_KEY = 'aloura_return_to';
-
   const supabase = createSupabaseBrowserClient();
 
   let name     = $state('');
@@ -33,34 +32,52 @@
   let success  = $state('');
   let loading  = $state(false);
 
+  // 'auth' = sign in/up/forgot · 'onboarding' = preference steps
+  let view        = $state<'auth' | 'onboarding'>('auth');
+  let onbAccountId = $state<string>('');
+
   function switchMode(m: 'signup' | 'signin' | 'forgot') { mode = m; error = ''; success = ''; }
   function close() { if (!loading) open = false; }
-  function onKey(e: KeyboardEvent) { if (e.key === 'Escape') close(); }
+  function onKey(e: KeyboardEvent) { if (e.key === 'Escape' && view === 'auth') close(); }
 
-  async function redirectAfterAuth(userId: string) {
-    const { data: account } = await supabase.from('accounts').select('id').eq('auth_id', userId).maybeSingle();
-    let report = null;
-    if (account) {
-      const r = await supabase.from('style_reports').select('id').eq('account_id', account.id).order('generated_at', { ascending: false }).limit(1).maybeSingle();
-      report = r.data;
-    }
-    const onboarded = !!(account && report);
-
-    if (!onboarded) {
-      // New user — remember where they were headed, run onboarding first
-      if (returnTo && typeof localStorage !== 'undefined') localStorage.setItem(RETURN_KEY, returnTo);
-      goto('/onboarding');
-      return;
-    }
-
-    // Existing, onboarded user
-    if (returnTo) {
-      // Hard navigation so the destination re-runs fresh as an authenticated user
-      // (it reads the search from the URL and auto-runs it).
-      window.location.href = returnTo;
-      return;
-    }
+  function finishRedirect() {
+    if (returnTo) { window.location.href = returnTo; return; }
     goto('/discover');
+  }
+
+  // Make sure the account has a (possibly empty) style_report so generation works.
+  async function ensureStyleReport(accountId: string) {
+    const { data: rep } = await supabase
+      .from('style_reports').select('id').eq('account_id', accountId).limit(1).maybeSingle();
+    if (!rep) {
+      await supabase.from('style_reports').insert({
+        account_id: accountId,
+        goal_1: 'Be more confident',
+        goal_2: 'Look more attractive',
+        goal_3: 'Be more consistent in style',
+      });
+    }
+  }
+
+  // After auth: ensure account, then run onboarding if not done, else redirect.
+  async function proceed(userId: string, name = '', email = '') {
+    let { data: account } = await supabase.from('accounts').select('id, onboarded').eq('auth_id', userId).maybeSingle();
+    if (!account) {
+      const { data: created } = await supabase.from('accounts')
+        .insert({ auth_id: userId, name: name || null, email: email.toLowerCase() })
+        .select('id, onboarded').single();
+      account = created;
+      track(supabase, account?.id, 'sign_ups');
+    }
+    if (!account) { finishRedirect(); return; }
+
+    await ensureStyleReport(account.id);
+
+    if (account.onboarded) { finishRedirect(); return; }
+
+    // Not onboarded - run the preference steps in this same popup
+    onbAccountId = account.id;
+    view = 'onboarding';
   }
 
   async function sendReset() {
@@ -72,7 +89,7 @@
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (e) throw e;
-      success = 'Check your inbox — we sent a reset link.';
+      success = 'Check your inbox - we sent a reset link.';
     } catch {
       error = 'Could not send reset email. Please try again.';
     } finally {
@@ -93,19 +110,11 @@
           options: { data: { full_name: name.trim() } },
         });
         if (e) throw e;
-        if (authData.user) {
-          const { data: existing } = await supabase.from('accounts').select('id').eq('auth_id', authData.user.id).maybeSingle();
-          if (!existing) {
-            await supabase.from('accounts').insert({ auth_id: authData.user.id, name: name.trim(), email: email.trim().toLowerCase() });
-            const { data: newAcc } = await supabase.from('accounts').select('id').eq('auth_id', authData.user.id).maybeSingle();
-            track(supabase, newAcc?.id, 'sign_ups');
-          }
-          await redirectAfterAuth(authData.user.id);
-        }
+        if (authData.user) await proceed(authData.user.id, name.trim(), email.trim());
       } else {
         const { data: authData, error: e } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
         if (e) throw e;
-        if (authData.user) await redirectAfterAuth(authData.user.id);
+        if (authData.user) await proceed(authData.user.id, '', email.trim());
       }
     } catch (e: any) {
       const msg = (e.message ?? '').toLowerCase();
@@ -123,8 +132,12 @@
 
 {#if open}
   <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-  <div class="backdrop" onclick={(e) => { if (e.target === e.currentTarget) close(); }}>
-    <div class="modal">
+  <div class="backdrop" onclick={(e) => { if (e.target === e.currentTarget && view === 'auth') close(); }}>
+    <div class="modal" class:modal--wide={view === 'onboarding'}>
+
+    {#if view === 'onboarding'}
+      <OnboardingSteps accountId={onbAccountId} onDone={finishRedirect} />
+    {:else}
       <button class="modal__close" onclick={close} aria-label="Close"><i class="fas fa-times"></i></button>
 
       <div class="modal__logo">Aloura<span>.</span></div>
@@ -180,13 +193,15 @@
           </button>
         </p>
       {/if}
+    {/if}
     </div>
   </div>
 {/if}
 
 <style>
   .backdrop { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.18s ease; }
-  .modal { background: #fff; border-radius: 20px; padding: 36px 32px; width: 100%; max-width: 400px; position: relative; animation: slideUp 0.22s ease; box-shadow: 0 24px 80px rgba(0,0,0,0.18); }
+  .modal { background: #fff; border-radius: 20px; padding: 36px 32px; width: 100%; max-width: 400px; position: relative; animation: slideUp 0.22s ease; box-shadow: 0 24px 80px rgba(0,0,0,0.18); max-height: 92vh; overflow-y: auto; }
+  .modal--wide { max-width: 460px; }
   .modal__close { position: absolute; top: 14px; right: 14px; background: #f5f0eb; border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; color: var(--clr-taupe); font-size: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
   .modal__close:hover { background: #ede5db; }
   .modal__logo { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: var(--clr-charcoal); margin-bottom: 16px; }

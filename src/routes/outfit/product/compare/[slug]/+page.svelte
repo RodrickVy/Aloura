@@ -9,12 +9,12 @@
   let { data } = $props();
   const supabase = createSupabaseBrowserClient();
 
-  // Pieces array — grows as user adds comparisons
-  let columns = $state<(Piece & { searching?: boolean })[]>(data.pieces);
+  // Pieces array - grows as user adds comparisons
+  let columns = $state<(Piece & { searching?: boolean; same_store?: boolean; price_verdict?: string; price_delta?: number | null })[]>(data.pieces);
   let addingBrand = $state<string | null>(null);   // chip currently loading
   let addError   = $state('');
 
-  // Base piece (first column) — used as source for all comparisons
+  // Base piece (first column) - used as source for all comparisons
   const basePiece = data.pieces[0];
   const ogImage = $derived(basePiece.image_url || `${$page.url.origin}/assets/man_on_chair.jpg`);
 
@@ -42,7 +42,7 @@
           account_id: 'anonymous',
           mood_board_id: basePiece.mood_board_id,
           store: brand.name,
-          products: [{ name: basePiece.name, keywords: basePiece.keywords ?? [], colors: basePiece.colors ?? [] }],
+          products: [{ name: basePiece.name, keywords: basePiece.keywords ?? [], colors: basePiece.colors ?? [], url: basePiece.url ?? undefined, store: basePiece.store ?? undefined, original_price: basePiece.price ?? null }],
         },
       });
 
@@ -78,18 +78,18 @@
     return columns.some(c => c.store?.toLowerCase() === brandName.toLowerCase()) ? 'active' : null;
   }
 
-  const formatPrice = (p: number | null) => p ? `$${p.toFixed(2)}` : '—';
+  const formatPrice = (p: number | null) => p ? `$${p.toFixed(2)}` : '-';
 </script>
 
 <svelte:head>
-  <title>Compare: {basePiece.name} — Aloura</title>
-  <meta name="description" content="Compare {basePiece.name} across stores — prices and availability on Aloura." />
+  <title>Compare: {basePiece.name} - Aloura</title>
+  <meta name="description" content="Compare {basePiece.name} across stores - prices and availability on Aloura." />
   <link rel="canonical" href="{$page.url.origin}{$page.url.pathname}" />
 
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="Aloura" />
   <meta property="og:title"       content="Compare: {basePiece.name}" />
-  <meta property="og:description" content="Compare {basePiece.name} across stores — prices and availability on Aloura." />
+  <meta property="og:description" content="Compare {basePiece.name} across stores - prices and availability on Aloura." />
   <meta property="og:url"         content="{$page.url.origin}{$page.url.pathname}{$page.url.search}" />
   <meta property="og:image"       content={ogImage} />
 
@@ -174,7 +174,8 @@
           <!-- Store header -->
           <div class="col__header">
             <span class="col__store">{col.store ?? 'Original'}</span>
-            {#if i === 0}<span class="col__base-tag">Original</span>{/if}
+            {#if i === 0}<span class="col__base-tag">Original</span>
+            {:else if col.same_store === false && !col.searching}<span class="col__closest-tag">closest match</span>{/if}
           </div>
 
           <!-- Image -->
@@ -309,6 +310,7 @@
   }
   .col__store { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--clr-taupe); }
   .col__base-tag { background: var(--clr-charcoal); color: white; border-radius: 999px; padding: 2px 8px; font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .col__closest-tag { background: var(--clr-beige); color: var(--clr-brown); border-radius: 999px; padding: 2px 8px; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 
   .col__img-wrap { padding: var(--space-3); }
   .col__img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-lg); display: block; }

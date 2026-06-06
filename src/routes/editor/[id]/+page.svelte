@@ -220,11 +220,11 @@
     if (pieces.length) detectColors();
   }
 
-  // Colors are auto-generated — no manual input needed
+  // Colors are auto-generated - no manual input needed
 </script>
 
 <svelte:head>
-  <title>Edit: {board.title} — Aloura Editor</title>
+  <title>Edit: {board.title} - Aloura Editor</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -533,7 +533,7 @@
     {:else}
       <p class="colors-empty">
         <i class="fas fa-palette"></i>
-        {pieces.length ? 'Click Refresh to detect colors from your pieces.' : 'Add pieces first — colors will be detected automatically.'}
+        {pieces.length ? 'Click Refresh to detect colors from your pieces.' : 'Add pieces first - colors will be detected automatically.'}
       </p>
     {/if}
   </section>

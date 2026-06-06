@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     .eq('auth_id', user.id)
     .maybeSingle();
 
-  // No account yet — create one then continue
+  // No account yet - create one then continue
   if (!account) {
     const { data: newAccount } = await locals.supabase
       .from('accounts')

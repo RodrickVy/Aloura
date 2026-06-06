@@ -20,7 +20,7 @@
 </script>
 
 <svelte:head>
-  <title>Analytics — Aloura</title>
+  <title>Analytics - Aloura</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -143,7 +143,7 @@
               {#if fb.felt_personalized}
                 <div class="qa">
                   <div class="qa__q">Felt personalized</div>
-                  <div class="qa__a">{fb.felt_personalized}{fb.personalized_why ? ` — "${fb.personalized_why}"` : ''}</div>
+                  <div class="qa__a">{fb.felt_personalized}{fb.personalized_why ? ` - "${fb.personalized_why}"` : ''}</div>
                 </div>
               {/if}
               {#if fb.wanted_feature}

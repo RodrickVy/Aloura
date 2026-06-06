@@ -134,7 +134,7 @@
     try {
       const cols = 'id,title,description,goal,occasion,category,colors,image_url,slug,account_id,is_official,created_at';
 
-      // Public catalogue — official, public, non-comparison boards (visible to everyone, incl. anon)
+      // Public catalogue - official, public, non-comparison boards (visible to everyone, incl. anon)
       const officialQuery = supabase.from('mood_boards').select(cols)
         .eq('public', true).eq('is_official', true).is('comparison_of', null)
         .order('created_at', { ascending: false }).limit(120);
@@ -243,7 +243,7 @@
   }
 
   // Upload the attached image to storage and return a signed URL
-  // (works even if the bucket is private — the edge function fetches it).
+  // (works even if the bucket is private - the edge function fetches it).
   async function uploadSearchImage(): Promise<string | null> {
     if (!uploadedB64 || !accountId) return null;
     const ext  = (uploadedType?.split('/')[1] ?? 'jpg').replace('jpeg', 'jpg');
@@ -258,16 +258,29 @@
     return data.signedUrl;
   }
 
-  // Analyse the uploaded image via edge function → returns the outfit
-  // description that best matches the typed query (the "highlighted" one).
-  async function analyzeImage(): Promise<string> {
+  // Analyse the uploaded image via edge function → returns a structured
+  // breakdown (per-garment items + tight search queries + overall description).
+  interface AnalysedItem {
+    category: string; type: string; color: string;
+    material: string | null; fit: string | null; pattern: string | null;
+    brand: string | null; search_query: string; confidence: string;
+  }
+  interface ImageAnalysis {
+    description: string; gender: string; primary_index: number; items: AnalysedItem[];
+  }
+  async function analyzeImage(): Promise<ImageAnalysis> {
     const url = await uploadSearchImage();
     if (!url) throw new Error('image upload failed');
     const { data, error } = await supabase.functions.invoke('analyse_image_outfit', {
       body: { image_url: url, hint: goal.trim() },
     });
     if (error) throw error;
-    return (data?.description ?? '').trim();
+    return {
+      description:   (data?.description ?? '').trim(),
+      gender:        data?.gender ?? 'unknown',
+      primary_index: data?.primary_index ?? 0,
+      items:         Array.isArray(data?.items) ? data.items : [],
+    };
   }
 
   async function generate() {
@@ -282,9 +295,16 @@
       let finalGoal = goal.trim() || 'general outfit';
       if (uploadedB64) {
         console.log('[generate] analysing image…');
-        const breakdown = await analyzeImage();
-        console.log('[generate] analysis done, breakdown length:', breakdown.length);
-        if (breakdown) finalGoal = (goal.trim() ? `${goal.trim()}. ` : '') + `Reference look to recreate: ${breakdown}`;
+        const analysis = await analyzeImage();
+        console.log('[generate] analysis done, items:', analysis.items.length);
+        if (analysis.description) {
+          const itemList = analysis.items
+            .map(i => `${i.color} ${i.fit ?? ''} ${i.type}`.replace(/\s+/g, ' ').trim())
+            .join('; ');
+          finalGoal = (goal.trim() ? `${goal.trim()}. ` : '')
+            + `Reference look to recreate (${analysis.gender}): ${analysis.description}`
+            + (itemList ? ` Key pieces: ${itemList}.` : '');
+        }
       }
 
       console.log('[generate] invoking aloura_outfit_board_generator, goal length:', finalGoal.length);
@@ -300,7 +320,7 @@
       myBoards = [board, ...myBoards];
       track(supabase, accountId, 'mood_boards_made');
 
-      // Show the result immediately — go to the generated outfit's page
+      // Show the result immediately - go to the generated outfit's page
       if (board.slug) {
         goto(`/outfit/${board.slug}`);
         return;
@@ -326,10 +346,11 @@
       // If an image is attached, analyse it first and combine with the typed query
       let finalQuery = goal.trim();
       if (uploadedB64) {
-        const breakdown = await analyzeImage();
-        // keep the serp query tight — first ~16 words of the chosen outfit
-        const short = breakdown.split(/\s+/).slice(0, 16).join(' ');
-        finalQuery = [goal.trim(), short].filter(Boolean).join(' ');
+        const analysis = await analyzeImage();
+        // Use the primary garment's tight, shoppable query (built for SerpAPI)
+        const primary = analysis.items[analysis.primary_index] ?? analysis.items[0];
+        const itemQuery = primary?.search_query?.trim() ?? '';
+        finalQuery = [goal.trim(), itemQuery].filter(Boolean).join(' ').trim();
       }
 
       const params = new URLSearchParams({ q: finalQuery });
@@ -426,7 +447,7 @@
 </script>
 
 <svelte:head>
-  <title>Discover Outfits — Aloura</title>
+  <title>Discover Outfits - Aloura</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -539,7 +560,7 @@
   {:else}
     <div class="rows-wrap">
 
-      <!-- FIFA 2026 — teaser grid (2 rows) + view all -->
+      <!-- FIFA 2026 - teaser grid (2 rows) + view all -->
       {#if fifaGroup}
         <section class="feed-section">
           <div class="feed-section__head">
@@ -559,7 +580,7 @@
         </section>
       {/if}
 
-      <!-- SPORTS — one board per sport -->
+      <!-- SPORTS - one board per sport -->
       {#if sportTiles.length}
         <section class="feed-section">
           <div class="feed-section__head">
@@ -661,7 +682,7 @@
   .search-bar-group { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
   .search-error { font-size: var(--text-xs); color: #a33020; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
 
-  /* Aloura logo inline with the search — desktop only (mobile uses the top nav) */
+  /* Aloura logo inline with the search - desktop only (mobile uses the top nav) */
   .discover-logo { display: none; font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--clr-charcoal); letter-spacing: -0.5px; flex-shrink: 0; }
   .discover-logo span { color: var(--clr-terracotta); }
 
@@ -691,7 +712,7 @@
   .product-card__name { font-size: var(--text-xs); font-weight: 500; color: var(--clr-charcoal); line-height: 1.4; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .product-card__price { font-size: var(--text-sm); font-weight: 600; color: var(--clr-brown); }
 
-  /* ── Brand chips — Material Design filter style ── */
+  /* ── Brand chips - Material Design filter style ── */
   .brands-scroll {
     display: flex; gap: 8px;
     overflow-x: auto; padding-bottom: 2px;
@@ -741,9 +762,10 @@
   /* 2-row clipped grid: rows beyond 2 collapse to 0 height (any column count) */
   .grid-2row {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
     grid-template-rows: repeat(2, auto);
     grid-auto-rows: 0;
+    column-gap: var(--space-4);
     overflow: hidden;
   }
   .grid-2row--open { grid-template-rows: auto; grid-auto-rows: auto; overflow: visible; }
@@ -754,23 +776,24 @@
     border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm);
     transition: box-shadow var(--dur-base), transform var(--dur-base);
     text-decoration: none; color: inherit;
+    margin-bottom: var(--space-6);
   }
   .board-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
 
   /* ── Collage ── */
   .collage { width: 100%; aspect-ratio: 1; display: grid; gap: 2px; background: var(--clr-light-taupe); }
 
-  /* 1 image — full */
+  /* 1 image - full */
   .collage--1 { grid-template-columns: 1fr; }
 
-  /* 2 images — side by side */
+  /* 2 images - side by side */
   .collage--2 { grid-template-columns: 1fr 1fr; }
 
-  /* 3 images — one big left, two stacked right */
+  /* 3 images - one big left, two stacked right */
   .collage--3 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
   .collage--3 .collage__cell:first-child { grid-row: span 2; }
 
-  /* 4 images — 2×2 grid */
+  /* 4 images - 2×2 grid */
   .collage--4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
 
   .collage__cell { overflow: hidden; background: #e8e0d8; }

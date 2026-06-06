@@ -1,9 +1,9 @@
 /**
  * seed_worldcup_boards
- * Supabase Edge Function — Deno / TypeScript
+ * Supabase Edge Function - Deno / TypeScript
  *
  * ONE-TIME catalogue seeder for FIFA World Cup 2026 team kits.
- *   POST { account_id: string, teams?: string[] }   // teams optional — defaults to all 48
+ *   POST { account_id: string, teams?: string[] }   // teams optional - defaults to all 48
  *
  * For each team:
  *   - one board, category "fifa 2026"
@@ -118,8 +118,8 @@ Deno.serve(async (req: Request) => {
       const { data: board, error: bErr } = await db.from("mood_boards").insert({
         account_id,
         style_report_id: styleReportId,
-        title:       `${teamKey} — World Cup 2026`,
-        description: `${teamKey}'s 2026 World Cup kit — jersey and shorts.`,
+        title:       `${teamKey} - World Cup 2026`,
+        description: `${teamKey}'s 2026 World Cup kit - jersey and shorts.`,
         occasion:    `${teamKey} World Cup 2026 kit`,
         goal:        teamKey.toLowerCase(),
         category:    CATEGORY,

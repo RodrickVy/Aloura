@@ -39,7 +39,7 @@
 </script>
 
 {#if !isHome}
-  <!-- NAV (hidden on desktop for /discover — the search row carries the logo there) -->
+  <!-- NAV (hidden on desktop for /discover - the search row carries the logo there) -->
   <nav class="nav" class:scrolled class:nav--discover={isDiscover}>
     <div class="nav__inner">
       <a href="/" class="nav__logo">Aloura<span>.</span></a>
@@ -210,7 +210,7 @@
     .hamburger   { display: none; }
     .drawer      { display: none; }
     .drawer-backdrop { display: none; }
-    /* Discover gets a search-first header on desktop — drop the global bar */
+    /* Discover gets a search-first header on desktop - drop the global bar */
     .nav--discover { display: none; }
   }
 

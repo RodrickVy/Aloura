@@ -78,7 +78,7 @@
     const onScroll = () => { scrolled = window.scrollY > 10; };
     window.addEventListener('scroll', onScroll, { passive: true });
 
-    // Realtime subscription — updates report as each edge function writes fields
+    // Realtime subscription - updates report as each edge function writes fields
     const channel = supabase.channel(`report:${data.report.id}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'style_reports', filter: `id=eq.${data.report.id}` },
         (payload) => { report = { ...report, ...payload.new }; }
@@ -96,12 +96,12 @@
     };
   });
 
-  const join = (arr: string[] | null) => (arr ?? []).filter(Boolean).join(', ') || '—';
-  const val  = (v: string | null) => (v && v.trim()) ? v : '—';
+  const join = (arr: string[] | null) => (arr ?? []).filter(Boolean).join(', ') || '-';
+  const val  = (v: string | null) => (v && v.trim()) ? v : '-';
 </script>
 
 <svelte:head>
-  <title>{report.title ?? 'Your Style Report'} — Aloura</title>
+  <title>{report.title ?? 'Your Style Report'} - Aloura</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 

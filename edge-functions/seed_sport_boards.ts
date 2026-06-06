@@ -1,6 +1,6 @@
 /**
  * seed_sport_boards
- * Supabase Edge Function — Deno / TypeScript
+ * Supabase Edge Function - Deno / TypeScript
  *
  * ONE-TIME catalogue seeder. Invoke manually:
  *   POST { account_id: string, sports: string[] }
@@ -78,14 +78,14 @@ async function claudeJSON(prompt: string, system: string, maxTokens = 1500): Pro
 // ── 1. Outfit concept for a sport ─────────────────────────────
 async function generateConcept(sport: string): Promise<OutfitConcept> {
   const system = `You are a sports apparel stylist. You design the essential head-to-toe
-APPAREL + FOOTWEAR outfit for a given sport. Apparel and shoes ONLY — never include hard
+APPAREL + FOOTWEAR outfit for a given sport. Apparel and shoes ONLY - never include hard
 equipment (rackets, bikes, balls, clubs, helmets-as-gear, bags). Unisex/general styling.
 Respond ONLY with valid JSON, no markdown.`;
 
   const prompt = `Sport: ${sport}
 
-Design the essential outfit someone needs to dress for ${sport} — head to toe, apparel + footwear only.
-Typically 4-6 pieces (e.g. headwear, top, mid-layer or jacket, bottoms, socks, shoes) — only what makes sense for ${sport}.
+Design the essential outfit someone needs to dress for ${sport} - head to toe, apparel + footwear only.
+Typically 4-6 pieces (e.g. headwear, top, mid-layer or jacket, bottoms, socks, shoes) - only what makes sense for ${sport}.
 NO equipment.
 
 Return ONLY:
@@ -209,7 +209,7 @@ Deno.serve(async (req: Request) => {
         const { data: board, error: bErr } = await db.from("mood_boards").insert({
           account_id,
           style_report_id: styleReportId,
-          title:       `${sportLabel} Essentials — ${store}`,
+          title:       `${sportLabel} Essentials - ${store}`,
           description: concept.description,
           occasion:    concept.occasion,
           goal:        sport,

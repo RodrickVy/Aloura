@@ -22,7 +22,7 @@
   let submitting     = $state(false);
   let error          = $state('');
 
-  // Goals are required — no skip
+  // Goals are required - no skip
   function toggleGoal(id: string) {
     selectedGoals = selectedGoals.includes(id)
       ? selectedGoals.filter(g => g !== id)
@@ -55,7 +55,7 @@
       const goalLabels = selectedGoals.map(id => GOALS.find(g => g.id === id)?.label ?? id);
       await supabase.from('accounts').update({ goals: goalLabels }).eq('id', accountId);
 
-      // 2. Upload photos (optional — user may have skipped)
+      // 2. Upload photos (optional - user may have skipped)
       const imageIds: string[] = [];
       for (const img of uploadedImages) {
         const path = `${accountId}/profile/${Date.now()}_${img.file.name}`;
@@ -76,7 +76,7 @@
         goal_1: 'Be more confident',
         goal_2: 'Look more attractive',
         goal_3: 'Be more consistent in style',
-        // AI fields — null until filled by pipeline
+        // AI fields - null until filled by pipeline
         title: null, description: null,
         skin_tone: null, undertone: null, color_family: null, accessories: null,
         color_intelligence: null,
@@ -125,7 +125,7 @@
 </script>
 
 <svelte:head>
-  <title>Aloura — Create Your Style Profile</title>
+  <title>Aloura - Create Your Style Profile</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -146,7 +146,7 @@
     <div class="step-card">
       <p class="eyebrow" style="margin-bottom:var(--space-4)">Let's personalise your experience</p>
       <h1 class="heading-lg" style="margin-bottom:var(--space-2)">What do you want Aloura<br>to help you with?</h1>
-      <p class="step-sub">Pick everything that applies — no limit.</p>
+      <p class="step-sub">Pick everything that applies - no limit.</p>
 
       <div class="goals-list">
         {#each GOALS as goal}
@@ -223,7 +223,7 @@
       {#if uploadedImages.length === 0}
         <div class="photo-skip-wrap">
           <button class="skip-btn" onclick={() => { skippedPhotos = true; submit(); }}>
-            Skip photos — I'll add them later
+            Skip photos - I'll add them later
           </button>
           <p class="skip-note">
             <i class="fas fa-info-circle"></i>

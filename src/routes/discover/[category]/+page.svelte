@@ -16,19 +16,19 @@
 </script>
 
 <svelte:head>
-  <title>{title} — Aloura</title>
+  <title>{title} - Aloura</title>
   <meta name="description" content="Browse {title} outfit boards on Aloura." />
   <link rel="canonical" href="{$page.url.origin}/discover/{encodeURIComponent(data.category)}" />
 
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="Aloura" />
-  <meta property="og:title"       content="{title} — Aloura" />
+  <meta property="og:title"       content="{title} - Aloura" />
   <meta property="og:description" content="Browse {title} outfit boards on Aloura." />
   <meta property="og:url"         content="{$page.url.origin}/discover/{encodeURIComponent(data.category)}" />
   <meta property="og:image"       content={ogImage} />
 
   <meta name="twitter:card"  content="summary_large_image" />
-  <meta name="twitter:title" content="{title} — Aloura" />
+  <meta name="twitter:title" content="{title} - Aloura" />
   <meta name="twitter:image" content={ogImage} />
 </svelte:head>
 

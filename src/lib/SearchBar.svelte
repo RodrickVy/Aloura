@@ -29,7 +29,7 @@
 
   const ph = $derived(
     mode === 'product'
-      ? 'Search a product — white linen shirt, chelsea boots…'
+      ? 'Search a product - white linen shirt, chelsea boots…'
       : placeholder
   );
 
@@ -124,7 +124,7 @@
   }
   .mode-opt.active { background: #fff; color: var(--clr-charcoal); box-shadow: var(--shadow-sm); }
   .mode-opt i { font-size: 10px; }
-  /* Hide labels on small screens — icons only */
+  /* Hide labels on small screens - icons only */
   @media (max-width: 560px) { .mode-opt span { display: none; } .mode-opt { padding: 6px 9px; } }
 
   .search-inner {

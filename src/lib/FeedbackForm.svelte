@@ -76,7 +76,7 @@
         <div class="fq">
           <label class="fq__label">What frustrated or confused you?</label>
           <textarea class="fq__input" bind:value={frustrations} rows={2}
-            placeholder="Be honest — this is the most useful answer you can give us."></textarea>
+            placeholder="Be honest - this is the most useful answer you can give us."></textarea>
         </div>
 
         <!-- Q3 -->
