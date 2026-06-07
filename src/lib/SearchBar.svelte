@@ -7,6 +7,7 @@
     showImage?:    boolean;
     onsubmit:      () => void;
     onimage?:      (b64: string, type: string, name: string) => void;
+    onimageerror?: (msg: string) => void;
     imageAttached?: boolean;
     imageName?:    string;
     imagePreview?: string;
@@ -21,11 +22,15 @@
     showImage   = true,
     onsubmit,
     onimage,
+    onimageerror,
     imageAttached = false,
     imageName     = '',
     imagePreview  = '',
     onclearimage,
   }: Props = $props();
+
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png'];
+  const FILE_ERR = 'Only JPG and PNG images are supported. Please choose a different file.';
 
   const ph = $derived(
     mode === 'product'
@@ -34,8 +39,15 @@
   );
 
   function handleFile(e: Event) {
-    const file = (e.target as HTMLInputElement).files?.[0];
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file) return;
+    // Restrict to JPG / PNG only.
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      onimageerror?.(FILE_ERR);
+      input.value = '';   // allow re-selecting
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
@@ -77,7 +89,7 @@
       {:else}
         <label class="upload-btn" title="Add image">
           <i class="fas fa-plus"></i>
-          <input type="file" accept="image/*" style="display:none" onchange={handleFile} />
+          <input type="file" accept="image/jpeg,image/png" style="display:none" onchange={handleFile} />
         </label>
       {/if}
     {/if}

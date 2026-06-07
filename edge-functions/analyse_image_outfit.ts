@@ -54,15 +54,35 @@ interface Item {
   confidence:   "high" | "medium" | "low";
 }
 
+// Detect the REAL image type from the file's magic bytes. Storage often
+// serves a wrong/generic Content-Type, and Claude rejects a base64 image
+// whose declared media type doesn't match the actual bytes.
+function sniffMediaType(buf: Uint8Array): string | null {
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "image/jpeg";
+  if (buf.length >= 8 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return "image/png";
+  if (buf.length >= 6 && buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) return "image/gif";
+  // WEBP: "RIFF"...."WEBP"
+  if (buf.length >= 12 && buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46
+      && buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50) return "image/webp";
+  return null;
+}
+
 // Fetch a remote image and return base64 + media type (most reliable for vision)
 async function fetchAsBase64(url: string): Promise<{ b64: string; mediaType: string }> {
   console.log("[analyse] fetching image…");
   const res = await fetch(url);
   console.log("[analyse] image fetch status:", res.status, res.headers.get("content-type"));
   if (!res.ok) throw new Error(`fetch image ${res.status} - is the URL reachable?`);
-  const mediaType = (res.headers.get("content-type") ?? "image/jpeg").split(";")[0];
   const buf = new Uint8Array(await res.arrayBuffer());
   console.log("[analyse] image bytes:", buf.length);
+
+  // Prefer the real format sniffed from bytes; fall back to the header.
+  const headerType = (res.headers.get("content-type") ?? "").split(";")[0];
+  const sniffed    = sniffMediaType(buf);
+  const allowed    = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  const mediaType  = sniffed ?? (allowed.includes(headerType) ? headerType : "image/jpeg");
+  console.log("[analyse] media type - header:", headerType, "sniffed:", sniffed, "using:", mediaType);
+
   let binary = "";
   const chunk = 0x8000;
   for (let i = 0; i < buf.length; i += chunk) binary += String.fromCharCode(...buf.subarray(i, i + chunk));

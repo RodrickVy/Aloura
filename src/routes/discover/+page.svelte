@@ -5,6 +5,7 @@
   import SearchBar from '$lib/SearchBar.svelte';
   import FitCheck from '$lib/FitCheck.svelte';
   import AuthModal from '$lib/AuthModal.svelte';
+  import AccountMenu from '$lib/AccountMenu.svelte';
   import { track } from '$lib/analytics';
   import type { MoodBoard, Piece } from '$lib/types';
 
@@ -268,18 +269,29 @@
   interface ImageAnalysis {
     description: string; gender: string; primary_index: number; items: AnalysedItem[];
   }
+  // Friendly, code-free message for any image problem.
+  const IMAGE_ERR = "We couldn't read that image. It may be an unsupported file type - please try a different photo.";
+
   async function analyzeImage(): Promise<ImageAnalysis> {
-    const url = await uploadSearchImage();
-    if (!url) throw new Error('image upload failed');
-    const { data, error } = await supabase.functions.invoke('analyse_image_outfit', {
-      body: { image_url: url, hint: goal.trim() },
-    });
-    if (error) throw error;
+    let data: any, error: any;
+    try {
+      const url = await uploadSearchImage();
+      if (!url) throw new Error('no-url');
+      ({ data, error } = await supabase.functions.invoke('analyse_image_outfit', {
+        body: { image_url: url, hint: goal.trim() },
+      }));
+    } catch {
+      throw new Error(IMAGE_ERR);
+    }
+    // Edge function returned an error, or no usable result.
+    if (error || !data || data.success === false || !Array.isArray(data.items) || data.items.length === 0) {
+      throw new Error(IMAGE_ERR);
+    }
     return {
-      description:   (data?.description ?? '').trim(),
-      gender:        data?.gender ?? 'unknown',
-      primary_index: data?.primary_index ?? 0,
-      items:         Array.isArray(data?.items) ? data.items : [],
+      description:   (data.description ?? '').trim(),
+      gender:        data.gender ?? 'unknown',
+      primary_index: data.primary_index ?? 0,
+      items:         data.items,
     };
   }
 
@@ -287,7 +299,7 @@
     if (!goal.trim() && !uploadedB64) return;
     loading = true; searchError = '';
     startLoadingMessages(uploadedB64 ? ['Analysing your image…', ...OUTFIT_STAGES] : OUTFIT_STAGES);
-    track(supabase, accountId, 'outfit_search_hits');
+    track(supabase, accountId, 'searches');
     try {
       const store = selectedBrands.size ? BRANDS.filter(b => selectedBrands.has(b.id)).map(b => b.name).join(', ') : '';
 
@@ -318,7 +330,6 @@
 
       const board = result.mood_board as MoodBoard;
       myBoards = [board, ...myBoards];
-      track(supabase, accountId, 'mood_boards_made');
 
       // Show the result immediately - go to the generated outfit's page
       if (board.slug) {
@@ -327,7 +338,7 @@
       }
     } catch (e: any) {
       console.error('[generate]', e);
-      searchError = e?.message ?? 'Something went wrong generating your outfit.';
+      searchError = e?.message === IMAGE_ERR ? IMAGE_ERR : 'Something went wrong generating your outfit. Please try again.';
     } finally {
       loading = false;
       stopLoadingMessages();
@@ -339,7 +350,7 @@
     if (!goal.trim() && !uploadedB64) return;
     loading = true; searchError = '';
     startLoadingMessages(uploadedB64 ? ['Analysing your image…', ...PRODUCT_STAGES] : PRODUCT_STAGES);
-    track(supabase, accountId, 'outfit_search_hits');
+    track(supabase, accountId, 'searches');
     try {
       const store = selectedBrands.size ? BRANDS.filter(b => selectedBrands.has(b.id)).map(b => b.name).join(', ') : '';
 
@@ -362,9 +373,9 @@
       showingProducts = true;
     } catch (e: any) {
       console.error('[productSearch]', e);
-      searchError = e?.message ?? 'Search failed.';
-      productResults = [];
-      showingProducts = true;
+      searchError = e?.message === IMAGE_ERR ? IMAGE_ERR : 'Search failed. Please try again.';
+      productResults = e?.message === IMAGE_ERR ? productResults : [];
+      showingProducts = e?.message !== IMAGE_ERR;
     } finally {
       loading = false;
       stopLoadingMessages();
@@ -467,10 +478,13 @@
           imageName={uploadedName ?? ''}
           imagePreview={uploadedB64 ? `data:${uploadedType};base64,${uploadedB64}` : ''}
           onsubmit={onSearch}
-          onimage={(b64, type, name) => { uploadedB64 = b64; uploadedType = type; uploadedName = name; }}
+          onimage={(b64, type, name) => { uploadedB64 = b64; uploadedType = type; uploadedName = name; searchError = ''; }}
+          onimageerror={(msg) => { searchError = msg; }}
           onclearimage={() => { uploadedB64 = null; uploadedType = null; uploadedName = null; }}
         />
         <FitCheck {accountId} />
+        <a href="/trending" class="disc-trending"><i class="fas fa-fire"></i> Trending</a>
+        <div class="disc-account"><AccountMenu /></div>
       </div>
 
       <!-- Brand filter chips -->
@@ -483,7 +497,6 @@
               const next = new Set(selectedBrands);
               next.has(brand.id) ? next.delete(brand.id) : next.add(brand.id);
               selectedBrands = next;
-              track(supabase, accountId, 'store_filter_used');
             }}
           >
             <img src={brand.logo} alt={brand.name} class="brand-chip__logo" />
@@ -638,7 +651,7 @@
 {#snippet boardCard(board: MoodBoard)}
   {@const imgs = pieceImgs(board)}
   {@const count = imgs.length}
-  <a class="board-card" href={boardHref(board)} onclick={() => track(supabase, accountId, 'outfit_checkout_hits')}>
+  <a class="board-card" href={boardHref(board)}>
     <div class="collage" class:collage--1={count === 1} class:collage--2={count === 2} class:collage--3={count === 3} class:collage--4={count >= 4}>
       {#if count === 0}
         <div class="collage__ph"><i class="fas fa-tshirt"></i></div>
@@ -656,7 +669,7 @@
       {/if}
     </div>
     <div class="board-card__info">
-      <div class="board-card__occasion">{board.occasion ?? board.goal ?? board.title}</div>
+      <div class="board-card__occasion">{board.title ?? board.occasion ?? board.goal}</div>
       <div class="board-card__meta">
         <span>{totalPrice(board.pieces ?? []) > 0 ? '$' + totalPrice(board.pieces ?? []).toFixed(0) : ''}</span>
         <span>{(board.pieces ?? []).length} pieces</span>
@@ -686,9 +699,19 @@
   .discover-logo { display: none; font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--clr-charcoal); letter-spacing: -0.5px; flex-shrink: 0; }
   .discover-logo span { color: var(--clr-terracotta); }
 
+  /* Account menu inline - desktop only (mobile uses the top nav drawer) */
+  .disc-account { display: none; flex-shrink: 0; }
+
+  /* Trending link inline - desktop only (mobile uses the top nav drawer) */
+  .disc-trending { display: none; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; font-size: var(--text-sm); font-weight: 500; color: var(--clr-charcoal); text-decoration: none; white-space: nowrap; }
+  .disc-trending i { color: var(--clr-terracotta); font-size: 13px; }
+  .disc-trending:hover { color: var(--clr-terracotta); }
+
   @media (min-width: 768px) {
     .search-row { top: 0; padding-top: 14px; }
     .discover-logo { display: block; }
+    .disc-account { display: block; }
+    .disc-trending { display: inline-flex; }
   }
 
   .loading-msg { animation: msgFade 0.4s var(--ease); }

@@ -178,7 +178,7 @@
       return;
     }
 
-    track(supabase, accountId, 'mood_board_comparisons');
+    track(supabase, accountId, 'comparisons');
     addingStore = brand.id;
 
     // Check if comparison board already exists
@@ -264,7 +264,7 @@
       <!-- Title + share -->
       <div class="title-row">
         <div class="board-title">{original.title}</div>
-        <ShareButton variant="pill" label="Share comparison" title="{original.title} - price comparison" text="Compare prices for this outfit on Aloura" />
+        <ShareButton variant="pill" label="Share comparison" title="{original.title} - price comparison" text="Compare prices for this outfit on Aloura" onShare={() => track(supabase, accountId, 'shares')} />
       </div>
 
       <div class="strip-row">

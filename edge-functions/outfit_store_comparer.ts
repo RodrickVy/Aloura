@@ -51,6 +51,7 @@ interface ComparedProduct {
   price:         number | null;
   url:           string;
   image_url:     string;
+  description:   string | null;
   keywords:      string[];
   colors:        string[];
   slug:          string;
@@ -180,6 +181,11 @@ async function findBestMatch(
 
   const price     = best.price;
   const storeName = (hit.source as string) ?? store;
+  const exts = Array.isArray(hit.extensions) ? (hit.extensions as string[]).join(" · ") : "";
+  const description =
+    (typeof hit.snippet === "string" && hit.snippet.trim()) ? hit.snippet.trim()
+    : (typeof hit.description === "string" && hit.description.trim()) ? hit.description.trim()
+    : (exts.trim() || null);
   const delta     = (origPrice != null && price != null) ? +(price - origPrice).toFixed(2) : null;
   const verdict: ComparedProduct["price_verdict"] =
     delta == null ? "unknown" :
@@ -195,6 +201,7 @@ async function findBestMatch(
     price,
     url:            (hit.link as string) ?? (hit.product_link as string) ?? "#",
     image_url:      (hit.thumbnail as string) ?? "",
+    description,
     keywords:       product.keywords,
     colors:         product.colors ?? [],
     original_price: origPrice,
@@ -292,7 +299,7 @@ Deno.serve(async (req: Request) => {
       mood_board_id,
       name: p.name, title: p.name, price: p.price,
       url: p.url, image_url: p.image_url, colors: p.colors,
-      style: `${store} comparison`, store: p.store, keywords: p.keywords,
+      style: `${store} comparison`, description: p.description, store: p.store, keywords: p.keywords,
     }));
     const { data: insertedPieces, error: pErr } = await db.from("pieces").insert(pieceRows).select("id");
     if (pErr) throw new Error(`Pieces insert: ${pErr.message}`);

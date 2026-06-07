@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createSupabaseBrowserClient } from '$lib/supabase';
+  import { track } from '$lib/analytics';
 
   interface Props {
     accountId: string;
@@ -74,8 +75,14 @@
   let recommended = $state<{ hex: string; name: string }[]>([]);
 
   async function onColorPhoto(e: Event) {
-    const file = (e.target as HTMLInputElement).files?.[0];
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file) return;
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      colorUploadError = 'Only JPG and PNG images are supported. Please choose a different file.';
+      input.value = '';
+      return;
+    }
     colorUploadLoading = true; colorUploadError = '';
     try {
       // read → upload → signed URL → edge function
@@ -97,9 +104,9 @@
       const { data, error } = await supabase.functions.invoke('color_intelligence', { body: { image_url: signed.signedUrl } });
       if (error) throw error;
       recommended = data?.colors ?? [];
-      if (!recommended.length) colorUploadError = 'Could not read colours from that photo. Try another.';
+      if (!recommended.length) colorUploadError = "We couldn't read that image. It may be an unsupported file type - please try a different photo.";
     } catch {
-      colorUploadError = 'Could not analyse that photo. Please try again.';
+      colorUploadError = "We couldn't read that image. It may be an unsupported file type - please try a different photo.";
     } finally {
       colorUploadLoading = false;
     }
@@ -115,6 +122,7 @@
 
   async function markOnboarded() {
     await supabase.from('accounts').update({ onboarded: true }).eq('id', accountId);
+    track(supabase, accountId, 'onboarded');
   }
 
   async function saveProfile() {
@@ -197,7 +205,7 @@
       {:else}
         <i class="fas fa-camera"></i> Upload a photo, get colours that suit you
       {/if}
-      <input type="file" accept="image/*" style="display:none" onchange={onColorPhoto} disabled={colorUploadLoading} />
+      <input type="file" accept="image/jpeg,image/png" style="display:none" onchange={onColorPhoto} disabled={colorUploadLoading} />
     </label>
     {#if colorUploadError}<p class="ob-upload__err">{colorUploadError}</p>{/if}
 

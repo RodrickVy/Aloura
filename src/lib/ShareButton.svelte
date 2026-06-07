@@ -7,6 +7,8 @@
     /** 'icon' = round icon button, 'pill' = icon + label */
     variant?: 'icon' | 'pill';
     label?:  string;
+    /** Fired when the user initiates a share (for analytics). */
+    onShare?: () => void;
   }
 
   let {
@@ -15,6 +17,7 @@
     text    = 'Check this out on Aloura',
     variant = 'pill',
     label   = 'Share',
+    onShare,
   }: Props = $props();
 
   let copied = $state(false);
@@ -26,6 +29,7 @@
   }
 
   async function share() {
+    onShare?.();
     const shareUrl = resolveUrl();
 
     // Native share sheet (mobile + some desktops)

@@ -16,7 +16,7 @@
   function openFlow() {
     stage = 'intro';
     open = true;
-    track(supabase, accountId, 'fit_check_hits');
+    track(supabase, accountId, 'fit_checks');
   }
 
   function stopStream() {

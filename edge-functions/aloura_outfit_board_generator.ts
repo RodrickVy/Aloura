@@ -52,14 +52,15 @@ interface OutfitConcept {
 }
 
 interface ShoppingProduct {
-  name:      string;
-  price:     number | null;
-  url:       string;
-  image_url: string;
-  store:     string;
-  style:     string;   // occasion/outfit context
-  keywords:  string[];
-  colors:    string[];
+  name:        string;
+  price:       number | null;
+  url:         string;
+  image_url:   string;
+  store:       string;
+  style:       string;          // occasion/outfit context
+  description: string | null;   // REAL product description from SerpAPI (never AI-generated)
+  keywords:    string[];
+  colors:      string[];
 }
 
 interface SlugPayload {
@@ -195,17 +196,27 @@ async function searchGoogleShopping(
 
   const storeName = (product.source as string) ?? (store || "Online");
 
-  console.log(`[shop] "${(product.title as string)?.slice(0, 40)}" at ${storeName} | $${price}`);
+  // REAL product description straight from SerpAPI - never AI-generated.
+  // Prefer the snippet/description; fall back to the retailer extensions
+  // (e.g. "Free shipping · In stock"); null if SerpAPI gives us nothing.
+  const exts = Array.isArray(product.extensions) ? (product.extensions as string[]).join(" · ") : "";
+  const description =
+    (typeof product.snippet === "string" && product.snippet.trim()) ? product.snippet.trim()
+    : (typeof product.description === "string" && product.description.trim()) ? product.description.trim()
+    : (exts.trim() || null);
+
+  console.log(`[shop] "${(product.title as string)?.slice(0, 40)}" at ${storeName} | $${price} | desc:${description ? "yes" : "no"}`);
 
   return {
-    name:      (product.title as string) ?? piece.name,
+    name:        (product.title as string) ?? piece.name,
     price,
-    url:       (product.link as string) ?? (product.product_link as string) ?? "#",
-    image_url: (product.thumbnail as string) ?? "",
-    store:     storeName,
-    style:     occasion,
-    keywords:  piece.keywords,
-    colors:    piece.colors,
+    url:         (product.link as string) ?? (product.product_link as string) ?? "#",
+    image_url:   (product.thumbnail as string) ?? "",
+    store:       storeName,
+    style:       occasion,
+    description,
+    keywords:    piece.keywords,
+    colors:      piece.colors,
   };
 }
 
@@ -371,14 +382,15 @@ Deno.serve(async (req: Request) => {
     for (const piece of concept.pieces.slice(0, 5)) {
       const product = await searchGoogleShopping(piece, store, concept.occasion);
       products.push(product ?? {
-        name:      piece.name,
-        price:     null,
-        url:       `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(piece.keywords.join(" "))}`,
-        image_url: "",
-        store:     store || "Online",
-        style:     concept.occasion,
-        keywords:  piece.keywords,
-        colors:    piece.colors,
+        name:        piece.name,
+        price:       null,
+        url:         `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(piece.keywords.join(" "))}`,
+        image_url:   "",
+        store:       store || "Online",
+        style:       concept.occasion,
+        description: null,
+        keywords:    piece.keywords,
+        colors:      piece.colors,
       });
       await new Promise(r => setTimeout(r, 200));
     }
@@ -410,8 +422,9 @@ Deno.serve(async (req: Request) => {
       url:           p.url,
       image_url:     p.image_url,
       colors:        p.colors,
-      style:         p.style,   // occasion/outfit context
-      store:         p.store,   // brand/retailer name
+      style:         p.style,         // occasion/outfit context
+      description:   p.description,   // REAL SerpAPI product description
+      store:         p.store,         // brand/retailer name
       keywords:      p.keywords,
     }));
 

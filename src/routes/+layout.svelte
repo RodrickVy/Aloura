@@ -5,6 +5,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import FeedbackForm from '$lib/FeedbackForm.svelte';
+  import AccountMenu from '$lib/AccountMenu.svelte';
 
   let { children, data } = $props();
   const supabase = createSupabaseBrowserClient();
@@ -46,9 +47,10 @@
 
       <!-- Desktop links -->
       <div class="nav__links">
+        <a href="/trending" class="nav__link">Trending</a>
         {#if data.user}
-          <a href="/report" class="nav__link">Account</a>
-          <button onclick={signOut} class="btn btn--ghost" style="padding:10px 20px">Sign out</button>
+          <a href="/discover" class="nav__link">Discover</a>
+          <AccountMenu />
         {:else}
           <a href="/" class="btn btn--primary" style="padding:10px 20px">Get started</a>
         {/if}
@@ -83,12 +85,15 @@
     </div>
 
     <nav class="drawer__nav">
+      <a href="/trending" class="drawer__link">
+        <i class="fas fa-fire"></i> Trending
+      </a>
       {#if data.user}
         <a href="/discover" class="drawer__link">
           <i class="fas fa-compass"></i> Discover
         </a>
-        <a href="/report" class="drawer__link">
-          <i class="fas fa-user"></i> Account
+        <a href="/account" class="drawer__link">
+          <i class="fas fa-user"></i> My account
         </a>
         <div class="drawer__divider"></div>
         <button class="drawer__link drawer__link--danger" onclick={signOut}>

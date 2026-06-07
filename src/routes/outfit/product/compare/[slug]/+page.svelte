@@ -4,6 +4,7 @@
   import ShareButton from '$lib/ShareButton.svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { track } from '$lib/analytics';
   import type { Piece } from '$lib/types';
 
   let { data } = $props();
@@ -57,6 +58,7 @@
           ? { ...basePiece, ...found, id: found.id ?? placeholder.id, slug: found.slug, searching: false }
           : c
       );
+      track(supabase, null, 'comparisons');
       updateUrl(columns);
     } catch {
       addError = `No match found at ${brand.name}.`;
@@ -151,7 +153,7 @@
       <h1 class="page-title">
         Comparing <em class="text-italic">{basePiece.name}</em>
       </h1>
-      <ShareButton variant="pill" label="Share comparison" title="Comparing {basePiece.name}" text="Compare this product across stores on Aloura" />
+      <ShareButton variant="pill" label="Share comparison" title="Comparing {basePiece.name}" text="Compare this product across stores on Aloura" onShare={() => track(supabase, null, 'shares')} />
     </div>
     <p class="page-sub">Select a store above to add it to the comparison.</p>
 
@@ -203,7 +205,7 @@
 
             <!-- Buy button -->
             {#if col.url && col.url !== '#'}
-              <a href={col.url} target="_blank" rel="noopener sponsored" class="col__buy btn btn--primary">
+              <a href={col.url} target="_blank" rel="noopener sponsored" class="col__buy btn btn--primary" onclick={() => track(supabase, null, 'buy_clicks')}>
                 Shop at {col.store ?? 'store'}
               </a>
             {/if}

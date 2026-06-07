@@ -8,6 +8,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 
   if (!(await isAdmin(locals.supabase))) throw error(404, 'Not found');
 
+  // The admin's own account id - passed to the trend orchestrator runner.
+  const { data: account } = await locals.supabase
+    .from('accounts')
+    .select('id')
+    .eq('auth_id', user.id)
+    .maybeSingle();
+
   // Aggregate analytics across all users
   const { data: rows } = await locals.supabase
     .from('analytics')
@@ -15,22 +22,19 @@ export const load: PageServerLoad = async ({ locals }) => {
 
   const totals = (rows ?? []).reduce(
     (acc, row) => ({
-      sign_ups:                acc.sign_ups                + (row.sign_ups ?? 0),
-      mood_boards_made:        acc.mood_boards_made        + (row.mood_boards_made ?? 0),
-      fit_check_hits:          acc.fit_check_hits          + (row.fit_check_hits ?? 0),
-      outfit_search_hits:      acc.outfit_search_hits      + (row.outfit_search_hits ?? 0),
-      outfit_checkout_hits:    acc.outfit_checkout_hits    + (row.outfit_checkout_hits ?? 0),
-      mood_board_comparisons:  acc.mood_board_comparisons  + (row.mood_board_comparisons ?? 0),
-      buy_clicks:              acc.buy_clicks              + (row.buy_clicks ?? 0),
-      piece_comparisons:       acc.piece_comparisons       + (row.piece_comparisons ?? 0),
-      report_generated:        acc.report_generated        + (row.report_generated ?? 0),
-      store_filter_used:       acc.store_filter_used       + (row.store_filter_used ?? 0),
+      sign_ups:       acc.sign_ups       + (row.sign_ups ?? 0),
+      onboarded:      acc.onboarded      + (row.onboarded ?? 0),
+      searches:       acc.searches       + (row.searches ?? 0),
+      comparisons:    acc.comparisons    + (row.comparisons ?? 0),
+      shares:         acc.shares         + (row.shares ?? 0),
+      product_tracks: acc.product_tracks + (row.product_tracks ?? 0),
+      fit_checks:     acc.fit_checks     + (row.fit_checks ?? 0),
+      buy_clicks:     acc.buy_clicks     + (row.buy_clicks ?? 0),
+      trends:         acc.trends         + (row.trends ?? 0),
     }),
     {
-      sign_ups: 0, mood_boards_made: 0, fit_check_hits: 0,
-      outfit_search_hits: 0, outfit_checkout_hits: 0,
-      mood_board_comparisons: 0, buy_clicks: 0,
-      piece_comparisons: 0, report_generated: 0, store_filter_used: 0,
+      sign_ups: 0, onboarded: 0, searches: 0, comparisons: 0,
+      shares: 0, product_tracks: 0, fit_checks: 0, buy_clicks: 0, trends: 0,
     }
   );
 
@@ -42,5 +46,5 @@ export const load: PageServerLoad = async ({ locals }) => {
     .select('*')
     .order('created_at', { ascending: false });
 
-  return { totals, totalUsers, feedback: feedback ?? [] };
+  return { totals, totalUsers, feedback: feedback ?? [], accountId: account?.id ?? null };
 };

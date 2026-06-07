@@ -1,22 +1,67 @@
 <script lang="ts">
+  import { createSupabaseBrowserClient } from '$lib/supabase';
+
   let { data } = $props();
   const { totals, totalUsers, feedback } = data;
 
+  const supabase = createSupabaseBrowserClient();
+
   const metrics = [
-    { key: 'sign_ups',               label: 'Sign ups',               icon: 'fas fa-user-plus',        color: '#6366f1' },
-    { key: 'report_generated',       label: 'Reports generated',      icon: 'fas fa-file-alt',         color: '#8b5cf6' },
-    { key: 'mood_boards_made',       label: 'Mood boards made',       icon: 'fas fa-layer-group',      color: '#c4906a' },
-    { key: 'outfit_search_hits',     label: 'Outfit searches',        icon: 'fas fa-search',           color: '#0ea5e9' },
-    { key: 'outfit_checkout_hits',   label: 'Outfit checkouts',       icon: 'fas fa-tshirt',           color: '#10b981' },
-    { key: 'store_filter_used',      label: 'Store filters used',     icon: 'fas fa-store',            color: '#f59e0b' },
-    { key: 'fit_check_hits',         label: 'Fit check hits',         icon: 'fas fa-camera',           color: '#ec4899' },
-    { key: 'mood_board_comparisons', label: 'Board comparisons',      icon: 'fas fa-columns',          color: '#06b6d4' },
-    { key: 'buy_clicks',             label: 'Buy clicks',             icon: 'fas fa-shopping-bag',     color: '#22c55e' },
-    { key: 'piece_comparisons',      label: 'Piece comparisons',      icon: 'fas fa-balance-scale',    color: '#f97316' },
+    { key: 'sign_ups',       label: 'Sign ups',        icon: 'fas fa-user-plus',     color: '#6366f1' },
+    { key: 'onboarded',      label: 'Onboarded',       icon: 'fas fa-clipboard-check', color: '#8b5cf6' },
+    { key: 'searches',       label: 'Searches',        icon: 'fas fa-search',        color: '#0ea5e9' },
+    { key: 'comparisons',    label: 'Comparisons',     icon: 'fas fa-columns',       color: '#06b6d4' },
+    { key: 'shares',         label: 'Shares',          icon: 'fas fa-arrow-up-from-bracket', color: '#f59e0b' },
+    { key: 'product_tracks', label: 'Price tracks',    icon: 'fas fa-bell',          color: '#ec4899' },
+    { key: 'fit_checks',     label: 'Fit checks',      icon: 'fas fa-camera',        color: '#c4906a' },
+    { key: 'buy_clicks',     label: 'Buy clicks',      icon: 'fas fa-shopping-bag',  color: '#22c55e' },
+    { key: 'trends',         label: 'Trend views',     icon: 'fas fa-fire',          color: '#ef4444' },
   ];
 
   const formatDate = (s: string) =>
     new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  // ── Trend orchestrator runner (admin only) ──
+  const TREND_CATEGORIES = [
+    { key: 'streetwear',  label: 'Streetwear' },
+    { key: 'formal',      label: 'Formal' },
+    { key: 'casual',      label: 'Casual' },
+    { key: 'athleisure',  label: 'Athleisure' },
+    { key: 'old-money',   label: 'Old Money' },
+    { key: 'date-night',  label: 'Date Night' },
+  ];
+
+  let runStatus = $state<Record<string, 'idle' | 'running' | 'done' | 'error'>>({});
+  let runMsg    = $state<Record<string, string>>({});
+  let runningAll = $state(false);
+
+  async function runCategory(key: string): Promise<boolean> {
+    if (!data.accountId) { runMsg[key] = 'No admin account found.'; runStatus[key] = 'error'; return false; }
+    runStatus[key] = 'running'; runMsg[key] = '';
+    try {
+      const { data: res, error } = await supabase.functions.invoke('trend_orchestrator', {
+        body: { account_id: data.accountId, category: key },
+      });
+      if (error) throw error;
+      if (!res?.success) throw new Error(res?.error || 'Failed');
+      runStatus[key] = 'done';
+      const boards = res.boards ?? [];
+      runMsg[key] = boards.length
+        ? boards.map((b: any) => `${b.title} (${b.pieces})`).join(' · ')
+        : 'Done';
+      return true;
+    } catch (e: any) {
+      runStatus[key] = 'error';
+      runMsg[key] = e?.message ?? 'Something went wrong';
+      return false;
+    }
+  }
+
+  async function runAll() {
+    runningAll = true;
+    for (const c of TREND_CATEGORIES) await runCategory(c.key);
+    runningAll = false;
+  }
 </script>
 
 <svelte:head>
@@ -37,6 +82,35 @@
       <div class="meta-chip"><i class="fas fa-comment-dots"></i> {feedback.length} feedback submissions</div>
     </div>
   </div>
+
+  <!-- TREND ORCHESTRATOR RUNNER -->
+  <section class="section-block">
+    <h2 class="section-heading">Trend generator <span class="section-sub">runs the orchestrator + builds boards</span></h2>
+    <div class="runner">
+      <div class="runner__bar">
+        <button class="runner__all" onclick={runAll} disabled={runningAll}>
+          {#if runningAll}<span class="runner__spin"></span> Running all…{:else}<i class="fas fa-bolt"></i> Generate all categories{/if}
+        </button>
+      </div>
+      <div class="runner__grid">
+        {#each TREND_CATEGORIES as c}
+          <div class="runner__card" class:running={runStatus[c.key] === 'running'} class:done={runStatus[c.key] === 'done'} class:error={runStatus[c.key] === 'error'}>
+            <div class="runner__card-head">
+              <span class="runner__cat">{c.label}</span>
+              <button class="runner__btn" onclick={() => runCategory(c.key)} disabled={runStatus[c.key] === 'running' || runningAll}>
+                {#if runStatus[c.key] === 'running'}<span class="runner__spin"></span>
+                {:else if runStatus[c.key] === 'done'}<i class="fas fa-check"></i> Re-run
+                {:else}Generate{/if}
+              </button>
+            </div>
+            {#if runMsg[c.key]}
+              <p class="runner__msg">{runMsg[c.key]}</p>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    </div>
+  </section>
 
   <!-- METRICS GRID -->
   <section class="section-block">
@@ -66,28 +140,28 @@
     <div class="ratios-grid">
       {#each [
         {
-          label: 'Search → Board rate',
-          desc:  'How often a search results in a board being made',
-          num:   totals.mood_boards_made,
-          den:   totals.outfit_search_hits,
+          label: 'Sign up → Onboard rate',
+          desc:  'How often a new sign up completes onboarding',
+          num:   totals.onboarded,
+          den:   totals.sign_ups,
         },
         {
-          label: 'Board → Checkout rate',
-          desc:  'How often someone clicks into a board they see',
-          num:   totals.outfit_checkout_hits,
-          den:   totals.mood_boards_made,
+          label: 'Search → Compare rate',
+          desc:  'How often a search leads to a store comparison',
+          num:   totals.comparisons,
+          den:   totals.searches,
         },
         {
-          label: 'Checkout → Buy rate',
-          desc:  'How often a board view leads to a buy click',
+          label: 'Compare → Buy rate',
+          desc:  'How often a comparison leads to a buy click',
           num:   totals.buy_clicks,
-          den:   totals.outfit_checkout_hits,
+          den:   totals.comparisons,
         },
         {
-          label: 'Compare adoption',
-          desc:  'How often outfit views lead to a comparison',
-          num:   totals.mood_board_comparisons,
-          den:   totals.outfit_checkout_hits,
+          label: 'Search → Buy rate',
+          desc:  'How often a search ends in a buy click',
+          num:   totals.buy_clicks,
+          den:   totals.searches,
         },
       ] as r}
         {@const pct = r.den > 0 ? Math.round((r.num / r.den) * 100) : 0}
@@ -218,4 +292,34 @@
   @media (min-width: 1024px) {
     .metrics-grid { grid-template-columns: repeat(5, 1fr); }
   }
+  /* Trend runner */
+  .runner { background: var(--clr-cream); border: 1px solid var(--clr-border); border-radius: 16px; padding: var(--space-5); }
+  .runner__bar { margin-bottom: var(--space-4); }
+  .runner__all {
+    display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px;
+    border-radius: 999px; border: none; cursor: pointer; background: var(--clr-charcoal); color: #fff;
+    font-family: var(--font-body); font-size: 13px; font-weight: 600; transition: background 0.15s;
+  }
+  .runner__all:hover:not(:disabled) { background: var(--clr-brown); }
+  .runner__all:disabled { opacity: 0.6; cursor: wait; }
+  .runner__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-3); }
+  .runner__card { background: #fff; border: 1.5px solid var(--clr-border); border-radius: 12px; padding: 12px 14px; transition: border-color 0.15s; }
+  .runner__card.running { border-color: #f59e0b; }
+  .runner__card.done    { border-color: #22c55e; }
+  .runner__card.error   { border-color: #ef4444; }
+  .runner__card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .runner__cat { font-size: 13px; font-weight: 600; color: var(--clr-charcoal); }
+  .runner__btn {
+    display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px;
+    border-radius: 999px; border: 1.5px solid var(--clr-border); background: var(--clr-beige);
+    cursor: pointer; font-family: var(--font-body); font-size: 12px; font-weight: 500; color: var(--clr-charcoal);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .runner__btn:hover:not(:disabled) { border-color: var(--clr-light-taupe); }
+  .runner__btn:disabled { opacity: 0.6; cursor: wait; }
+  .runner__msg { font-size: 11px; color: var(--clr-taupe); margin-top: 8px; line-height: 1.4; }
+  .runner__card.error .runner__msg { color: #dc2626; }
+  .runner__spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.15); border-top-color: var(--clr-charcoal); animation: spin 0.8s linear infinite; display: inline-block; }
+  .runner__all .runner__spin { border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>

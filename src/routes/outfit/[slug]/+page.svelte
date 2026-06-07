@@ -5,6 +5,7 @@
   import BrandChips from '$lib/BrandChips.svelte';
   import AuthModal from '$lib/AuthModal.svelte';
   import ShareButton from '$lib/ShareButton.svelte';
+  import TrackButton from '$lib/TrackButton.svelte';
   import { track } from '$lib/analytics';
   import type { MoodBoard, Piece } from '$lib/types';
 
@@ -37,7 +38,6 @@
       authOpen = true;
       return;
     }
-    track(supabase, null, 'mood_board_comparisons');
     goto(target);
   }
 </script>
@@ -82,7 +82,10 @@
       <div class="outfit-hero__info">
         <div class="outfit-title-row">
           <h1 class="outfit-title">{board.title}</h1>
-          <ShareButton variant="icon" title={board.title} text="Check out this outfit on Aloura" />
+          <div class="outfit-actions">
+            <TrackButton variant="icon" productName={board.title} onTrack={() => track(supabase, null, 'product_tracks')} />
+            <ShareButton variant="icon" title={board.title} text="Check out this outfit on Aloura" onShare={() => track(supabase, null, 'shares')} />
+          </div>
         </div>
         <div class="outfit-meta">
           <div class="outfit-meta__item">
@@ -130,8 +133,8 @@
                 {piece.store ?? 'Online'}
               </div>
               <div class="piece-row__name">{piece.name ?? 'Item'}</div>
-              {#if piece.style && piece.style !== piece.store}
-                <div class="piece-row__style">{piece.style}</div>
+              {#if piece.description}
+                <div class="piece-row__desc">{piece.description}</div>
               {/if}
             </div>
 
@@ -181,6 +184,7 @@
   .outfit-hero { display: flex; flex-direction: column; gap: var(--space-8); padding-top: var(--space-10); margin-bottom: var(--space-12); }
   .outfit-hero__img { width: 100%; max-width: 360px; border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); object-fit: cover; aspect-ratio: 3/4; }
   .outfit-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-5); }
+  .outfit-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
   .outfit-title { font-family: var(--font-display); font-size: clamp(20px, 3vw, 28px); font-weight: 500; line-height: 1.2; letter-spacing: -0.3px; color: var(--clr-charcoal); }
 
   .outfit-meta { display: flex; gap: var(--space-5); margin-top: var(--space-4); }
@@ -224,7 +228,7 @@
     display: flex; align-items: center; gap: 6px;
   }
   .piece-row__name { font-size: var(--text-sm); font-weight: 500; color: var(--clr-charcoal); line-height: 1.4; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .piece-row__style { font-size: var(--text-xs); font-weight: 300; color: var(--clr-text-muted); }
+  .piece-row__desc { font-size: var(--text-xs); font-weight: 300; color: var(--clr-text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; }
 
   .piece-row__right { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
   .piece-row__price { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 500; color: var(--clr-charcoal); }

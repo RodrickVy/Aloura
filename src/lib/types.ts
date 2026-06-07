@@ -69,6 +69,7 @@ export interface Piece {
   image_url: string | null;
   colors: string[] | null;
   style: string | null;
+  description: string | null;
   store: string | null;
   keywords: string[] | null;
   slug: string | null;

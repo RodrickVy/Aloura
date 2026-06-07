@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
   const { data: account } = await locals.supabase
     .from('accounts').select('id').eq('auth_id', user.id).maybeSingle();
-  if (!account) throw redirect(303, '/onboarding');
+  if (!account) throw redirect(303, '/account');
 
   const { data: boards, error: bErr } = await locals.supabase
     .from('mood_boards')

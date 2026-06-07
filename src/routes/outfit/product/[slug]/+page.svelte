@@ -2,6 +2,7 @@
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import BrandChips from '$lib/BrandChips.svelte';
   import ShareButton from '$lib/ShareButton.svelte';
+  import TrackButton from '$lib/TrackButton.svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { track } from '$lib/analytics';
@@ -41,7 +42,7 @@
       if (!found?.slug) throw new Error('No slug returned');
 
       // Navigate to compare page
-      track(supabase, null, 'piece_comparisons');
+      track(supabase, null, 'comparisons');
       goto(`/outfit/product/compare/${originalPiece.slug}--vs--${found.slug}`);
     } catch {
       searchError = `No match found at ${brand.name}. Try another store.`;
@@ -130,7 +131,10 @@
       <div class="product__details">
         <div class="product__store-row">
           <div class="product__store">{originalPiece.store ?? 'Online'}</div>
-          <ShareButton variant="icon" title={originalPiece.name ?? 'Product'} text="Check out this piece on Aloura" />
+          <div class="product__actions">
+            <TrackButton variant="icon" productName={originalPiece.name ?? 'this product'} onTrack={() => track(supabase, null, 'product_tracks')} />
+            <ShareButton variant="icon" title={originalPiece.name ?? 'Product'} text="Check out this piece on Aloura" onShare={() => track(supabase, null, 'shares')} />
+          </div>
         </div>
         <h1 class="product__name">{originalPiece.name ?? originalPiece.name}</h1>
 
@@ -138,8 +142,8 @@
           <div class="product__price">${originalPiece.price.toFixed(2)}</div>
         {/if}
 
-        {#if originalPiece.style}
-          <p class="product__style">{originalPiece.style}</p>
+        {#if originalPiece.description}
+          <p class="product__style">{originalPiece.description}</p>
         {/if}
 
         {#if originalPiece.colors?.length}
@@ -156,7 +160,7 @@
 
         <div class="product__actions">
           {#if originalPiece.url && originalPiece.url !== '#'}
-            <a href={originalPiece.url} target="_blank" rel="noopener sponsored" class="btn btn--primary btn--lg">
+            <a href={originalPiece.url} target="_blank" rel="noopener sponsored" class="btn btn--primary btn--lg" onclick={() => track(supabase, null, 'buy_clicks')}>
               <i class="fas fa-shopping-bag"></i>
               Shop now
             </a>
@@ -194,13 +198,6 @@
         </a>
       </section>
     {/if}
-
-    <!-- CTA -->
-    <section class="product-cta">
-      <h2 class="heading-md" style="margin-bottom:var(--space-4)">Outfits <em class="text-italic">built for you.</em></h2>
-      <p class="lead" style="font-size:var(--text-sm);margin-bottom:var(--space-6)">Get your personalized color palette, outfit boards, and price comparisons.</p>
-      <a href="/" class="btn btn--primary">Get my style report <i class="fas fa-arrow-right"></i></a>
-    </section>
 
   </div>
 </div>
@@ -252,6 +249,7 @@
   }
 
   .product__store-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+  .product__actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
   .product__store { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--clr-taupe); }
   .product__name { font-family: var(--font-display); font-size: clamp(22px, 4vw, 36px); font-weight: 500; line-height: 1.2; margin-bottom: var(--space-4); color: var(--clr-charcoal); }
   .product__price { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 600; color: var(--clr-charcoal); margin-bottom: var(--space-4); }
@@ -276,8 +274,6 @@
   .outfit-ref__title { font-size: var(--text-sm); font-weight: 600; color: var(--clr-charcoal); margin-bottom: 2px; }
   .outfit-ref__occ { font-size: var(--text-xs); color: var(--clr-taupe); }
 
-  /* ── CTA ── */
-  .product-cta { background: var(--clr-beige); border-radius: var(--radius-xl); padding: var(--space-10); }
 
   @media (min-width: 640px) {
     .product { flex-direction: row; align-items: flex-start; }

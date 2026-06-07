@@ -76,8 +76,13 @@
   <header class="header">
     <span class="logo">Aloura<span>.</span></span>
     <div class="header__actions">
-      <button class="link-btn" onclick={() => openModal('signin')}>Log in</button>
-      <button class="pill-btn" onclick={() => openModal('signup')}>Sign up</button>
+      {#if data.user}
+        <a class="link-btn" href="/trending">Trending</a>
+        <a class="pill-btn" href="/discover">Go to Discover</a>
+      {:else}
+        <button class="link-btn" onclick={() => openModal('signin')}>Log in</button>
+        <button class="pill-btn" onclick={() => openModal('signup')}>Sign up</button>
+      {/if}
     </div>
   </header>
 
@@ -92,9 +97,11 @@
         showImage={false}
         onsubmit={heroSearch}
       />
-      <button class="hero__login" onclick={() => openModal('signin')}>
-        Already have an account? <span>Log in</span>
-      </button>
+      {#if !data.user}
+        <button class="hero__login" onclick={() => openModal('signin')}>
+          Already have an account? <span>Log in</span>
+        </button>
+      {/if}
     </div>
   </section>
 
@@ -131,10 +138,10 @@
   <section class="features">
     <div class="features__inner">
       {#each [
-        { icon: 'fas fa-palette',  title: 'Color analysis',    desc: 'Your exact palette - best colors, accents, and what to avoid.' },
-        { icon: 'fas fa-tshirt',   title: 'Outfit boards',     desc: 'Swipeable outfit boards tailored to your goals and occasions.' },
-        { icon: 'fas fa-tag',      title: 'Price comparison',  desc: 'Find the same pieces across stores and see where to get the best deal.' },
-        { icon: 'fas fa-glasses',  title: 'Accessories',       desc: 'Metals, chains, and eyewear shapes matched to your face and undertone.' },
+        { icon: 'fas fa-store',               title: 'Compare stores', desc: 'Compare the same pieces across 12+ stores and see where to get the best deal.' },
+        { icon: 'fas fa-bell',                title: 'Price alerts',   desc: 'Track product pricing and get notified the moment a price drops.' },
+        { icon: 'fas fa-camera',              title: 'Shop any look',  desc: 'Upload any outfit you see online and instantly get the products to buy.' },
+        { icon: 'fas fa-wand-magic-sparkles', title: 'Style picks',    desc: 'Get outfit recommendations based on your style preferences.' },
       ] as f}
         <div class="feature">
           <div class="feature__icon"><i class={f.icon}></i></div>
@@ -171,12 +178,12 @@
   .logo span { color: var(--clr-terracotta); }
   .header__actions { display: flex; align-items: center; gap: 8px; }
 
-  .link-btn { background: none; border: none; cursor: pointer; font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--clr-charcoal); padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .link-btn { background: none; border: none; cursor: pointer; font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--clr-charcoal); padding: 8px 12px; border-radius: 8px; transition: background 0.15s; text-decoration: none; display: inline-flex; align-items: center; }
   .link-btn:hover { background: #f5f0eb; }
   .link-btn--sm { font-size: 13px; color: var(--clr-taupe); }
   .link-btn--sm:hover { color: var(--clr-charcoal); background: transparent; }
 
-  .pill-btn { background: var(--clr-terracotta); color: #fff; border: none; cursor: pointer; font-family: var(--font-body); font-size: 14px; font-weight: 500; padding: 10px 22px; border-radius: 999px; transition: background 0.2s, transform 0.15s; }
+  .pill-btn { background: var(--clr-terracotta); color: #fff; border: none; cursor: pointer; font-family: var(--font-body); font-size: 14px; font-weight: 500; padding: 10px 22px; border-radius: 999px; transition: background 0.2s, transform 0.15s; text-decoration: none; display: inline-flex; align-items: center; }
   .pill-btn:hover { background: #c4835a; transform: translateY(-1px); }
   .pill-btn--lg { font-size: 15px; padding: 14px 32px; }
 
@@ -219,11 +226,11 @@
   /* ── PINTEREST GRID ── */
   .pin-section { padding: 0 16px 48px; }
   .pin-grid {
-    columns: 2; column-gap: 12px;
-    max-width: 1200px; margin: 0 auto;
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+    gap: 12px; max-width: 1200px; margin: 0 auto;
   }
   .pin {
-    break-inside: avoid; margin-bottom: 12px; border-radius: 16px;
+    flex: 0 1 280px; max-width: 320px; border-radius: 16px;
     overflow: hidden; position: relative; background: #f5efe8;
     cursor: pointer;
   }
@@ -295,12 +302,10 @@
   @keyframes slideUp { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
 
   @media (min-width: 640px)  {
-    .pin-grid { columns: 3; }
     .hero__actions { flex-direction: row; justify-content: center; }
     .features__inner { grid-template-columns: repeat(2, 1fr); }
   }
   @media (min-width: 1024px) {
-    .pin-grid { columns: 4; }
     .features__inner { grid-template-columns: repeat(4, 1fr); }
   }
 </style>

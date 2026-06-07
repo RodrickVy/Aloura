@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ locals }) => {
         .limit(1)
         .maybeSingle();
 
-      throw redirect(303, report ? '/discover' : '/onboarding');
+      throw redirect(303, report ? '/discover' : '/account');
     }
   }
 
