@@ -5,7 +5,6 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import FeedbackForm from '$lib/FeedbackForm.svelte';
-  import AccountMenu from '$lib/AccountMenu.svelte';
 
   let { children, data } = $props();
   const supabase = createSupabaseBrowserClient();
@@ -17,8 +16,7 @@
     return () => subscription.unsubscribe();
   });
 
-  let scrolled    = $state(false);
-  let drawerOpen  = $state(false);
+  let scrolled = $state(false);
 
   onMount(() => {
     const onScroll = () => { scrolled = window.scrollY > 10; };
@@ -26,88 +24,44 @@
     return () => window.removeEventListener('scroll', onScroll);
   });
 
-  // Close drawer on route change
-  $effect(() => { $page.url.pathname; drawerOpen = false; });
-
   const isHome     = $derived($page.url.pathname === '/');
   const isDiscover = $derived($page.url.pathname === '/discover');
 
   async function signOut() {
-    drawerOpen = false;
     await supabase.auth.signOut();
     goto('/');
   }
 </script>
 
 {#if !isHome}
-  <!-- NAV (hidden on desktop for /discover - the search row carries the logo there) -->
+  <!-- NAV - always-visible icon links (no hamburger). On /discover the search
+       row carries its own header on desktop, so the bar is hidden there only. -->
   <nav class="nav" class:scrolled class:nav--discover={isDiscover}>
     <div class="nav__inner">
       <a href="/" class="nav__logo">Aloura<span>.</span></a>
 
-      <!-- Desktop links -->
       <div class="nav__links">
-        <a href="/trending" class="nav__link">Trending</a>
+        <a href="/trending" class="nav__link" title="Trending">
+          <i class="fas fa-fire"></i><span class="nav__txt">Trending</span>
+        </a>
         {#if data.user}
-          <a href="/discover" class="nav__link">Discover</a>
-          <AccountMenu />
+          <a href="/discover" class="nav__link" title="Discover">
+            <i class="fas fa-compass"></i><span class="nav__txt">Discover</span>
+          </a>
+          <a href="/account" class="nav__link" title="Account">
+            <i class="fas fa-user"></i><span class="nav__txt">Account</span>
+          </a>
+          <button class="nav__link nav__link--danger" onclick={signOut} title="Sign out">
+            <i class="fas fa-sign-out-alt"></i><span class="nav__txt">Sign out</span>
+          </button>
         {:else}
-          <a href="/" class="btn btn--primary" style="padding:10px 20px">Get started</a>
+          <a href="/" class="nav__link nav__link--cta" title="Get started">
+            <i class="fas fa-arrow-right-to-bracket"></i><span class="nav__txt">Get started</span>
+          </a>
         {/if}
       </div>
-
-      <!-- Mobile hamburger -->
-      <button
-        class="hamburger"
-        onclick={() => drawerOpen = !drawerOpen}
-        aria-label="Menu"
-        aria-expanded={drawerOpen}
-      >
-        <span class="hamburger__bar" class:open={drawerOpen}></span>
-        <span class="hamburger__bar" class:open={drawerOpen}></span>
-        <span class="hamburger__bar" class:open={drawerOpen}></span>
-      </button>
     </div>
   </nav>
-
-  <!-- MOBILE DRAWER -->
-  {#if drawerOpen}
-    <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-    <div class="drawer-backdrop" onclick={() => drawerOpen = false}></div>
-  {/if}
-
-  <div class="drawer" class:drawer--open={drawerOpen}>
-    <div class="drawer__header">
-      <span class="drawer__logo">Aloura<span>.</span></span>
-      <button class="drawer__close" onclick={() => drawerOpen = false} aria-label="Close menu">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-
-    <nav class="drawer__nav">
-      <a href="/trending" class="drawer__link">
-        <i class="fas fa-fire"></i> Trending
-      </a>
-      {#if data.user}
-        <a href="/discover" class="drawer__link">
-          <i class="fas fa-compass"></i> Discover
-        </a>
-        <a href="/account" class="drawer__link">
-          <i class="fas fa-user"></i> My account
-        </a>
-        <div class="drawer__divider"></div>
-        <button class="drawer__link drawer__link--danger" onclick={signOut}>
-          <i class="fas fa-sign-out-alt"></i> Sign out
-        </button>
-      {:else}
-        <a href="/" class="drawer__link">
-          <i class="fas fa-home"></i> Home
-        </a>
-        <div class="drawer__divider"></div>
-        <a href="/" class="drawer__cta btn btn--primary btn--full">Get started</a>
-      {/if}
-    </nav>
-  </div>
 {/if}
 
 {@render children()}
@@ -136,86 +90,41 @@
     display: flex; align-items: center; justify-content: space-between;
     width: 100%; padding-inline: var(--page-px);
   }
-  .nav__logo { font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--clr-charcoal); letter-spacing: -0.5px; }
+  .nav__logo { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: var(--clr-charcoal); letter-spacing: -0.5px; flex-shrink: 0; }
   .nav__logo span { color: var(--clr-terracotta); }
-  .nav__links { display: none; align-items: center; gap: var(--space-8); }
-  .nav__link { font-size: var(--text-sm); font-weight: 400; color: var(--clr-text-muted); transition: color var(--dur-fast); text-decoration: none; }
-  .nav__link:hover { color: var(--clr-text-primary); }
 
-  /* ── Hamburger ── */
-  .hamburger {
-    display: flex; flex-direction: column; justify-content: center; gap: 5px;
-    width: 36px; height: 36px; background: none; border: none; cursor: pointer;
-    padding: 4px; border-radius: var(--radius-md);
+  /* Always-visible icon links - no hamburger, no drawer */
+  .nav__links { display: flex; align-items: center; gap: 4px; }
+  .nav__link {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 12px; border-radius: 999px;
+    font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500;
+    color: var(--clr-charcoal); text-decoration: none;
+    background: none; border: none; cursor: pointer;
+    transition: background 0.15s, color 0.15s; white-space: nowrap;
   }
-  .hamburger__bar {
-    display: block; height: 2px; background: var(--clr-charcoal);
-    border-radius: 2px; transition: transform 0.25s ease, opacity 0.25s ease;
-    transform-origin: center;
+  .nav__link i { font-size: 15px; color: var(--clr-taupe); }
+  .nav__link:hover { background: var(--clr-beige); }
+  .nav__link:hover i { color: var(--clr-charcoal); }
+  .nav__link--danger { color: #a33020; }
+  .nav__link--danger i { color: #a33020; }
+  .nav__link--cta { background: var(--clr-terracotta); color: #fff; }
+  .nav__link--cta i { color: #fff; }
+  .nav__link--cta:hover { background: #c4835a; }
+  .nav__link--cta:hover i { color: #fff; }
+
+  /* Mobile: tighten spacing and drop the text labels (icons only) so every
+     link fits on one row next to the logo. */
+  @media (max-width: 600px) {
+    .nav__inner { padding-inline: 14px; }
+    .nav__links { gap: 2px; }
+    .nav__link { padding: 8px 9px; }
+    .nav__txt { display: none; }
+    .nav__link i { font-size: 17px; }
   }
-  .hamburger__bar.open:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-  .hamburger__bar.open:nth-child(2) { opacity: 0; transform: scaleX(0); }
-  .hamburger__bar.open:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-  /* ── Drawer backdrop ── */
-  .drawer-backdrop {
-    position: fixed; inset: 0; z-index: 299;
-    background: rgba(0,0,0,0.35); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
-    animation: fadeIn 0.2s ease;
-  }
-
-  /* ── Drawer ── */
-  .drawer {
-    position: fixed; top: 0; right: 0; bottom: 0; z-index: 300;
-    width: min(280px, 85vw);
-    background: var(--clr-off-white);
-    box-shadow: -8px 0 40px rgba(0,0,0,0.12);
-    transform: translateX(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex; flex-direction: column;
-  }
-  .drawer--open { transform: translateX(0); }
-
-  .drawer__header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px var(--page-px);
-    border-bottom: 1px solid var(--clr-border);
-  }
-  .drawer__logo { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: var(--clr-charcoal); letter-spacing: -0.5px; }
-  .drawer__logo span { color: var(--clr-terracotta); }
-  .drawer__close {
-    width: 32px; height: 32px; border-radius: 50%; background: var(--clr-beige);
-    border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    color: var(--clr-taupe); font-size: 14px; transition: background 0.15s;
-  }
-  .drawer__close:hover { background: var(--clr-light-taupe); }
-
-  .drawer__nav { display: flex; flex-direction: column; padding: var(--space-5) var(--space-4); gap: 4px; flex: 1; }
-
-  .drawer__link {
-    display: flex; align-items: center; gap: var(--space-3);
-    padding: 14px 16px; border-radius: var(--radius-lg);
-    font-size: var(--text-base); font-weight: 400; color: var(--clr-charcoal);
-    text-decoration: none; background: none; border: none; cursor: pointer;
-    font-family: var(--font-body); width: 100%; text-align: left;
-    transition: background 0.15s, color 0.15s;
-  }
-  .drawer__link i { width: 20px; text-align: center; color: var(--clr-taupe); font-size: 16px; }
-  .drawer__link:hover { background: var(--clr-beige); }
-  .drawer__link--danger { color: #a33020; }
-  .drawer__link--danger i { color: #a33020; }
-  .drawer__link--danger:hover { background: #fdf0ee; }
-
-  .drawer__divider { height: 1px; background: var(--clr-border); margin: var(--space-3) 0; }
-  .drawer__cta { margin-top: auto; }
-
-  /* Desktop: hide hamburger, show links */
+  /* Discover has its own search-first header on desktop - hide the global bar there only */
   @media (min-width: 768px) {
-    .nav__links  { display: flex; }
-    .hamburger   { display: none; }
-    .drawer      { display: none; }
-    .drawer-backdrop { display: none; }
-    /* Discover gets a search-first header on desktop - drop the global bar */
     .nav--discover { display: none; }
   }
 
