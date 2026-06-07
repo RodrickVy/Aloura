@@ -245,7 +245,7 @@
   /* ── Brand strip ── */
   .brand-strip {
     position: sticky; top: var(--nav-h); z-index: 100;
-    background: rgba(253,251,248,0.96); backdrop-filter: blur(12px);
+    background: rgba(253,251,248,0.96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--clr-border); padding: 10px var(--page-px) 8px;
   }
   .brand-strip__inner { max-width: var(--max-w); margin: 0 auto; }

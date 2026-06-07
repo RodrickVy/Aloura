@@ -199,7 +199,7 @@
 {/if}
 
 <style>
-  .backdrop { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.18s ease; }
+  .backdrop { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.18s ease; }
   .modal { background: #fff; border-radius: 20px; padding: 36px 32px; width: 100%; max-width: 400px; position: relative; animation: slideUp 0.22s ease; box-shadow: 0 24px 80px rgba(0,0,0,0.18); max-height: 92vh; overflow-y: auto; }
   .modal--wide { max-width: 460px; }
   .modal__close { position: absolute; top: 14px; right: 14px; background: #f5f0eb; border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; color: var(--clr-taupe); font-size: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }

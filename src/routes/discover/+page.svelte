@@ -687,7 +687,7 @@
   /* ── Search row ── */
   .search-row {
     position: sticky; top: var(--nav-h); z-index: 100;
-    background: rgba(253,251,248,0.96); backdrop-filter: blur(12px);
+    background: rgba(253,251,248,0.96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--clr-border);
     padding: 12px var(--page-px) 10px;
   }
@@ -765,7 +765,7 @@
     transition: color var(--dur-fast);
   }
 
-  .detail-nav { position: sticky; top: var(--nav-h); z-index: 100; background: rgba(253,251,248,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--clr-border); padding: var(--space-3) var(--page-px); display: flex; align-items: center; gap: var(--space-4); }
+  .detail-nav { position: sticky; top: var(--nav-h); z-index: 100; background: rgba(253,251,248,0.95); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--clr-border); padding: var(--space-3) var(--page-px); display: flex; align-items: center; gap: var(--space-4); }
   .back-btn { background: none; border: none; cursor: pointer; color: var(--clr-taupe); font-size: var(--text-sm); display: flex; align-items: center; gap: var(--space-2); transition: color var(--dur-fast); white-space: nowrap; }
   .back-btn:hover { color: var(--clr-charcoal); }
 

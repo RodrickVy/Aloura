@@ -301,7 +301,7 @@
   /* Onboarding popup */
   .onb-overlay {
     position: fixed; inset: 0; z-index: 100000;
-    background: rgba(40,33,28,0.5); backdrop-filter: blur(4px);
+    background: rgba(40,33,28,0.5); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
     display: flex; align-items: center; justify-content: center; padding: 20px;
     animation: onbFade 0.18s ease;
   }

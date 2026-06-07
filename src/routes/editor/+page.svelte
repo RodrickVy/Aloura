@@ -233,7 +233,7 @@
   .collage__cell { overflow: hidden; background: #e8e0d8; }
   .collage__cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .collage__ph { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--clr-taupe); font-size: 32px; }
-  .public-badge { position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; border: none; cursor: pointer; background: rgba(255,255,255,0.9); color: var(--clr-taupe); backdrop-filter: blur(4px); transition: all 0.15s; }
+  .public-badge { position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; border: none; cursor: pointer; background: rgba(255,255,255,0.9); color: var(--clr-taupe); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); transition: all 0.15s; }
   .public-badge.is-public { background: var(--clr-charcoal); color: #fff; }
   .board-card__body { padding: var(--space-4) var(--space-4) var(--space-2); }
   .board-card__title { font-size: var(--text-base); font-weight: 600; color: var(--clr-charcoal); margin-bottom: 2px; }

@@ -127,7 +127,7 @@
   .nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 200;
     height: var(--nav-h); display: flex; align-items: center;
-    background: rgba(253,251,248,0.92); backdrop-filter: blur(20px);
+    background: rgba(253,251,248,0.92); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
     border-bottom: 1px solid transparent;
     transition: border-color var(--dur-base), box-shadow var(--dur-base);
   }
@@ -160,7 +160,7 @@
   /* ── Drawer backdrop ── */
   .drawer-backdrop {
     position: fixed; inset: 0; z-index: 299;
-    background: rgba(0,0,0,0.35); backdrop-filter: blur(2px);
+    background: rgba(0,0,0,0.35); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
     animation: fadeIn 0.2s ease;
   }
 

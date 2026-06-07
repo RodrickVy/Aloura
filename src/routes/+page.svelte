@@ -171,7 +171,7 @@
   .header {
     position: fixed; top: 0; left: 0; right: 0; z-index: 200;
     height: 60px; display: flex; align-items: center; justify-content: space-between;
-    padding: 0 24px; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
+    padding: 0 24px; background: rgba(255,255,255,0.95); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
     border-bottom: 1px solid #f0ece8;
   }
   .logo { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: var(--clr-charcoal); letter-spacing: -0.5px; }
@@ -263,7 +263,7 @@
   /* ── MODAL ── */
   .backdrop {
     position: fixed; inset: 0; z-index: 500;
-    background: rgba(0,0,0,0.45); backdrop-filter: blur(6px);
+    background: rgba(0,0,0,0.45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
     display: flex; align-items: center; justify-content: center;
     padding: 20px; animation: fadeIn 0.18s ease;
   }
