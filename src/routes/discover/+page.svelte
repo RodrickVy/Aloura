@@ -2,6 +2,7 @@
   import { createSupabaseBrowserClient } from '$lib/supabase';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import SearchBar from '$lib/SearchBar.svelte';
   import FitCheck from '$lib/FitCheck.svelte';
   import AuthModal from '$lib/AuthModal.svelte';
@@ -460,6 +461,13 @@
 <svelte:head>
   <title>Discover Outfits - Aloura</title>
   <meta name="robots" content="noindex" />
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Aloura" />
+  <meta property="og:title"       content="Discover Outfits - Aloura" />
+  <meta property="og:description" content="Search outfits, find the best prices, and shop looks matched to your style." />
+  <meta property="og:image"       content="{$page.url.origin}/assets/man_on_chair.jpg" />
+  <meta name="twitter:card"  content="summary_large_image" />
+  <meta name="twitter:image" content="{$page.url.origin}/assets/man_on_chair.jpg" />
 </svelte:head>
 
 <div class="discover">
