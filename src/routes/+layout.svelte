@@ -125,13 +125,11 @@
 <style>
   /* ── Nav ── */
   .nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
     height: var(--nav-h); display: flex; align-items: center;
-    /* Solid opaque background - iOS Safari fails to paint a fixed element's
-       background when backdrop-filter is present, so we don't rely on blur. */
-    background: #fdfbf8;
-    border-bottom: 1px solid transparent;
-    transition: border-color var(--dur-base), box-shadow var(--dur-base);
+    background: #fdfbf8;                 /* solid - no blur/filter dependency */
+    border-bottom: 1px solid var(--clr-border);
+    transition: box-shadow var(--dur-base);
   }
   .nav.scrolled { border-color: var(--clr-border); box-shadow: var(--shadow-sm); }
   .nav__inner {
