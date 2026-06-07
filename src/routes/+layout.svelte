@@ -127,7 +127,9 @@
   .nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 200;
     height: var(--nav-h); display: flex; align-items: center;
-    background: rgba(253,251,248,0.92); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+    /* Solid opaque background - iOS Safari fails to paint a fixed element's
+       background when backdrop-filter is present, so we don't rely on blur. */
+    background: #fdfbf8;
     border-bottom: 1px solid transparent;
     transition: border-color var(--dur-base), box-shadow var(--dur-base);
   }
