@@ -203,12 +203,18 @@
               {/if}
             </div>
 
-            <!-- Buy button -->
-            {#if col.url && col.url !== '#'}
-              <a href={col.url} target="_blank" rel="noopener sponsored" class="col__buy btn btn--primary" onclick={() => track(supabase, null, 'buy_clicks')}>
-                Shop at {col.store ?? 'store'}
-              </a>
-            {/if}
+            <!-- Buy button - always shown; falls back to a shopping search if no direct link -->
+            <a
+              href={col.url && col.url !== '#'
+                ? col.url
+                : `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(`${col.name ?? basePiece.name ?? ''} ${col.store ?? ''}`.trim())}`}
+              target="_blank"
+              rel="noopener sponsored"
+              class="col__buy btn btn--primary"
+              onclick={() => track(supabase, null, 'buy_clicks')}
+            >
+              Shop at {col.store ?? 'store'}
+            </a>
 
             <!-- Savings vs original -->
             {#if i > 0 && col.price && columns[0].price}

@@ -3,8 +3,32 @@
   import { page } from '$app/stores';
   import AuthModal from '$lib/AuthModal.svelte';
   import SearchBar from '$lib/SearchBar.svelte';
+  import { createSupabaseBrowserClient } from '$lib/supabase';
 
   let { data } = $props();
+  const supabase = createSupabaseBrowserClient();
+
+  // ── Waitlist / early-access email capture ──
+  let waitEmail   = $state('');
+  let waitSaving  = $state(false);
+  let waitDone    = $state(false);
+  let waitError   = $state('');
+
+  async function joinWaitlist() {
+    const email = waitEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { waitError = 'Please enter a valid email.'; return; }
+    waitSaving = true; waitError = '';
+    try {
+      const { error } = await supabase.from('waitlist').insert({ email, source: 'home' });
+      // Treat duplicate email as success (they already signalled interest)
+      if (error && !/duplicate|unique/i.test(error.message)) throw error;
+      waitDone = true;
+    } catch {
+      waitError = 'Something went wrong. Please try again.';
+    } finally {
+      waitSaving = false;
+    }
+  }
 
   // Absolute social-preview image, derived from the live origin
   const ogImage = $derived(`${$page.url.origin}/assets/man_on_chair.jpg`);
@@ -152,6 +176,34 @@
     </div>
   </section>
 
+  <!-- ── WAITLIST / EARLY ACCESS ───────────────────────────── -->
+  <section class="waitlist">
+    <div class="waitlist__inner">
+      {#if waitDone}
+        <i class="fas fa-circle-check waitlist__tick"></i>
+        <h2 class="waitlist__title">You're on the list.</h2>
+        <p class="waitlist__sub">Thanks for the interest - we'll email you as Aloura gets better.</p>
+      {:else}
+        <p class="eyebrow" style="color:var(--clr-terracotta)">Early access</p>
+        <h2 class="waitlist__title">Aloura is brand new and still improving.</h2>
+        <p class="waitlist__sub">Like the idea? Drop your email and we'll keep you posted as new features land - no spam.</p>
+        <form class="waitlist__form" onsubmit={(e) => { e.preventDefault(); joinWaitlist(); }}>
+          <input
+            class="waitlist__input"
+            type="email"
+            placeholder="you@email.com"
+            bind:value={waitEmail}
+            autocomplete="email"
+          />
+          <button class="waitlist__btn" type="submit" disabled={waitSaving}>
+            {#if waitSaving}Joining…{:else}Keep me posted{/if}
+          </button>
+        </form>
+        {#if waitError}<p class="waitlist__err">{waitError}</p>{/if}
+      {/if}
+    </div>
+  </section>
+
   <!-- ── FOOTER ────────────────────────────────────────────── -->
   <footer class="footer">
     <span class="logo" style="color:rgba(255,255,255,0.9)">Aloura<span style="color:var(--clr-terracotta)">.</span></span>
@@ -255,6 +307,37 @@
   }
   .feature__title { font-family: var(--font-display); font-size: 18px; font-weight: 500; margin-bottom: 8px; color: var(--clr-charcoal); }
   .feature__desc { font-size: 14px; font-weight: 300; line-height: 1.75; color: var(--clr-taupe); }
+
+  /* ── WAITLIST ── */
+  .waitlist { padding: 64px 24px; }
+  .waitlist__inner {
+    max-width: 560px; margin: 0 auto; text-align: center;
+    background: var(--clr-cream); border: 1px solid var(--clr-border);
+    border-radius: 20px; padding: 40px 28px;
+  }
+  .waitlist__title { font-family: var(--font-display); font-size: clamp(22px, 4vw, 28px); font-weight: 500; color: var(--clr-charcoal); line-height: 1.2; margin: 4px 0 8px; }
+  .waitlist__sub { font-size: 14px; font-weight: 300; color: var(--clr-taupe); line-height: 1.6; margin: 0 auto 22px; max-width: 420px; }
+  .waitlist__form { display: flex; gap: 10px; max-width: 440px; margin: 0 auto; }
+  .waitlist__input {
+    flex: 1; height: 48px; padding: 0 16px; border: 1.5px solid var(--clr-border);
+    border-radius: 999px; font-family: var(--font-body); font-size: 14px;
+    color: var(--clr-charcoal); background: #fff; outline: none; transition: border-color 0.15s; min-width: 0;
+  }
+  .waitlist__input:focus { border-color: var(--clr-terracotta); }
+  .waitlist__btn {
+    flex-shrink: 0; height: 48px; padding: 0 22px; border: none; border-radius: 999px;
+    background: var(--clr-charcoal); color: #fff; font-family: var(--font-body);
+    font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s;
+  }
+  .waitlist__btn:hover:not(:disabled) { background: var(--clr-brown); }
+  .waitlist__btn:disabled { opacity: 0.6; cursor: wait; }
+  .waitlist__err { font-size: 13px; color: #a33020; margin-top: 12px; }
+  .waitlist__tick { font-size: 40px; color: var(--clr-terracotta); margin-bottom: 12px; }
+
+  @media (max-width: 480px) {
+    .waitlist__form { flex-direction: column; }
+    .waitlist__btn { width: 100%; }
+  }
 
   /* ── FOOTER ── */
   .footer { background: var(--clr-charcoal); padding: 40px 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }

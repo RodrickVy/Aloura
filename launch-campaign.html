@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aloura — MVP Launch Experiment & Marketing Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --off-white:#FDFBF8; --cream:#FAF7F2; --beige:#F5EFE6; --light-taupe:#D4C9BE;
+    --taupe:#9E8C7E; --brown:#6B4F3A; --terracotta:#C4906A; --charcoal:#2C2C2C;
+    --border:rgba(158,140,126,0.22);
+    --display:'Playfair Display',Georgia,serif; --body:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--body); color:var(--charcoal);
+    background:var(--off-white); line-height:1.65; font-weight:300;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px; margin:0 auto; padding:0 22px 100px;}
+
+  /* Header */
+  header.hero{
+    background:var(--charcoal); color:var(--off-white);
+    padding:54px 22px 46px; text-align:center; margin-bottom:40px;
+  }
+  .logo{font-family:var(--display); font-size:34px; font-weight:600; letter-spacing:-0.5px;}
+  .logo span{color:var(--terracotta);}
+  .hero h1{font-family:var(--display); font-weight:500; font-size:29px; margin:18px 0 6px; line-height:1.18;}
+  .hero p.status{color:rgba(253,251,248,0.72); font-size:14px; margin:0 auto; max-width:600px;}
+  .byline{margin-top:22px; font-size:12.5px; color:rgba(253,251,248,0.55);}
+  .byline strong{color:var(--off-white); font-weight:500;}
+
+  .eyebrow{
+    font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--terracotta); margin-bottom:6px;
+  }
+  h2{font-family:var(--display); font-weight:500; font-size:24px; letter-spacing:-0.3px; margin:0 0 8px;}
+  h3{font-family:var(--display); font-weight:500; font-size:18px; margin:26px 0 4px; color:var(--brown);}
+  p{margin:0 0 14px; font-size:15px;}
+  strong{font-weight:600;}
+  em{font-style:italic;}
+  a{color:var(--brown); font-weight:500;}
+
+  section.block{border-top:1px solid var(--border); padding-top:34px; margin-top:40px;}
+
+  ul{margin:0 0 16px; padding-left:20px;}
+  ol{margin:0 0 16px; padding-left:20px;}
+  li{margin-bottom:8px; font-size:15px;}
+
+  /* TL;DR + lead cards */
+  .card{
+    background:var(--cream); border:1px solid var(--border); border-radius:16px;
+    padding:22px 24px; margin-bottom:10px;
+  }
+  .card--accent{border-left:4px solid var(--terracotta);}
+
+  .callout{
+    background:rgba(196,144,106,0.10); border:1px solid rgba(196,144,106,0.3);
+    border-radius:12px; padding:15px 18px; margin:18px 0; font-size:14.5px;
+  }
+  .callout strong{color:var(--brown);}
+
+  .goal{
+    display:inline-block; background:var(--charcoal); color:var(--off-white);
+    border-radius:999px; padding:6px 16px; font-size:14px; font-weight:500; margin:6px 0;
+  }
+
+  /* Tables */
+  table{width:100%; border-collapse:collapse; margin:8px 0 18px; font-size:14px;}
+  th,td{text-align:left; padding:11px 12px; border-bottom:1px solid var(--border); vertical-align:top;}
+  th{font-weight:600; color:var(--brown); background:var(--beige); font-size:12.5px; text-transform:uppercase; letter-spacing:0.04em;}
+  tr:last-child td{border-bottom:none;}
+  .total-row td{background:var(--beige); font-weight:600;}
+
+  .note{font-size:13px; color:var(--taupe); font-style:italic;}
+
+  footer{
+    margin-top:56px; padding-top:24px; border-top:1px solid var(--border);
+    text-align:center; color:var(--taupe); font-size:13px;
+  }
+  footer .logo{font-size:20px; color:var(--charcoal);}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="logo">Aloura<span>.</span></div>
+  <h1>MVP Launch Experiment &amp; Marketing Plan</h1>
+  <p class="status"><strong>Prepared:</strong> June 2026 &nbsp;·&nbsp; <strong>Status:</strong> Build + testing finishing by <strong>12:00&nbsp;AM (midnight), Sunday June&nbsp;7th</strong>. Posting starts <strong>Thursday at the latest.</strong></p>
+  <div class="byline">Prepared by <strong>Rodrick Vyizigiro</strong>, Co-founder, Aloura &nbsp;·&nbsp; Stakeholder: <strong>Jerome Hsieh</strong></div>
+</header>
+
+<div class="wrap">
+
+  <!-- TL;DR -->
+  <div class="card card--accent">
+    <div class="eyebrow">Read this first</div>
+    <h2>TL;DR</h2>
+    <ul>
+      <li><strong>What:</strong> A 2-week paid experiment to put Aloura in front of real people and learn fast.</li>
+      <li><strong>Goal:</strong> <strong>100 sign-ups</strong> and <strong>at least 50 pieces of feedback</strong> (via the in-app form).</li>
+      <li><strong>How:</strong> 3 social posts/day for 14 days across <strong>Instagram (main), YouTube, Pinterest</strong>, all pointing to live Aloura moodboards through a <strong>Linktree</strong> in the bio. Plus optional cold outreach.</li>
+      <li><strong>3 campaigns in parallel:</strong> (1) World Cup Jerseys, (2) Trending Outfit Recreations, (3) Share Your Outfit Ideas — plus an influencer/creator vector.</li>
+      <li><strong>People:</strong> Hire 1 part-time social poster (lower-cost region) for <strong>~$250</strong>; founder handles strategy, direction, monitoring, outreach.</li>
+      <li><strong>Estimated total experiment spend:</strong> <strong>~US $415–490</strong> (domain + AI credits + search API + poster).</li>
+      <li><strong>Accounts set up:</strong> Domain <strong>joinaloura.com</strong>, email <strong>shopaloura.info@gmail.com</strong>, Instagram <strong>@_joinaloura_</strong>.</li>
+      <li><strong>All receipts are referenced below and can be provided on request</strong> (attach where available).</li>
+    </ul>
+  </div>
+
+  <!-- 1 -->
+  <section class="block">
+    <div class="eyebrow">Section 1</div>
+    <h2>Why this experiment</h2>
+    <p>We have a working MVP. The product already does the hard part — search outfits, compare prices across 12+ stores, upload a look and shop it, trending outfits, and color/style matching. The unknown now is <strong>demand</strong>: will people sign up, use it, and tell us it's useful?</p>
+    <p>This experiment answers that cheaply, on a fixed budget and a fixed timeline, before spending more on the product or on ads.</p>
+    <p><span class="goal">Success = 100 sign-ups + 50 feedback submissions in 2 weeks</span></p>
+  </section>
+
+  <!-- 2 -->
+  <section class="block">
+    <div class="eyebrow">Section 2</div>
+    <h2>The assets we already have</h2>
+    <table>
+      <tr><th>Asset</th><th>Detail</th></tr>
+      <tr><td><strong>Domain</strong></td><td><strong>joinaloura.com</strong> (.com, 1-year registration)</td></tr>
+      <tr><td><strong>Email</strong></td><td>shopaloura.info@gmail.com</td></tr>
+      <tr><td><strong>Instagram</strong></td><td>@_joinaloura_</td></tr>
+      <tr><td><strong>Bio link tool</strong></td><td>Linktree (free plan) — routes followers to the right moodboards</td></tr>
+      <tr><td><strong>Live product</strong></td><td>Public, shareable outfit / product / comparison / trending pages with proper link previews</td></tr>
+    </table>
+    <p><strong>Why the domain is "joinaloura.com":</strong> the plain ".com" was the priority (most trusted, easiest to remember). Cleaner options were taken or expensive. We deliberately copied the pattern of <strong>Honey</strong> (joinhoney.com) — a well-known shopping/savings brand — because "join…" reads as an invitation and the price-comparison angle is similar.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="block">
+    <div class="eyebrow">Section 3</div>
+    <h2>The campaigns</h2>
+    <p>All run at the same time and share the same goal: drive a click → a moodboard → a sign-up → feedback. Every post ends with a clear call to action and the Linktree link.</p>
+
+    <h3>Campaign 1 — World Cup Jerseys</h3>
+    <ul>
+      <li><strong>Idea:</strong> One post per national team. Show the team's kit moodboard (jersey + shorts) and link to it.</li>
+      <li><strong>Why it works:</strong> The World Cup is a massive, timely, searched-for topic. People are emotionally attached to their team and actively looking for kits.</li>
+      <li><strong>Execution:</strong> Pre-generate a moodboard for each team. Each post = team colors/kit visual + "Shop [Country]'s 2026 kit → link in bio." Linktree has a tidy list of teams.</li>
+      <li><strong>Volume:</strong> This alone can carry many of the 42 posts (there are 48 teams).</li>
+    </ul>
+
+    <h3>Campaign 2 — Trending Outfit Recreations</h3>
+    <ul>
+      <li><strong>Idea:</strong> Showcase a currently-trending look (streetwear, old money, date night, etc.), then link to a moodboard that lets people <strong>recreate and shop</strong> it.</li>
+      <li><strong>Why it works:</strong> "Recreate this outfit / where do I buy this look" is one of the most shared fashion formats online.</li>
+      <li><strong>Execution:</strong> Short Reels/Shorts: "This look is everywhere right now — here's how to get it for less," ending on the moodboard link. Reuse on YouTube Shorts and Pinterest.</li>
+    </ul>
+
+    <h3>Campaign 3 — Share Your Outfit Ideas</h3>
+    <ul>
+      <li><strong>Idea:</strong> Community-driven. Invite people to recreate a look, or post "outfit idea → shoppable board" content that encourages sharing and saving.</li>
+      <li><strong>Why it works:</strong> Turns viewers into participants and creates word-of-mouth. Every shared Aloura link is a free referral with a proper preview image.</li>
+      <li><strong>Execution:</strong> Lighter, faster posts. Polls, "rate this fit," "we built a board for this — would you wear it?"</li>
+    </ul>
+
+    <h3>Vector 4 — Influencer / creator partnerships</h3>
+    <ul>
+      <li><strong>Idea:</strong> Reach out to fashion/styling creators. Offer to build them a <strong>moodboard for their outfit videos</strong> so their followers can actually <strong>buy the items they talk about</strong> — one clean link instead of "everything's in my bio."</li>
+      <li><strong>The future hook:</strong> soon they'll get <strong>their own creator page</strong> to add products and earn through <strong>commission links</strong> — so they benefit by getting in early on a growing platform.</li>
+      <li><strong>Why it works:</strong> Creators constantly get "where's that from?" Aloura answers it. Their audience is exactly our target shopper. One creator post can outperform dozens of ours.</li>
+      <li><strong>Execution:</strong> Personalized DMs/emails (see the separate <strong>Outreach Scripts</strong> document), starting with smaller/mid creators. We build the board for them — zero effort on their side.</li>
+    </ul>
+  </section>
+
+  <!-- 4 -->
+  <section class="block">
+    <div class="eyebrow">Section 4</div>
+    <h2>Posting plan</h2>
+    <ul>
+      <li><strong>Cadence:</strong> <strong>3 posts/day × 14 days = 42 posts.</strong></li>
+      <li><strong>Split (guideline):</strong> ~50% World Cup, ~30% Trending Recreations, ~20% Share Ideas — adjust based on traction.</li>
+      <li><strong>Channels:</strong> Instagram (primary: Reels + carousels), YouTube Shorts (repurpose), Pinterest (pin the boards for long-tail search traffic).</li>
+      <li><strong>Every post:</strong> strong visual + 1 sentence hook + "link in bio" → Linktree → moodboard.</li>
+      <li><strong>Tracking:</strong> Watch the in-app analytics (sign-ups, onboarded, searches, comparisons, trends, shares, buy clicks) daily to see which campaign converts.</li>
+    </ul>
+  </section>
+
+  <!-- 5 -->
+  <section class="block">
+    <div class="eyebrow">Section 5</div>
+    <h2>People &amp; who does what</h2>
+    <table>
+      <tr><th>Role</th><th>Who</th><th>Notes</th></tr>
+      <tr><td>Strategy, content direction, monitoring, feedback follow-up</td><td><strong>Founder</strong></td><td>~30–60 min/day</td></tr>
+      <tr><td>Daily posting, scheduling, basic engagement</td><td><strong>Hired part-time poster</strong></td><td>Lower-cost region, ~$250 for the run</td></tr>
+      <tr><td>Cold outreach (optional)</td><td>Founder / poster</td><td>See "Things to decide on"</td></tr>
+    </table>
+  </section>
+
+  <!-- 6 -->
+  <section class="block">
+    <div class="eyebrow">Section 6</div>
+    <h2>Cost analysis</h2>
+
+    <h3>6a. Already spent — building the product</h3>
+    <table>
+      <tr><th>Item</th><th>Amount</th><th>Date</th><th>Receipt</th></tr>
+      <tr><td>Domain — joinaloura.com (Order #4105721835, 1 yr)</td><td><strong>C$19.17</strong> (C$18.26 + C$0.91 tax)</td><td>Jun 5 2026</td><td>Attached / on request</td></tr>
+      <tr><td>Anthropic (Claude) — extra usage credits</td><td>C$11.20</td><td>Jun 6 2026</td><td>Attached / on request</td></tr>
+      <tr><td>Anthropic (Claude) — extra usage credits</td><td>C$22.40</td><td>May 29 2026</td><td>Attached / on request</td></tr>
+      <tr><td>Anthropic (Claude) — extra usage credits</td><td>C$5.60</td><td>May 27 2026</td><td>Attached / on request</td></tr>
+      <tr><td>Anthropic (Claude) — extra usage credits</td><td>C$31.36</td><td>May 23 2026</td><td>Attached / on request</td></tr>
+      <tr class="total-row"><td>Anthropic extra credits subtotal</td><td>C$70.56</td><td></td><td></td></tr>
+      <tr><td>Claude monthly subscription (build month)</td><td><em>(separate monthly fee)</em></td><td>—</td><td>On request</td></tr>
+      <tr><td>SerpApi — Starter plan (1,000 searches/mo). Receipt #2839-8338, Invoice QEGRW0YS-0001, Visa •5135</td><td><strong>US $25.00</strong></td><td>Jun 4 2026</td><td>Attached / on request</td></tr>
+    </table>
+    <div class="callout"><strong>Note on the Claude credits:</strong> the work was done on a paid monthly Claude subscription, but the subscription has a usage limit. Because of the project's tight timeline, we hit that limit and had to <strong>buy additional usage credits</strong> to keep building without delay. That's what the four Anthropic receipts above are.</div>
+
+    <h3>6b. The experiment — what we'll spend to run it (≈ 1 month of services)</h3>
+    <table>
+      <tr><th>Item</th><th>Plan / detail</th><th>Cost</th></tr>
+      <tr><td><strong>Social media poster</strong></td><td>Part-time, lower-cost region, full 2-week run</td><td><strong>US $250</strong></td></tr>
+      <tr><td><strong>SerpAPI</strong> (product/price search)</td><td>Currently on the <strong>$25 Starter plan (1,000 searches)</strong> — already paid this month. If campaign traffic exceeds 1,000 searches, upgrade to <strong>Developer (5,000 searches) at $75/mo</strong>.</td><td><strong>$25 paid → up to +$50 to upgrade</strong></td></tr>
+      <tr><td><strong>Claude (Anthropic) credits</strong></td><td>AI for outfit generation, trend synthesis, image analysis — pay-as-you-go buffer for campaign traffic</td><td><strong>~US $50–100</strong> (budget $75)</td></tr>
+      <tr><td><strong>Linktree</strong></td><td>Free plan</td><td>$0</td></tr>
+      <tr><td><strong>Email (Gmail)</strong></td><td>Free</td><td>$0</td></tr>
+      <tr><td><strong>Instagram / YouTube / Pinterest</strong></td><td>Free (organic)</td><td>$0</td></tr>
+      <tr><td><strong>Domain</strong></td><td>Already paid (see 6a)</td><td>—</td></tr>
+    </table>
+    <p class="note"><strong>SerpAPI plan choice:</strong> the $25 plan (1,000 searches) is likely too tight once we batch-generate the World Cup + trending boards and real users start searching/comparing. The $75 Developer plan (5,000 searches) is the safe choice for the launch month. We can downgrade after.</p>
+
+    <h3>6c. Estimated experiment total</h3>
+    <table>
+      <tr><th>Item</th><th>USD (approx)</th></tr>
+      <tr><td>Poster</td><td>$250</td></tr>
+      <tr><td>SerpAPI (Starter $25 already paid; +$50 only if we must upgrade to Developer)</td><td>$25–75</td></tr>
+      <tr><td>Claude credits (campaign buffer)</td><td>$75</td></tr>
+      <tr class="total-row"><td>Experiment subtotal</td><td>≈ $350–400</td></tr>
+      <tr><td>Domain (already paid, ~C$19)</td><td>≈ $14</td></tr>
+      <tr><td>Build-phase Claude extra credits (already paid, C$70.56)</td><td>≈ $52</td></tr>
+      <tr class="total-row"><td>Grand total incl. already-spent build costs</td><td>≈ $415–490</td></tr>
+    </table>
+    <p class="note">Currency note: domain and build credits were billed in CAD; services above are USD. Conversions are approximate.</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="block">
+    <div class="eyebrow">Section 7</div>
+    <h2>Timeline</h2>
+    <table>
+      <tr><th>When</th><th>Milestone</th></tr>
+      <tr><td><strong>By 12:00 AM Sun June 7</strong></td><td>Rigorous testing + optimizations complete (this was necessary and is being finished now).</td></tr>
+      <tr><td><strong>June 7–10</strong></td><td>Set up Linktree, pre-generate World Cup + trending boards, prep first batch of content, <strong>find and onboard the social media poster</strong>.</td></tr>
+      <tr><td><strong>By Thursday (latest)</strong></td><td><strong>Start posting.</strong></td></tr>
+      <tr><td><strong>2 weeks from first post</strong></td><td>Experiment ends. Review metrics vs. goal (100 sign-ups / 50 feedback). Decide next move.</td></tr>
+    </table>
+  </section>
+
+  <!-- 8 -->
+  <section class="block">
+    <div class="eyebrow">Section 8</div>
+    <h2>Next steps</h2>
+    <ol>
+      <li><strong>Finish rigorous testing &amp; optimization</strong> — done by midnight Sun June 7. <em>(Necessary before driving any traffic — bad first impressions waste the spend.)</em></li>
+      <li><strong>Pre-generate the boards</strong> — all World Cup team kits + trending category boards.</li>
+      <li><strong>Set up Linktree</strong> and organize links by team / trend.</li>
+      <li><strong>Hire the social media poster</strong> (lower-cost region, ~$250).</li>
+      <li><strong>Prepare the first week of content</strong> (visuals + captions + CTAs).</li>
+      <li><strong>Begin posting by Thursday</strong>, 3×/day.</li>
+      <li><strong>Monitor analytics daily</strong> and shift effort toward whatever converts.</li>
+      <li><strong>Cold outreach</strong> (optional — see below).</li>
+      <li><strong>Chase feedback</strong> — actively nudge sign-ups toward the feedback form to hit the 50 target.</li>
+    </ol>
+
+    <h3>Other promotion routes (beyond social posting)</h3>
+    <ul>
+      <li><strong>Influencer / creator partnerships</strong> — see Vector 4 and the separate Outreach Scripts document.</li>
+      <li><strong>Friends &amp; personal network</strong> — direct asks to try the app and leave feedback. Fastest path to the first sign-ups and the 50 feedback responses.</li>
+      <li><strong>Cold outreach / DMs</strong> — to relevant communities and strangers who fit the target.</li>
+      <li><strong>Launch Academy</strong> — apply to the startup accelerator/community for mentorship, visibility, and a built-in audience of early adopters.</li>
+      <li><strong>Launch builder demo event — June 25th</strong> — if we apply and get accepted to <strong>demo</strong>, this is a chance to present Aloura live to an audience and press/investors. Worth applying given the timing lines up with our experiment.</li>
+    </ul>
+  </section>
+
+  <!-- 9 -->
+  <section class="block">
+    <div class="eyebrow">Section 9</div>
+    <h2>Things to decide on</h2>
+    <p>These are open choices — we should agree before launch:</p>
+    <ol>
+      <li><strong>Cold calling / cold outreach — yes or no?</strong> Posting is the baseline. Do we also do direct outreach (DMs, communities, emails)? It can boost sign-ups but takes time.</li>
+      <li><strong>Do we build a social engagement presence</strong>, or purely post-and-link? (Replying to comments, following, community-building drives more growth but is more work — does the hired poster do this, and how much?)</li>
+      <li><strong>SerpAPI plan:</strong> start on $75 Developer (recommended) or risk the $25 plan and upgrade if we run out?</li>
+      <li><strong>Claude budget cap</strong> for the campaign — set a hard monthly ceiling so a traffic spike can't run up an unexpected bill.</li>
+      <li><strong>Poster scope &amp; pay structure</strong> — flat $250 for the run, or hourly? Posting only vs. posting + engagement?</li>
+      <li><strong>Paid ads — not now or later?</strong> Recommendation: stay organic for this experiment; only consider paid after we see the funnel convert.</li>
+      <li><strong>Channel priority</strong> — all of Instagram/YouTube/Pinterest, or focus on Instagram first?</li>
+    </ol>
+  </section>
+
+  <!-- 10 -->
+  <section class="block">
+    <div class="eyebrow">Section 10</div>
+    <h2>Notes</h2>
+    <ul>
+      <li>All receipts (domain + Anthropic credits + SerpApi) are referenced above and <strong>can be provided on request</strong> if not already attached.</li>
+      <li>This is an <strong>experiment, not a full launch</strong> — the point is to learn whether people want this, cheaply, before bigger investment.</li>
+      <li>Keep an eye on <strong>cost-per-action</strong>: every search and comparison costs real money (SerpAPI + Claude). The budget caps above protect us.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <div class="logo">Aloura<span style="color:var(--terracotta)">.</span></div>
+    <p>Prepared by Rodrick Vyizigiro, Co-founder · Stakeholder: Jerome Hsieh<br/>
+    joinaloura.com · @_joinaloura_ · shopaloura.info@gmail.com</p>
+  </footer>
+
+</div>
+</body>
+</html>
