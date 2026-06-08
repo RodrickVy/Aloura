@@ -25,12 +25,13 @@
     submitting = true; error = '';
     try {
       const { error: e } = await supabase.from('feedback').insert({
-        account_id:       accountId,
+        account_id:       accountId,          // null when anonymous - allowed
         most_useful:      mostUseful.trim()       || null,
         frustrations:     frustrations.trim()     || null,
         felt_personalized: feltPersonalized       || null,
         personalized_why: personalizedWhy.trim()  || null,
         wanted_feature:   wantedFeature.trim()    || null,
+        source:           'footer',
       });
       if (e) throw e;
       submitted = true;
