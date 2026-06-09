@@ -3,11 +3,21 @@
   import { invalidateAll, goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import OnboardingSteps from '$lib/OnboardingSteps.svelte';
+  import StyleReportView from '$lib/StyleReportView.svelte';
 
   let { data } = $props();
   const supabase = createSupabaseBrowserClient();
 
   const account = $derived(data.account);
+
+  // Style reports - free during beta, shown once ready.
+  let reports = $state<any[]>(data.styleReports ?? []);
+  const readyReports = $derived(reports.filter(r => r.status === 'ready'));
+
+  // Collapsible report cards (default expanded).
+  let collapsed = $state<Record<string, boolean>>({});
+  const isOpen = (id: string) => !collapsed[id];
+  const toggleReport = (id: string) => { collapsed = { ...collapsed, [id]: !collapsed[id] }; };
 
   // ── Name (lives on accounts) ──
   let editName = $state(data.account?.name ?? '');
@@ -117,6 +127,35 @@
       </div>
       <button class="acc-signout" onclick={signOut}><i class="fas fa-sign-out-alt"></i> Sign out</button>
     </div>
+
+    <!-- ── STYLE REPORT ── -->
+    {#if readyReports.length}
+      {#each readyReports as r}
+        <div class="acc-card sr-card">
+          <button class="sr-card__head" onclick={() => toggleReport(r.id)} aria-expanded={isOpen(r.id)}>
+            <span class="eyebrow" style="color:var(--clr-terracotta)">Your Style Report · Beta</span>
+            <span class="sr-card__head-right">
+              {#if r.signature_style}<span class="sr-card__sig">★ {r.signature_style}</span>{/if}
+              <i class="fas fa-chevron-{isOpen(r.id) ? 'up' : 'down'} sr-card__chev"></i>
+            </span>
+          </button>
+          {#if isOpen(r.id)}
+            <StyleReportView report={r} />
+            <a href="/feedback" class="sr-card__feedback">Give us feedback on your report</a>
+          {/if}
+        </div>
+      {/each}
+    {:else}
+      <a href="/style-report" class="sr-promo">
+        <div class="sr-promo__icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+        <div class="sr-promo__body">
+          <span class="sr-promo__beta">Beta · still in review</span>
+          <h2 class="sr-promo__title">Create your Style Report</h2>
+          <p class="sr-promo__sub">A full analysis of the colours, frames, accessories and styles that suit <em>you</em> - woven into every recommendation. Built on real styling data, not just AI.</p>
+          <span class="sr-promo__cta">Create yours - free while in beta <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </a>
+    {/if}
 
     {#if !data.profile}
       <!-- NO PROFILE YET -->
@@ -312,4 +351,22 @@
   }
   @keyframes onbFade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes onbUp { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
+  /* Style report promo + cards */
+  .sr-promo { display: flex; gap: 16px; align-items: flex-start; text-decoration: none; background: var(--clr-charcoal); border-radius: 18px; padding: 22px; margin-bottom: var(--space-6); transition: transform 0.15s; }
+  .sr-promo:hover { transform: translateY(-2px); }
+  .sr-promo__icon { width: 46px; height: 46px; border-radius: 12px; background: rgba(196,144,106,0.2); color: var(--clr-terracotta); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .sr-promo__title { font-family: var(--font-display); font-size: 20px; font-weight: 500; color: #fff; margin-bottom: 4px; }
+  .sr-promo__sub { font-size: 13px; font-weight: 300; color: rgba(253,251,248,0.7); line-height: 1.55; margin-bottom: 10px; }
+  .sr-promo__sub em { font-style: italic; color: var(--clr-terracotta); }
+  .sr-promo__cta { font-size: 13px; font-weight: 600; color: var(--clr-terracotta); display: inline-flex; align-items: center; gap: 6px; }
+
+  .sr-promo__beta { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--clr-terracotta); background: rgba(196,144,106,0.2); border-radius: 999px; padding: 4px 10px; margin-bottom: 8px; }
+
+  .sr-card { margin-bottom: var(--space-6); }
+  .sr-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; margin-bottom: var(--space-4); background: none; border: none; cursor: pointer; font-family: var(--font-body); text-align: left; padding: 0; }
+  .sr-card__head-right { display: flex; align-items: center; gap: 10px; }
+  .sr-card__sig { font-size: 12px; font-weight: 600; color: var(--clr-brown); background: var(--clr-beige); border-radius: 999px; padding: 4px 12px; }
+  .sr-card__chev { font-size: 12px; color: var(--clr-taupe); }
+  .sr-card__feedback { display: inline-block; margin-top: var(--space-5); font-size: 13px; font-weight: 500; color: var(--clr-brown); text-decoration: underline; text-underline-offset: 3px; }
+  .sr-card__feedback:hover { color: var(--clr-charcoal); }
 </style>

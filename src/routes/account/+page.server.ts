@@ -28,9 +28,26 @@ export const load: PageServerLoad = async ({ locals }) => {
     .eq('account_id', account!.id)
     .maybeSingle();
 
+  // Style reports + which ones are paid (unlocked).
+  const { data: reports } = await locals.supabase
+    .from('style_report')
+    .select('*')
+    .eq('account_id', account!.id)
+    .order('created_at', { ascending: false });
+
+  const { data: payments } = await locals.supabase
+    .from('style_report_payment')
+    .select('style_report_id')
+    .eq('account_id', account!.id)
+    .eq('status', 'paid');
+
+  const paidSet = new Set((payments ?? []).map(p => p.style_report_id));
+  const styleReports = (reports ?? []).map(r => ({ ...r, paid: paidSet.has(r.id) }));
+
   return {
     account,
     profile,
     authEmail: user.email ?? '',
+    styleReports,
   };
 };
