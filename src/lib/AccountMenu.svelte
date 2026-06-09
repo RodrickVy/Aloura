@@ -52,7 +52,7 @@
             {#if name}<div class="acct__name">{name}</div>{/if}
             <div class="acct__email">{email}</div>
           </div>
-          <a href="/discover" class="acct__item" role="menuitem"><i class="fas fa-compass"></i> Discover</a>
+          <a href="/" class="acct__item" role="menuitem"><i class="fas fa-compass"></i> Discover</a>
           <a href="/account" class="acct__item" role="menuitem"><i class="fas fa-user"></i> My account</a>
           <div class="acct__divider"></div>
           <button class="acct__item acct__item--danger" role="menuitem" onclick={signOut}>

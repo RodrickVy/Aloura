@@ -106,12 +106,19 @@ async function generateOutfitConcept(
   personProfile: string,
   imageDesc: string,
   store: string,
+  gender: string,
+  maxBudget: number | null,
 ): Promise<OutfitConcept> {
   const imageContext = imageDesc
     ? `\nUSER UPLOADED ITEM:\n${imageDesc}\nIncorporate this item or find similar pieces in the outfit.`
     : "";
   const storeContext = store
     ? `\nPREFERRED STORE: ${store} - prefer pieces findable at ${store}.`
+    : "";
+  const genderLabel = gender === "mens" ? "men's" : gender === "womens" ? "women's" : gender === "unisex" ? "unisex" : "";
+  const genderContext = genderLabel ? `\nGENDER: design a ${genderLabel} outfit; every piece must be a ${genderLabel} item.` : "";
+  const budgetContext = maxBudget
+    ? `\nBUDGET: the WHOLE outfit must total UNDER $${maxBudget}. Pick realistically priced pieces so the combined cost stays under $${maxBudget}.`
     : "";
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -136,6 +143,8 @@ PERSON STYLE PROFILE:
 ${personProfile}
 ${imageContext}
 ${storeContext}
+${genderContext}
+${budgetContext}
 
 Return ONLY:
 {
@@ -167,17 +176,29 @@ Return ONLY:
 //  STEP 3 - Google Shopping search for one piece
 // ─────────────────────────────────────────────────────────────
 
+const GENDER_TERM: Record<string, string> = { mens: "men's", womens: "women's", unisex: "unisex" };
+
+function parsePrice(raw: unknown): number | null {
+  return typeof raw === "number" ? raw
+    : typeof raw === "string" ? parseFloat(raw.replace(/[^0-9.]/g, "")) || null
+    : null;
+}
+
 async function searchGoogleShopping(
   piece: PieceConcept,
   store: string,
   occasion: string,
+  gender: string,
+  perPieceCap: number | null,
 ): Promise<ShoppingProduct | null> {
+  const genderTerm = GENDER_TERM[gender] ?? "";
   const q = [
+    genderTerm,
     ...piece.keywords.slice(0, 4),
     store ? `site:${store.toLowerCase().replace(/\s+/g, "")}.com OR "${store}"` : "",
   ].filter(Boolean).join(" ");
 
-  const url = `https://serpapi.com/search?engine=google_shopping&q=${encodeURIComponent(q)}&api_key=${SERP_API_KEY}`;
+  const url = `https://serpapi.com/search?engine=google_shopping&q=${encodeURIComponent(q)}&api_key=${SERP_API_KEY}&num=40`;
   console.log(`[shop] Searching: "${q}"`);
 
   const res = await fetch(url);
@@ -187,7 +208,24 @@ async function searchGoogleShopping(
   const results = data.shopping_results ?? [];
   if (!results.length) { console.warn(`[shop] No results for "${q}"`); return null; }
 
-  const product = results.find((r: Record<string, unknown>) => r.thumbnail && r.price) ?? results[0];
+  // Prefer an item with image + price; if a per-piece budget cap is set, prefer
+  // the first relevant result under the cap, else fall back to the cheapest.
+  const withImgPrice = results.filter((r: Record<string, unknown>) => r.thumbnail && (r.extracted_price || r.price));
+  let product: Record<string, unknown> | undefined;
+  if (perPieceCap) {
+    const underCap = withImgPrice.filter((r: Record<string, unknown>) => {
+      const p = parsePrice(r.extracted_price ?? r.price);
+      return p != null && p <= perPieceCap;
+    });
+    if (underCap.length) {
+      product = underCap[0];
+    } else if (withImgPrice.length) {
+      // cheapest available if nothing fits the cap
+      product = [...withImgPrice].sort((a, b) =>
+        (parsePrice(a.extracted_price ?? a.price) ?? 1e9) - (parsePrice(b.extracted_price ?? b.price) ?? 1e9))[0];
+    }
+  }
+  product = product ?? withImgPrice[0] ?? results[0];
 
   const priceRaw = product.extracted_price ?? product.price;
   const price    = typeof priceRaw === "number" ? priceRaw
@@ -328,15 +366,19 @@ piece_slugs must have exactly ${piecesContext.length} entries in order.`;
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   try {
-    const { account_id, goal, store = "" } = await req.json() as {
+    const { account_id, goal, store = "", gender = "", max_budget = null } = await req.json() as {
       account_id:  string;
       goal:        string;
       store?:      string;
+      gender?:     string;
+      max_budget?: number | null;
     };
     if (!account_id) throw new Error("account_id required");
     if (!goal)       throw new Error("goal required");
 
-    console.log(`[board_gen] account=${account_id} goal="${goal}" store="${store}"`);
+    // A very large budget is the open-ended "+" tier = no real cap.
+    const budget = (max_budget && max_budget <= 5000) ? max_budget : null;
+    console.log(`[board_gen] account=${account_id} goal="${goal}" store="${store}" gender="${gender}" budget=${budget}`);
 
     const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
@@ -373,14 +415,18 @@ Deno.serve(async (req: Request) => {
 
     // ── Generate outfit concept ────────────────────────────────
     console.log("[board_gen] Generating outfit concept…");
-    const concept = await generateOutfitConcept(goal, personProfile, "", store);
+    const concept = await generateOutfitConcept(goal, personProfile, "", store, gender, budget);
     console.log(`[board_gen] Concept: "${concept.title}" - ${concept.pieces.length} pieces`);
+
+    // Per-piece budget cap = total budget / number of pieces (keeps the whole outfit under budget).
+    const pieceCount  = Math.max(1, Math.min(5, concept.pieces.length));
+    const perPieceCap = budget ? budget / pieceCount : null;
 
     // ── Search Google Shopping ─────────────────────────────────
     console.log("[board_gen] Searching Google Shopping…");
     const products: ShoppingProduct[] = [];
     for (const piece of concept.pieces.slice(0, 5)) {
-      const product = await searchGoogleShopping(piece, store, concept.occasion);
+      const product = await searchGoogleShopping(piece, store, concept.occasion, gender, perPieceCap);
       products.push(product ?? {
         name:        piece.name,
         price:       null,

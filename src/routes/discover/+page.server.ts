@@ -1,18 +1,8 @@
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-  const { user } = await locals.safeGetSession();
-
-  // Logged-out visitors are allowed - they see the public catalogue only.
-  if (!user) {
-    return { accountId: null, isLoggedIn: false };
-  }
-
-  const { data: account } = await locals.supabase
-    .from('accounts')
-    .select('id')
-    .eq('auth_id', user.id)
-    .maybeSingle();
-
-  return { accountId: account?.id ?? null, isLoggedIn: true };
+// Discover is now the home page (root "/"). Redirect any old /discover links
+// (bookmarks, shared links, returnTo) to "/", preserving query params.
+export const load: PageServerLoad = async ({ url }) => {
+  throw redirect(308, `/${url.search}`);
 };

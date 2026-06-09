@@ -34,7 +34,7 @@
 
 <div class="cat-page">
   <div class="cat-header">
-    <a href="/discover" class="back-link"><i class="fas fa-arrow-left"></i> Discover</a>
+    <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Discover</a>
     <div class="cat-title-wrap">
       {#if data.image}<img src={data.image} alt="" class="cat-img" />{/if}
       <h1 class="cat-title">{displayCategory(data.category)}</h1>

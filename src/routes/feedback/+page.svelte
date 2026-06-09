@@ -61,7 +61,7 @@
         <i class="fas fa-heart"></i>
         <h1>Thank you!</h1>
         <p>Your feedback genuinely helps us build a better Aloura.</p>
-        <a href="/discover" class="btn btn--primary">Explore Aloura</a>
+        <a href="/" class="btn btn--primary">Explore Aloura</a>
       </div>
     {:else}
       <p class="eyebrow">We'd love your honest take</p>

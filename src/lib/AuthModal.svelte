@@ -42,7 +42,7 @@
 
   function finishRedirect() {
     if (returnTo) { window.location.href = returnTo; return; }
-    goto('/discover');
+    goto('/');
   }
 
   // Make sure the account has a (possibly empty) style_report so generation works.

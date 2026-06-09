@@ -43,7 +43,7 @@
       const { error: e } = await supabase.auth.updateUser({ password });
       if (e) throw e;
       pageState = 'success';
-      setTimeout(() => goto('/discover'), 2500);
+      setTimeout(() => goto('/'), 2500);
     } catch (e: any) {
       error = e.message ?? 'Something went wrong. Please try again.';
     } finally {
