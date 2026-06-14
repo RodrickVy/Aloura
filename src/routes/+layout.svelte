@@ -5,9 +5,13 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import FeedbackForm from '$lib/FeedbackForm.svelte';
+  import AuthModal from '$lib/AuthModal.svelte';
 
   let { children, data } = $props();
   const supabase = createSupabaseBrowserClient();
+
+  // Global auth modal (opened by the nav "Get started" button).
+  let authOpen = $state(false);
 
   onMount(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
@@ -58,13 +62,17 @@
             <i class="fas fa-sign-out-alt"></i><span class="nav__txt">Sign out</span>
           </button>
         {:else}
-          <a href="/" class="nav__link nav__link--cta" title="Get started">
+          <button class="nav__link nav__link--cta" title="Get started" onclick={() => authOpen = true}>
             <i class="fas fa-arrow-right-to-bracket"></i><span class="nav__txt">Get started</span>
-          </a>
+          </button>
         {/if}
       </div>
     </div>
   </nav>
+
+  {#if !data.user}
+    <AuthModal bind:open={authOpen} mode="signup" />
+  {/if}
 {/if}
 
 {@render children()}

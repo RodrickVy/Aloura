@@ -11,7 +11,7 @@
   const supabase = createSupabaseBrowserClient();
 
   // Pieces array - grows as user adds comparisons
-  let columns = $state<(Piece & { searching?: boolean; same_store?: boolean; price_verdict?: string; price_delta?: number | null })[]>(data.pieces);
+  let columns = $state<(Piece & { searching?: boolean; same_store?: boolean; price_verdict?: string; price_delta?: number | null; _brandId?: string })[]>(data.pieces);
   let addingBrand = $state<string | null>(null);   // chip currently loading
   let addError   = $state('');
 
@@ -21,9 +21,7 @@
 
   async function onBrandSelect(brand: { id: string; name: string }) {
     // Already showing this brand? Deselect (remove that column)
-    const existingIdx = columns.findIndex(
-      c => c.store?.toLowerCase() === brand.name.toLowerCase() && c !== basePiece
-    );
+    const existingIdx = columns.findIndex(c => c._brandId === brand.id && c !== basePiece);
     if (existingIdx !== -1) {
       columns = columns.filter((_, i) => i !== existingIdx);
       updateUrl(columns);
@@ -33,8 +31,8 @@
     addingBrand = brand.id;
     addError = '';
 
-    // Add a loading placeholder column
-    const placeholder = { ...basePiece, id: 'loading-' + brand.id, store: brand.name, searching: true };
+    // Add a loading placeholder column (tracks the requested brand).
+    const placeholder = { ...basePiece, id: 'loading-' + brand.id, store: brand.name, searching: true, _brandId: brand.id };
     columns = [...columns, placeholder];
 
     try {
@@ -55,7 +53,7 @@
       // Replace placeholder with real result
       columns = columns.map(c =>
         c.id === placeholder.id
-          ? { ...basePiece, ...found, id: found.id ?? placeholder.id, slug: found.slug, searching: false }
+          ? { ...basePiece, ...found, id: found.id ?? placeholder.id, slug: found.slug, searching: false, _brandId: brand.id }
           : c
       );
       track(supabase, null, 'comparisons');
@@ -75,9 +73,10 @@
     }
   }
 
-  // Is a given brand already in the columns?
-  function activeChip(brandName: string) {
-    return columns.some(c => c.store?.toLowerCase() === brandName.toLowerCase()) ? 'active' : null;
+  // Is a given brand already being compared? (matches the requested brand,
+  // not the result's store - the result may fall back to another retailer.)
+  function activeChip(brandId: string) {
+    return columns.some(c => c._brandId === brandId);
   }
 
   const formatPrice = (p: number | null) => p ? `$${p.toFixed(2)}` : '-';
@@ -118,14 +117,14 @@
         {#each [{id:'amazon',name:'Amazon',logo:'/assets/logos/amazon.png'},{id:'asos',name:'ASOS',logo:'/assets/logos/asos.png'},{id:'zara',name:'Zara',logo:'/assets/logos/zara.png'},{id:'hm',name:'H&M',logo:'/assets/logos/hm.png'},{id:'uniqlo',name:'Uniqlo',logo:'/assets/logos/uniqlo.png'},{id:'aritzia',name:'Aritzia',logo:'/assets/logos/aritzia.png'},{id:'nike',name:'Nike',logo:'/assets/logos/nike.png'},{id:'adidas',name:'Adidas',logo:'/assets/logos/adidas.png'},{id:'lululemon',name:'Lululemon',logo:'/assets/logos/lululemon.png'},{id:'shein',name:'SHEIN',logo:'/assets/logos/shein.png'},{id:'abercrombie',name:'Abercrombie',logo:'/assets/logos/abercrombie.png'},{id:'nordstrom',name:'Nordstrom',logo:'/assets/logos/nordstrom.png'},{id:'levis',name:"Levi's",logo:'/assets/logos/levis.png'},{id:'gap',name:'Gap',logo:'/assets/logos/gap.png'}] as brand}
           <button
             class="chip"
-            class:active={!!activeChip(brand.name)}
+            class:active={activeChip(brand.id)}
             disabled={addingBrand === brand.id}
             onclick={() => onBrandSelect(brand)}
             title={brand.name}
           >
             <img src={brand.logo} alt={brand.name} class="chip__logo" />
             <span class="chip__name">{brand.name}</span>
-            {#if activeChip(brand.name) && brand.name.toLowerCase() !== basePiece.store?.toLowerCase()}
+            {#if activeChip(brand.id)}
               <span class="chip__remove">×</span>
             {/if}
           </button>

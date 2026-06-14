@@ -102,12 +102,6 @@
   let uploadedType = $state<string | null>(null);
   let uploadedName = $state<string | null>(null);
 
-  // Only show the store filter chips once the user actually engages with search
-  // (typed a query, attached an image, or is viewing/awaiting results).
-  const showStoreChips = $derived(
-    goal.trim().length > 0 || showingProducts || loading || !!uploadedB64
-  );
-
   onMount(async () => {
     if (accountId) {
       const { data: rep } = await supabase
@@ -212,15 +206,16 @@
   const pieceImgs = (b: MoodBoard) => (b.pieces ?? []).filter(p => p.image_url).slice(0, 4).map(p => p.image_url);
   const hasAnyBoards = $derived(myBoards.length > 0 || categoryGroups.length > 0);
 
-  // FIFA section + one-board-per-sport tiles
-  const fifaGroup  = $derived(categoryGroups.find(g => g.category.toLowerCase() === 'fifa 2026') ?? null);
-  const sportTiles = $derived(
+  // Trending row (lead), category tiles (browse), FIFA section (lower).
+  const trendingGroup = $derived(categoryGroups.find(g => g.category.toLowerCase() === 'trending') ?? null);
+  const fifaGroup     = $derived(categoryGroups.find(g => g.category.toLowerCase() === 'fifa 2026') ?? null);
+  const categoryTiles = $derived(
     categoryGroups
-      .filter(g => g.category.toLowerCase() !== 'fifa 2026')
+      .filter(g => !['fifa 2026', 'trending'].includes(g.category.toLowerCase()))
       .map(g => ({ category: g.category, image: g.image, board: g.boards[0], count: g.boards.length }))
       .filter(t => t.board)
   );
-  let sportsExpanded = $state(false);
+  let tilesExpanded = $state(false);
 
   // Build the URL that captures the current search (internal state, not shared)
   function buildSearchUrl(): string {
@@ -512,28 +507,14 @@
         />
         <FitCheck {accountId} />
         <a href="/trending" class="disc-trending"><i class="fas fa-fire"></i> Trending</a>
-        <div class="disc-account"><AccountMenu /></div>
-      </div>
-
-      <!-- Brand filter chips - only once the user starts searching -->
-      {#if showStoreChips}
-        <div class="brands-scroll">
-          {#each BRANDS as brand}
-            <button
-              class="brand-chip"
-              class:active={selectedBrands.has(brand.id)}
-              onclick={() => {
-                const next = new Set(selectedBrands);
-                next.has(brand.id) ? next.delete(brand.id) : next.add(brand.id);
-                selectedBrands = next;
-              }}
-            >
-              <img src={brand.logo} alt={brand.name} class="brand-chip__logo" />
-              <span class="brand-chip__name">{brand.name}</span>
-            </button>
-          {/each}
+        <div class="disc-account">
+          {#if isLoggedIn}
+            <AccountMenu />
+          {:else}
+            <button class="disc-getstarted" onclick={() => { authPrompt = ''; authReturnTo = ''; authOpen = true; }}>Get started</button>
+          {/if}
         </div>
-      {/if}
+      </div>
 
       {#if searchError}
         <p class="search-error"><i class="fas fa-exclamation-circle"></i> {searchError}</p>
@@ -603,39 +584,36 @@
   {:else}
     <div class="rows-wrap">
 
-      <!-- FIFA 2026 - teaser grid (2 rows) + view all -->
-      {#if fifaGroup}
+      <!-- TRENDING - the lead -->
+      {#if trendingGroup}
         <section class="feed-section">
           <div class="feed-section__head">
             <div class="feed-section__title-wrap">
-              {#if fifaGroup.image}<img src={fifaGroup.image} alt="" class="feed-section__img" />{/if}
-              <h2 class="feed-section__title">{displayCategory(fifaGroup.category)}</h2>
+              <h2 class="feed-section__title"><i class="fas fa-fire" style="color:var(--clr-terracotta);font-size:0.85em"></i> Trending now</h2>
             </div>
-            {#if fifaGroup.boards.length > 8}
-              <a class="view-all" href="/discover/{encodeURIComponent(fifaGroup.category)}">View all ({fifaGroup.boards.length})</a>
-            {/if}
+            <a class="view-all" href="/trending">View all</a>
           </div>
           <div class="grid-2row">
-            {#each fifaGroup.boards as board}
+            {#each trendingGroup.boards as board}
               {@render boardCard(board)}
             {/each}
           </div>
         </section>
       {/if}
 
-      <!-- SPORTS - one board per sport -->
-      {#if sportTiles.length}
+      <!-- BROWSE CATEGORIES - tappable tiles -->
+      {#if categoryTiles.length}
         <section class="feed-section">
           <div class="feed-section__head">
-            <h2 class="feed-section__title">Sports</h2>
-            {#if sportTiles.length > 8}
-              <button class="view-all" onclick={() => sportsExpanded = !sportsExpanded}>
-                {sportsExpanded ? 'Show less' : `View all (${sportTiles.length})`}
+            <h2 class="feed-section__title">Browse categories</h2>
+            {#if categoryTiles.length > 8}
+              <button class="view-all" onclick={() => tilesExpanded = !tilesExpanded}>
+                {tilesExpanded ? 'Show less' : `View all (${categoryTiles.length})`}
               </button>
             {/if}
           </div>
-          <div class="grid-2row" class:grid-2row--open={sportsExpanded}>
-            {#each sportTiles as tile}
+          <div class="grid-2row" class:grid-2row--open={tilesExpanded}>
+            {#each categoryTiles as tile}
               {@const imgs = pieceImgs(tile.board)}
               {@const count = imgs.length}
               <a class="board-card" href="/discover/{encodeURIComponent(tile.category)}">
@@ -655,6 +633,26 @@
                   <div class="board-card__meta"><span>{tile.count} board{tile.count === 1 ? '' : 's'}</span></div>
                 </div>
               </a>
+            {/each}
+          </div>
+        </section>
+      {/if}
+
+      <!-- FIFA 2026 - one category lower down -->
+      {#if fifaGroup}
+        <section class="feed-section">
+          <div class="feed-section__head">
+            <div class="feed-section__title-wrap">
+              {#if fifaGroup.image}<img src={fifaGroup.image} alt="" class="feed-section__img" />{/if}
+              <h2 class="feed-section__title">{displayCategory(fifaGroup.category)}</h2>
+            </div>
+            {#if fifaGroup.boards.length > 8}
+              <a class="view-all" href="/discover/{encodeURIComponent(fifaGroup.category)}">View all ({fifaGroup.boards.length})</a>
+            {/if}
+          </div>
+          <div class="grid-2row">
+            {#each fifaGroup.boards as board}
+              {@render boardCard(board)}
             {/each}
           </div>
         </section>
@@ -765,35 +763,15 @@
   .product-card__name { font-size: var(--text-xs); font-weight: 500; color: var(--clr-charcoal); line-height: 1.4; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .product-card__price { font-size: var(--text-sm); font-weight: 600; color: var(--clr-brown); }
 
-  /* ── Brand chips - Material Design filter style ── */
-  .brands-scroll {
-    display: flex; gap: 8px;
-    overflow-x: auto; padding-bottom: 2px;
-    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  /* ── Get started (desktop home header, logged-out) ── */
+  .disc-getstarted {
+    flex-shrink: 0; background: var(--clr-charcoal); color: #fff; border: none;
+    border-radius: 999px; padding: 9px 18px; font-family: var(--font-body);
+    font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap;
+    transition: background 0.15s;
   }
-  .brands-scroll::-webkit-scrollbar { display: none; }
+  .disc-getstarted:hover { background: var(--clr-brown); }
 
-  .brand-chip {
-    display: flex; align-items: center; gap: 6px;
-    flex-shrink: 0; height: 32px; padding: 0 12px 0 6px;
-    background: var(--clr-cream); border: 1.5px solid var(--clr-border);
-    border-radius: 999px; cursor: pointer;
-    transition: background var(--dur-fast), border-color var(--dur-fast);
-  }
-  .brand-chip:hover { background: var(--clr-beige); border-color: var(--clr-light-taupe); }
-  .brand-chip.active { background: var(--clr-charcoal); border-color: var(--clr-charcoal); }
-  .brand-chip.active .brand-chip__name { color: rgba(255,255,255,0.92); }
-  .brand-chip.active .brand-chip__logo { filter: brightness(0) invert(1); }
-
-  .brand-chip__logo {
-    width: 20px; height: 20px; border-radius: 50%;
-    object-fit: contain; background: white; padding: 2px; flex-shrink: 0;
-  }
-  .brand-chip__name {
-    font-size: 12px; font-weight: 500; color: var(--clr-charcoal);
-    white-space: nowrap; line-height: 1;
-    transition: color var(--dur-fast);
-  }
 
   .detail-nav { position: sticky; top: var(--nav-h); z-index: 100; background: rgba(253,251,248,0.95); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--clr-border); padding: var(--space-3) var(--page-px); display: flex; align-items: center; gap: var(--space-4); }
   .back-btn { background: none; border: none; cursor: pointer; color: var(--clr-taupe); font-size: var(--text-sm); display: flex; align-items: center; gap: var(--space-2); transition: color var(--dur-fast); white-space: nowrap; }
