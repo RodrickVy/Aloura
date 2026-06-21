@@ -52,7 +52,7 @@
   let loadingBoards = $state(true);
 
   // Search mode + product results
-  let searchMode = $state<'outfit' | 'product'>('outfit');
+  let searchMode = $state<'outfit' | 'product'>('product');
   let productResults = $state<any[]>([]);
   let showingProducts = $state(false);
   let defaultBoardId = $state<string | null>(null);
@@ -468,6 +468,17 @@
   }
 
   const totalPrice = (pieces: Piece[]) => pieces.reduce((s, p) => s + (p.price ?? 0), 0);
+
+  // Store logo lookup for product cards
+  function storeLogo(store: string | null | undefined): string | null {
+    if (!store) return null;
+    const n = store.toLowerCase().replace(/[^a-z]/g, '');
+    const match = BRANDS.find(b => {
+      const bid = b.id.replace(/[^a-z]/g, '');
+      return n.includes(bid) || bid.includes(n.slice(0, 5));
+    });
+    return match?.logo ?? null;
+  }
 </script>
 
 <svelte:head>
@@ -500,6 +511,7 @@
           imageAttached={!!uploadedB64}
           imageName={uploadedName ?? ''}
           imagePreview={uploadedB64 ? `data:${uploadedType};base64,${uploadedB64}` : ''}
+          isLoggedIn={isLoggedIn}
           onsubmit={onSearch}
           onimage={(b64, type, name) => { uploadedB64 = b64; uploadedType = type; uploadedName = name; searchError = ''; }}
           onimageerror={(msg) => { searchError = msg; }}
@@ -584,7 +596,7 @@
   {:else}
     <div class="rows-wrap">
 
-      <!-- TRENDING - the lead -->
+      <!-- TRENDING - one product card per board -->
       {#if trendingGroup}
         <section class="feed-section">
           <div class="feed-section__head">
@@ -595,7 +607,10 @@
           </div>
           <div class="grid-2row">
             {#each trendingGroup.boards as board}
-              {@render boardCard(board)}
+              {@const piece = board.pieces?.[0]}
+              {#if piece}
+                {@render trendProductCard(piece, board)}
+              {/if}
             {/each}
           </div>
         </section>
@@ -614,23 +629,26 @@
           </div>
           <div class="grid-2row" class:grid-2row--open={tilesExpanded}>
             {#each categoryTiles as tile}
-              {@const imgs = pieceImgs(tile.board)}
-              {@const count = imgs.length}
+              {@const piece = tile.board?.pieces?.[0]}
+              {@const logo = storeLogo(piece?.store)}
               <a class="board-card" href="/discover/{encodeURIComponent(tile.category)}">
-                <div class="collage" class:collage--1={count === 1} class:collage--2={count === 2} class:collage--3={count === 3} class:collage--4={count >= 4}>
-                  {#if count === 0}
-                    <div class="collage__ph"><i class="fas fa-tshirt"></i></div>
+                <div class="collage collage--1">
+                  {#if piece?.image_url}
+                    <div class="collage__cell">
+                      <img src={piece.image_url} alt={piece.name ?? displayCategory(tile.category)} loading="lazy"
+                        onerror={(e) => { (e.target as HTMLImageElement).parentElement!.style.background = '#E8E0D8'; (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    </div>
                   {:else}
-                    {#each imgs as src}
-                      <div class="collage__cell">
-                        <img src={src ?? ''} alt="" loading="lazy" onerror={(e) => { (e.target as HTMLImageElement).parentElement!.style.background = '#E8E0D8'; (e.target as HTMLImageElement).style.display = 'none'; }} />
-                      </div>
-                    {/each}
+                    <div class="collage__ph"><i class="fas fa-tshirt"></i></div>
                   {/if}
                 </div>
                 <div class="board-card__info">
                   <div class="board-card__occasion">{displayCategory(tile.category)}</div>
-                  <div class="board-card__meta"><span>{tile.count} board{tile.count === 1 ? '' : 's'}</span></div>
+                  <div class="board-card__meta">
+                    {#if logo}<img src={logo} alt={piece?.store ?? ''} class="store-logo-sm" />{/if}
+                    <span>{piece?.store ?? ''}</span>
+                    {#if piece?.price}<span>${piece.price.toFixed(0)}</span>{/if}
+                  </div>
                 </div>
               </a>
             {/each}
@@ -638,7 +656,7 @@
         </section>
       {/if}
 
-      <!-- FIFA 2026 - one category lower down -->
+      <!-- FIFA 2026 - one product per board -->
       {#if fifaGroup}
         <section class="feed-section">
           <div class="feed-section__head">
@@ -652,19 +670,27 @@
           </div>
           <div class="grid-2row">
             {#each fifaGroup.boards as board}
-              {@render boardCard(board)}
+              {@const piece = board.pieces?.[0]}
+              {#if piece}
+                {@render trendProductCard(piece, board)}
+              {/if}
             {/each}
           </div>
         </section>
       {/if}
 
-      <!-- MY BOARDS -->
+      <!-- SAVED LOOKS -->
       {#if myBoards.length}
         <section class="feed-section">
-          <div class="feed-section__head"><h2 class="feed-section__title">Saved outfits</h2></div>
+          <div class="feed-section__head"><h2 class="feed-section__title">Saved looks</h2></div>
           <div class="grid-2row grid-2row--open">
             {#each myBoards as board}
-              {@render boardCard(board)}
+              {@const piece = board.pieces?.[0]}
+              {#if piece}
+                {@render trendProductCard(piece, board)}
+              {:else}
+                {@render boardCard(board)}
+              {/if}
             {/each}
           </div>
         </section>
@@ -701,6 +727,33 @@
       <div class="board-card__meta">
         <span>{totalPrice(board.pieces ?? []) > 0 ? '$' + totalPrice(board.pieces ?? []).toFixed(0) : ''}</span>
         <span>{(board.pieces ?? []).length} pieces</span>
+      </div>
+    </div>
+  </a>
+{/snippet}
+
+<!-- Product card for trending / category sections -->
+{#snippet trendProductCard(piece: any, board: MoodBoard)}
+  {@const logo = storeLogo(piece.store)}
+  <a class="board-card" href={piece.slug ? `/outfit/product/${piece.slug}` : boardHref(board)}>
+    <div class="collage collage--1">
+      {#if piece.image_url}
+        <div class="collage__cell">
+          <img src={piece.image_url} alt={piece.name ?? piece.title ?? ''} loading="lazy"
+            onerror={(e) => { (e.target as HTMLImageElement).parentElement!.style.background = '#E8E0D8'; (e.target as HTMLImageElement).style.display = 'none'; }} />
+        </div>
+      {:else}
+        <div class="collage__ph"><i class="fas fa-tshirt"></i></div>
+      {/if}
+    </div>
+    <div class="board-card__info">
+      <div class="board-card__occasion">{piece.name ?? piece.title ?? board.title}</div>
+      <div class="board-card__meta">
+        <span class="store-meta">
+          {#if logo}<img src={logo} alt={piece.store} class="store-logo-sm" />{/if}
+          {piece.store ?? ''}
+        </span>
+        {#if piece.price}<span>${piece.price.toFixed(0)}</span>{/if}
       </div>
     </div>
   </a>
@@ -834,7 +887,9 @@
 
   .board-card__info { background: var(--clr-off-white); padding: var(--space-3); }
   .board-card__occasion { font-size: var(--text-xs); font-weight: 500; color: var(--clr-charcoal); margin-bottom: var(--space-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .board-card__meta { display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--clr-taupe); }
+  .board-card__meta { display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs); color: var(--clr-taupe); }
+  .store-meta { display: flex; align-items: center; gap: 4px; }
+  .store-logo-sm { width: 14px; height: 14px; object-fit: contain; border-radius: 2px; flex-shrink: 0; }
 
   .generating-card { column-span: all; background: var(--clr-cream); border: 1px solid var(--clr-border); border-radius: var(--radius-xl); padding: var(--space-12); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--space-4); margin-bottom: var(--space-4); }
   .generating-card p { font-size: var(--text-sm); color: var(--clr-taupe); font-weight: 300; }

@@ -6,8 +6,20 @@
     c.split(' ').map(w => (w.toLowerCase() === 'fifa' ? 'FIFA' : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
 
   const pieceImgs = (b: any) => (b.pieces ?? []).filter((p: any) => p.image_url).slice(0, 4).map((p: any) => p.image_url);
-  const totalPrice = (b: any) => (b.pieces ?? []).reduce((s: number, p: any) => s + (p.price ?? 0), 0);
+  const firstPiece = (b: any) => (b.pieces ?? []).find((p: any) => p.image_url) ?? (b.pieces ?? [])[0] ?? null;
   const boardHref = (b: any) => (b.slug ? `/outfit/${b.slug}` : '#');
+  const pieceHref = (b: any) => {
+    const p = firstPiece(b);
+    return p?.slug ? `/outfit/product/${p.slug}` : boardHref(b);
+  };
+
+  const BRAND_IDS = ['amazon','asos','zara','hm','uniqlo','aritzia','nike','adidas','lululemon','shein','abercrombie','hollister','urbanoutfitters','ssense','nordstrom','oldnavy','levis','gap','facebook'];
+  function storeLogo(store: string | null | undefined): string | null {
+    if (!store) return null;
+    const n = store.toLowerCase().replace(/[^a-z]/g, '');
+    const id = BRAND_IDS.find(b => n.includes(b) || b.includes(n.slice(0, 5)));
+    return id ? `/assets/logos/${id}.png` : null;
+  }
 
   // Contextual social image: category image → first piece image of the first board → site default
   const firstPieceImg = data.boards.flatMap((b: any) => pieceImgs(b))[0] ?? null;
@@ -38,31 +50,33 @@
     <div class="cat-title-wrap">
       {#if data.image}<img src={data.image} alt="" class="cat-img" />{/if}
       <h1 class="cat-title">{displayCategory(data.category)}</h1>
-      <span class="cat-count">{data.boards.length} board{data.boards.length === 1 ? '' : 's'}</span>
+      <span class="cat-count">{data.boards.length} item{data.boards.length === 1 ? '' : 's'}</span>
     </div>
   </div>
 
   <div class="grid">
     {#each data.boards as board}
-      {@const imgs = pieceImgs(board)}
-      {@const count = imgs.length}
-      <a class="board-card" href={boardHref(board)}>
-        <div class="collage" class:collage--1={count === 1} class:collage--2={count === 2} class:collage--3={count === 3} class:collage--4={count >= 4}>
-          {#if count === 0}
-            <div class="collage__ph"><i class="fas fa-tshirt"></i></div>
+      {@const piece = firstPiece(board)}
+      {@const logo = storeLogo(piece?.store)}
+      <a class="board-card" href={pieceHref(board)}>
+        <div class="collage collage--1">
+          {#if piece?.image_url}
+            <div class="collage__cell">
+              <img src={piece.image_url} alt={piece.name ?? piece.title ?? ''} loading="lazy"
+                onerror={(e) => { (e.target as HTMLImageElement).parentElement!.style.background = '#E8E0D8'; (e.target as HTMLImageElement).style.display = 'none'; }} />
+            </div>
           {:else}
-            {#each imgs as src}
-              <div class="collage__cell">
-                <img src={src ?? ''} alt="" loading="lazy" onerror={(e) => { (e.target as HTMLImageElement).parentElement!.style.background = '#E8E0D8'; (e.target as HTMLImageElement).style.display = 'none'; }} />
-              </div>
-            {/each}
+            <div class="collage__ph"><i class="fas fa-tshirt"></i></div>
           {/if}
         </div>
         <div class="board-card__info">
-          <div class="board-card__occasion">{board.occasion ?? board.goal ?? board.title}</div>
+          <div class="board-card__occasion">{piece?.name ?? piece?.title ?? board.occasion ?? board.goal ?? board.title}</div>
           <div class="board-card__meta">
-            <span>{totalPrice(board) > 0 ? '$' + totalPrice(board).toFixed(0) : ''}</span>
-            <span>{(board.pieces ?? []).length} pieces</span>
+            <span class="store-meta">
+              {#if logo}<img src={logo} alt={piece?.store ?? ''} class="store-logo-sm" />{/if}
+              {piece?.store ?? ''}
+            </span>
+            {#if piece?.price}<span>${piece.price.toFixed(0)}</span>{/if}
           </div>
         </div>
       </a>
@@ -94,5 +108,7 @@
   .collage__ph { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--clr-taupe); font-size: 28px; }
   .board-card__info { background: var(--clr-off-white); padding: var(--space-3); }
   .board-card__occasion { font-size: var(--text-xs); font-weight: 500; color: var(--clr-charcoal); margin-bottom: var(--space-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .board-card__meta { display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--clr-taupe); }
+  .board-card__meta { display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs); color: var(--clr-taupe); }
+  .store-meta { display: flex; align-items: center; gap: 4px; }
+  .store-logo-sm { width: 14px; height: 14px; object-fit: contain; border-radius: 2px; flex-shrink: 0; }
 </style>
