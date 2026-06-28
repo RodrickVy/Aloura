@@ -76,6 +76,15 @@ interface ComparedProduct {
   match_score:    number;
 }
 
+// A loose "similar product" suggestion (not inserted into the DB).
+interface Similar {
+  name: string; store: string; price: number | null; url: string; image_url: string;
+}
+
+// Minimum relevance for a STRICT single-product match. Below this we report
+// "no result" and surface similar products instead of a weak match.
+const STRICT_REL = 0.34;
+
 // ─────────────────────────────────────────────────────────────
 //  HELPERS
 // ─────────────────────────────────────────────────────────────
@@ -211,12 +220,40 @@ async function serp(query: string): Promise<Record<string, unknown>[]> {
   return (data.shopping_results ?? []) as Record<string, unknown>[];
 }
 
-// Check whether a result's source field matches the intended store
+// Common store name aliases so "Amazon.com" matches "Amazon", "H&M" matches "hm", etc.
+const STORE_ALIASES: Record<string, string[]> = {
+  amazon:        ["amazon", "amazoncom"],
+  hm:            ["hm", "h&m", "handm"],
+  "urban outfitters": ["urbanoutfitters", "urban"],
+  levis:         ["levis", "levi"],
+  abercrombie:   ["abercrombie", "abercrombieandkent", "abercrombiefit"],
+  shein:         ["shein", "she in"],
+  asos:          ["asos"],
+  zara:          ["zara"],
+  uniqlo:        ["uniqlo"],
+  aritzia:       ["aritzia"],
+  nike:          ["nike"],
+  adidas:        ["adidas"],
+  lululemon:     ["lululemon", "lulu"],
+  abercrombiefitch: ["abercrombie", "af"],
+  nordstrom:     ["nordstrom", "nordstromrack"],
+  gap:           ["gap"],
+  oldnavy:       ["oldnavy", "old navy"],
+  ssense:        ["ssense"],
+  hollister:     ["hollister"],
+};
+
 function sourceMatchesStore(source: string, store: string): boolean {
-  const s = source.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const t = store.toLowerCase().replace(/[^a-z0-9]/g, "");
-  // Direct substring match in either direction (handles "H&M" ↔ "hm", "Levi's" ↔ "levis")
-  return s.includes(t) || t.includes(s);
+  const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const s = clean(source);
+  const t = clean(store);
+
+  // Direct match
+  if (s.includes(t) || t.includes(s)) return true;
+
+  // Alias match
+  const aliases = STORE_ALIASES[t] ?? STORE_ALIASES[store.toLowerCase()] ?? [];
+  return aliases.some(a => s.includes(a));
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -226,11 +263,13 @@ function sourceMatchesStore(source: string, store: string): boolean {
 async function findBestMatch(
   product: InputProduct,
   store: string,
+  precomputedAttrs?: ProductAttributes,
+  strict = false,
 ): Promise<Omit<ComparedProduct, "slug" | "id"> | null> {
   const origPrice = product.original_price ?? null;
 
   // 1. AI extracts product type, gender, color → tight search query
-  const attrs = await buildSearchQuery(product);
+  const attrs = precomputedAttrs ?? await buildSearchQuery(product);
   const { productType, gender, colors, keyAttributes, searchQuery } = attrs;
 
   // 2. Query chain — stop as soon as we get candidates from the target store
@@ -241,54 +280,51 @@ async function findBestMatch(
     `${product.name} ${store}`.trim(),
   ].filter((q, i, arr) => q !== store && arr.indexOf(q) === i); // deduplicate
 
-  let results: Record<string, unknown>[] = [];
+  // Run queries sequentially; stop as soon as one yields results FROM the target store.
+  // Keep any batch that had store hits; fall through to broader queries if earlier ones miss.
+  let storeResults: Record<string, unknown>[] = [];
   let usedQuery = "";
+
   for (const q of queries) {
     const raw = await serp(q);
-    if (raw.length) {
-      // Immediately check if any result is from the target store before moving on
-      const hasStoreHit = raw.some(r =>
-        sourceMatchesStore((r.source as string) ?? "", store)
-      );
-      results = raw;
+    if (!raw.length) continue;
+
+    const hits = raw.filter(r =>
+      sourceMatchesStore((r.source as string) ?? "", store)
+    );
+
+    if (hits.length) {
+      storeResults = hits;
       usedQuery = q;
-      if (hasStoreHit) break;
-      // If no store hit yet, try the next query (but keep results as fallback check)
+      break; // found confirmed store results — stop searching
     }
-  }
 
-  if (!results.length) {
-    console.warn(`[comparer] no search results for "${product.name}" @ ${store}`);
-    return null;
+    // No store hits from this query — log and try next
+    console.log(`[comparer] query "${q}" returned ${raw.length} results but 0 from "${store}" — trying next`);
   }
-
-  // 3. Filter strictly to results from the target store only
-  const storeResults = results.filter(r =>
-    sourceMatchesStore((r.source as string) ?? "", store)
-  );
 
   if (!storeResults.length) {
-    // Target store not stocked / not on Google Shopping for this product
-    console.warn(`[comparer] "${store}" has no matching listing for "${product.name}" — not returning false match`);
+    console.warn(`[comparer] "${store}" not found in any query for "${product.name}" — not returning false match`);
     return null;
   }
 
-  console.log(`[comparer] "${product.name}" @ ${store}: ${storeResults.length} store hits from query "${usedQuery}"`);
+  console.log(`[comparer] "${product.name}" @ ${store}: ${storeResults.length} confirmed store hits — query: "${usedQuery}"`);
 
-  // 4. Score store results for product-type match
-  // Reference tokens: product type + gender + colors + key attributes
+  // 4. Score store-confirmed results for product-type match
   const refTokens = tokens(
-    [productType, gender, ...colors, ...keyAttributes, ...( product.keywords ?? [])].join(" ")
+    [productType, gender, ...colors, ...keyAttributes, ...(product.keywords ?? [])].join(" ")
   );
 
+  // Since we already confirmed the store, we can use a lower relevance floor
   const scored = storeResults
     .filter(r => !isSameProduct(r, product.url, product.name))
     .map(r => {
       const title = (r.title as string) ?? "";
       const price = parsePrice(r.extracted_price ?? r.price);
-      const rel   = overlapScore(tokens(title), refTokens);
+      const rel   = refTokens.length
+        ? overlapScore(tokens(title), refTokens)
+        : 0.5; // no ref tokens → treat as neutral rather than zero
 
-      // Sanity-check price against original (drop absurd mismatches)
       let priceOk = true;
       if (origPrice && price) {
         const ratio = price / origPrice;
@@ -297,15 +333,43 @@ async function findBestMatch(
 
       return { r, title, price, rel, score: rel - (priceOk ? 0 : 0.6) };
     })
-    .filter(c => c.rel >= 0.08)
+    .filter(c => c.score >= 0)
     .sort((a, b) => b.score - a.score);
 
   if (!scored.length) {
-    console.warn(`[comparer] store results found but none relevant to "${product.name}" @ ${store}`);
-    return null;
+    // Strict (single-product) mode: never return a weak match - report no result.
+    if (strict) { console.log(`[comparer] strict: no scored candidate for "${product.name}" @ ${store} — no result`); return null; }
+    // Store has listings but none pass price sanity — return the first store listing anyway
+    console.warn(`[comparer] store listings found but all failed scoring for "${product.name}" @ ${store} — using top listing`);
+    const fallbackHit = storeResults[0];
+    const fallbackPrice = parsePrice(fallbackHit.extracted_price ?? fallbackHit.price);
+    const delta2 = origPrice != null && fallbackPrice != null ? +(fallbackPrice - origPrice).toFixed(2) : null;
+    return {
+      original_name:  product.name,
+      store:          (fallbackHit.source as string) ?? store,
+      name:           (fallbackHit.title as string) ?? product.name,
+      price:          fallbackPrice,
+      url:            (fallbackHit.link as string) ?? (fallbackHit.product_link as string) ?? "#",
+      image_url:      (fallbackHit.thumbnail as string) ?? "",
+      description:    null,
+      keywords:       product.keywords,
+      colors,
+      original_price: origPrice,
+      price_delta:    delta2,
+      price_verdict:  delta2 == null ? "unknown" : delta2 < -1 ? "cheaper" : delta2 > 1 ? "pricier" : "similar",
+      same_store:     true,
+      match_score:    0.1,
+    };
   }
 
   const best     = scored[0];
+
+  // Strict (single-product) mode: only accept a genuinely close match.
+  if (strict && best.rel < STRICT_REL) {
+    console.log(`[comparer] strict: best rel ${best.rel.toFixed(2)} < ${STRICT_REL} for "${product.name}" @ ${store} — no result`);
+    return null;
+  }
+
   const hit      = best.r;
   const price    = best.price;
   const storeName = (hit.source as string) ?? store;
@@ -347,6 +411,94 @@ async function findBestMatch(
     same_store:     true, // always true — we only return confirmed store matches
     match_score:    +best.rel.toFixed(2),
   };
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Single-product compare — fast path.
+//  1 AI query build + 3 PARALLEL SerpAPI calls (two store-targeted, one
+//  broad for similars). Strict accuracy: only a genuinely close match at the
+//  requested store counts; otherwise return similars. No slug AI call.
+// ─────────────────────────────────────────────────────────────
+
+async function singleCompare(
+  product: InputProduct,
+  store: string,
+): Promise<{ match: Omit<ComparedProduct, "slug" | "id"> | null; similar: Similar[] }> {
+  const origPrice = product.original_price ?? null;
+  const attrs = await buildSearchQuery(product);
+  const { productType, gender, colors, keyAttributes, searchQuery } = attrs;
+
+  const qStore1 = `${searchQuery} ${store}`.replace(/\s+/g, " ").trim();
+  const qStore2 = `${product.name} ${store}`.replace(/\s+/g, " ").trim();
+  const qBroad  = (searchQuery || product.name).trim();
+
+  const [r1, r2, rBroad] = await Promise.all([serp(qStore1), serp(qStore2), serp(qBroad)]);
+
+  const refTokens = tokens(
+    [productType, gender, ...colors, ...keyAttributes, ...(product.keywords ?? [])].join(" ")
+  );
+
+  // Store-confirmed candidates from the two store queries
+  const seen = new Set<string>();
+  const storeScored = [...r1, ...r2]
+    .filter(r => sourceMatchesStore((r.source as string) ?? "", store))
+    .filter(r => !isSameProduct(r, product.url, product.name))
+    .map(r => {
+      const title = (r.title as string) ?? "";
+      const price = parsePrice(r.extracted_price ?? r.price);
+      let priceOk = true;
+      if (origPrice && price) { const ratio = price / origPrice; priceOk = ratio >= 0.15 && ratio <= 7; }
+      const rel = refTokens.length ? overlapScore(tokens(title), refTokens) : 0.5;
+      return { r, title, price, rel, score: rel - (priceOk ? 0 : 0.6) };
+    })
+    .filter(c => { const k = ((c.r.link ?? c.r.product_link) as string) ?? c.title; if (seen.has(k)) return false; seen.add(k); return true; })
+    .filter(c => c.score >= 0)
+    .sort((a, b) => b.score - a.score);
+
+  let match: Omit<ComparedProduct, "slug" | "id"> | null = null;
+  if (storeScored.length && storeScored[0].rel >= STRICT_REL) {
+    const best = storeScored[0];
+    const hit = best.r;
+    const price = best.price;
+    const storeName = (hit.source as string) ?? store;
+    const exts = Array.isArray(hit.extensions) ? (hit.extensions as string[]).join(" · ") : "";
+    const description =
+      (typeof hit.snippet === "string" && hit.snippet.trim()) ? hit.snippet.trim()
+      : (typeof hit.description === "string" && hit.description.trim()) ? hit.description.trim()
+      : (exts.trim() || null);
+    const delta = origPrice != null && price != null ? +(price - origPrice).toFixed(2) : null;
+    const verdict: ComparedProduct["price_verdict"] =
+      delta == null ? "unknown" : delta < -1 ? "cheaper" : delta > 1 ? "pricier" : "similar";
+    match = {
+      original_name: product.name, store: storeName, name: (hit.title as string) ?? product.name,
+      price, url: (hit.link as string) ?? (hit.product_link as string) ?? "#",
+      image_url: (hit.thumbnail as string) ?? "", description, keywords: product.keywords, colors,
+      original_price: origPrice, price_delta: delta, price_verdict: verdict, same_store: true, match_score: +best.rel.toFixed(2),
+    };
+    console.log(`[comparer] single MATCH "${best.title.slice(0,50)}" @ ${storeName} rel=${best.rel.toFixed(2)}`);
+  }
+
+  let similar: Similar[] = [];
+  if (!match) {
+    const sseen = new Set<string>();
+    similar = rBroad
+      .map(r => {
+        const title = (r.title as string) ?? "";
+        return {
+          r, title, price: parsePrice(r.extracted_price ?? r.price),
+          img: (r.thumbnail as string) ?? "", url: (r.link as string) ?? (r.product_link as string) ?? "#",
+          src: (r.source as string) ?? "Online",
+          rel: refTokens.length ? overlapScore(tokens(title), refTokens) : 0.3,
+        };
+      })
+      .filter(c => c.title && c.img && c.price != null && c.rel >= 0.12 && !isSameProduct(c.r, product.url, product.name))
+      .filter(c => { const k = `${normTitle(c.title)}|${c.src.toLowerCase()}`; if (sseen.has(k)) return false; sseen.add(k); return true; })
+      .sort((a, b) => b.rel - a.rel).slice(0, 8)
+      .map(c => ({ name: c.title, store: c.src, price: c.price, url: c.url, image_url: c.img }));
+    console.log(`[comparer] single: no match @ ${store}; ${similar.length} similar`);
+  }
+
+  return { match, similar };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -431,11 +583,12 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {
-    const { account_id, mood_board_id, store, products } = await req.json() as {
+    const { account_id, mood_board_id, store, products, mode = "board" } = await req.json() as {
       account_id:    string;
       mood_board_id: string;
       store:         string;
       products:      InputProduct[];
+      mode?:         "single" | "board";
     };
 
     if (!account_id)       throw new Error("account_id required");
@@ -443,13 +596,43 @@ Deno.serve(async (req: Request) => {
     if (!store)            throw new Error("store required");
     if (!products?.length) throw new Error("products array required");
 
-    console.log(`[comparer] account=${account_id} board=${mood_board_id} store="${store}" products=${products.length}`);
+    console.log(`[comparer] account=${account_id} board=${mood_board_id} store="${store}" products=${products.length} mode=${mode}`);
 
     const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
       auth: { persistSession: false },
     });
 
-    // Search all products in parallel (AI query build + SERP each product)
+    // ── SINGLE-PRODUCT MODE: fast, very accurate match or "no result" + similars ──
+    if (mode === "single") {
+      const { match, similar } = await singleCompare(products[0], store);
+
+      if (!match) {
+        return new Response(
+          JSON.stringify({ success: true, store, count: 0, products: [null], similar }),
+          { headers: { ...CORS, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: insP, error: insErr } = await db.from("pieces").insert({
+        mood_board_id,
+        name: match.name, title: match.name, price: match.price,
+        url: match.url, image_url: match.image_url, colors: match.colors,
+        style: `${store} comparison`, description: match.description,
+        store: match.store, keywords: match.keywords,
+      }).select("id").single();
+      if (insErr || !insP) throw new Error(`Pieces insert: ${insErr?.message}`);
+
+      // Rule-based slug (instant - no extra AI call on the hot path).
+      const slug = slugify(`${match.store} ${match.name}`.slice(0, 60)) + "-" + uuidSuffix(insP.id);
+      await db.from("pieces").update({ slug }).eq("id", insP.id);
+
+      return new Response(
+        JSON.stringify({ success: true, store, count: 1, products: [{ ...match, id: insP.id, slug }], similar: [] }),
+        { headers: { ...CORS, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── BOARD MODE: search all products in parallel ──
     const matches = await Promise.all(
       products.slice(0, 7).map(p => findBestMatch(p, store))
     );

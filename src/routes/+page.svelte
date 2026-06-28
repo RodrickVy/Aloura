@@ -42,6 +42,7 @@
   // Board feed, grouped: "My Boards" + one row per category (sport)
   let myBoards = $state<MoodBoard[]>([]);
   let categoryGroups = $state<{ category: string; image: string | null; boards: MoodBoard[] }[]>([]);
+  let trendingProducts = $state<any[]>([]);
 
   let selectedBrands = $state<Set<string>>(new Set());
   let goal = $state('');
@@ -55,6 +56,12 @@
   let searchMode = $state<'outfit' | 'product'>('product');
   let productResults = $state<any[]>([]);
   let showingProducts = $state(false);
+  let sortBy = $state<'relevance' | 'price_asc'>('relevance');
+  const sortedProducts = $derived(
+    sortBy === 'price_asc'
+      ? [...productResults].sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))
+      : productResults
+  );
   let defaultBoardId = $state<string | null>(null);
 
   let searchError = $state('');
@@ -119,6 +126,14 @@
     }
 
     await loadBoards();
+
+    // Trending products (a teaser row; full list on /trending)
+    const { data: tp } = await supabase
+      .from('trending_products')
+      .select('slug, name, image_url, price, store')
+      .order('rank', { ascending: true })
+      .limit(12);
+    trendingProducts = tp ?? [];
 
     // Auto-run a search captured in the URL (?action=search&mode=…&q=…)
     // Routes through onSearch so logged-out visitors get the sign-up prompt
@@ -204,10 +219,9 @@
   const displayCategory = (c: string) =>
     c.split(' ').map(w => (w.toLowerCase() === 'fifa' ? 'FIFA' : capitalize(w))).join(' ');
   const pieceImgs = (b: MoodBoard) => (b.pieces ?? []).filter(p => p.image_url).slice(0, 4).map(p => p.image_url);
-  const hasAnyBoards = $derived(myBoards.length > 0 || categoryGroups.length > 0);
+  const hasAnyBoards = $derived(myBoards.length > 0 || categoryGroups.length > 0 || trendingProducts.length > 0);
 
-  // Trending row (lead), category tiles (browse), FIFA section (lower).
-  const trendingGroup = $derived(categoryGroups.find(g => g.category.toLowerCase() === 'trending') ?? null);
+  // Category tiles (browse), FIFA section (lower). Trending = products (separate table).
   const fifaGroup     = $derived(categoryGroups.find(g => g.category.toLowerCase() === 'fifa 2026') ?? null);
   const categoryTiles = $derived(
     categoryGroups
@@ -433,17 +447,30 @@
         defaultBoardId = boardId;
       }
 
-      // 2. Save the product as a piece with a slug
-      const pieceSlug = slugify(`${p.store} ${p.name}`.slice(0, 60)) + '-' + Math.random().toString(36).slice(2, 10);
-      const { data: piece, error: pErr } = await supabase.from('pieces').insert({
-        mood_board_id: boardId,
-        name: p.name, title: p.name, price: p.price ?? null,
-        url: p.url, image_url: p.image_url, store: p.store,
-        keywords: p.keywords ?? [], slug: pieceSlug,
-      }).select('slug').single();
-      if (pErr) throw pErr;
+      // 2. Reuse if this product was already opened/saved (dedupe by URL),
+      //    otherwise insert it once.
+      let slug: string | null = null;
+      if (p.url && p.url !== '#') {
+        const { data: existing } = await supabase
+          .from('pieces').select('slug')
+          .eq('mood_board_id', boardId).eq('url', p.url)
+          .not('slug', 'is', null).limit(1).maybeSingle();
+        if (existing?.slug) slug = existing.slug;
+      }
 
-      goto(`/outfit/product/${piece.slug}`);
+      if (!slug) {
+        const pieceSlug = slugify(`${p.store} ${p.name}`.slice(0, 60)) + '-' + Math.random().toString(36).slice(2, 10);
+        const { data: piece, error: pErr } = await supabase.from('pieces').insert({
+          mood_board_id: boardId,
+          name: p.name, title: p.name, price: p.price ?? null,
+          url: p.url, image_url: p.image_url, store: p.store,
+          keywords: p.keywords ?? [], slug: pieceSlug,
+        }).select('slug').single();
+        if (pErr) throw pErr;
+        slug = piece.slug;
+      }
+
+      goto(`/outfit/product/${slug}`);
     } catch (e) {
       console.error('[openProduct]', e);
       openingProduct = null;
@@ -538,9 +565,17 @@
   {#if showingProducts}
     <div class="products-bar">
       <span>{productResults.length} product{productResults.length === 1 ? '' : 's'} found</span>
-      <button class="back-to-boards" onclick={clearProducts}>
-        <i class="fas fa-arrow-left"></i> Back to boards
-      </button>
+      <div class="products-bar__right">
+        {#if productResults.length > 1}
+          <div class="sort-toggle">
+            <button class="sort-opt" class:active={sortBy === 'relevance'} onclick={() => sortBy = 'relevance'}>Relevance</button>
+            <button class="sort-opt" class:active={sortBy === 'price_asc'} onclick={() => sortBy = 'price_asc'}>Price ↑</button>
+          </div>
+        {/if}
+        <button class="back-to-boards" onclick={clearProducts}>
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
+      </div>
     </div>
   {/if}
 
@@ -556,7 +591,7 @@
       {:else if !productResults.length}
         <div class="empty-state"><i class="fas fa-magnifying-glass"></i><p>No products found. Try different keywords.</p></div>
       {:else}
-        {#each productResults as p}
+        {#each sortedProducts as p}
           <button class="product-card" onclick={() => openProduct(p)} disabled={openingProduct === p.url}>
             <div class="product-card__img-wrap">
               {#if p.image_url}
@@ -596,8 +631,8 @@
   {:else}
     <div class="rows-wrap">
 
-      <!-- TRENDING - one product card per board -->
-      {#if trendingGroup}
+      <!-- TRENDING PRODUCTS - the lead -->
+      {#if trendingProducts.length}
         <section class="feed-section">
           <div class="feed-section__head">
             <div class="feed-section__title-wrap">
@@ -606,11 +641,21 @@
             <a class="view-all" href="/trending">View all</a>
           </div>
           <div class="grid-2row">
-            {#each trendingGroup.boards as board}
-              {@const piece = board.pieces?.[0]}
-              {#if piece}
-                {@render trendProductCard(piece, board)}
-              {/if}
+            {#each trendingProducts as p}
+              <a class="tprod" href={p.slug ? `/outfit/product/${p.slug}` : '#'}>
+                <div class="tprod__img">
+                  {#if p.image_url}
+                    <img src={p.image_url} alt={p.name} loading="lazy" onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  {:else}
+                    <div class="tprod__ph"><i class="fas fa-tshirt"></i></div>
+                  {/if}
+                </div>
+                <div class="tprod__info">
+                  <div class="tprod__store">{p.store}</div>
+                  <div class="tprod__name">{p.name}</div>
+                  {#if p.price}<div class="tprod__price">${Number(p.price).toFixed(2)}</div>{/if}
+                </div>
+              </a>
             {/each}
           </div>
         </section>
@@ -799,7 +844,11 @@
   @keyframes msgFade { from { opacity: 0.3; } to { opacity: 1; } }
 
   /* Product results bar */
-  .products-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px var(--page-px) 0; font-size: var(--text-sm); color: var(--clr-taupe); }
+  .products-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px var(--page-px) 0; font-size: var(--text-sm); color: var(--clr-taupe); flex-wrap: wrap; }
+  .products-bar__right { display: flex; align-items: center; gap: 12px; }
+  .sort-toggle { display: inline-flex; background: var(--clr-beige); border-radius: 999px; padding: 2px; }
+  .sort-opt { border: none; background: none; cursor: pointer; font-family: var(--font-body); font-size: 12px; font-weight: 500; color: var(--clr-taupe); padding: 5px 12px; border-radius: 999px; transition: background 0.15s, color 0.15s; }
+  .sort-opt.active { background: #fff; color: var(--clr-charcoal); box-shadow: var(--shadow-sm); }
   .back-to-boards { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; color: var(--clr-brown); }
   .back-to-boards:hover { text-decoration: underline; }
 
@@ -815,6 +864,17 @@
   .product-card__store { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--clr-taupe); margin-bottom: 2px; }
   .product-card__name { font-size: var(--text-xs); font-weight: 500; color: var(--clr-charcoal); line-height: 1.4; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .product-card__price { font-size: var(--text-sm); font-weight: 600; color: var(--clr-brown); }
+
+  /* ── Trending product cards ── */
+  .tprod { display: block; background: var(--clr-cream); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); text-decoration: none; color: inherit; margin-bottom: var(--space-6); transition: box-shadow var(--dur-base), transform var(--dur-base); }
+  .tprod:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .tprod__img { aspect-ratio: 1; background: #e8e0d8; }
+  .tprod__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tprod__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--clr-taupe); font-size: 28px; }
+  .tprod__info { background: var(--clr-off-white); padding: var(--space-3); }
+  .tprod__store { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--clr-taupe); margin-bottom: 2px; }
+  .tprod__name { font-size: var(--text-xs); font-weight: 500; color: var(--clr-charcoal); line-height: 1.4; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tprod__price { font-size: var(--text-sm); font-weight: 600; color: var(--clr-brown); }
 
   /* ── Get started (desktop home header, logged-out) ── */
   .disc-getstarted {

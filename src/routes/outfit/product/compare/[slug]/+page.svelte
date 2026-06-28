@@ -4,16 +4,31 @@
   import ShareButton from '$lib/ShareButton.svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { onMount } from 'svelte';
   import { track } from '$lib/analytics';
   import type { Piece } from '$lib/types';
 
   let { data } = $props();
   const supabase = createSupabaseBrowserClient();
 
+  const BRANDS = [
+    {id:'amazon',name:'Amazon',logo:'/assets/logos/amazon.png'},{id:'asos',name:'ASOS',logo:'/assets/logos/asos.png'},
+    {id:'zara',name:'Zara',logo:'/assets/logos/zara.png'},{id:'hm',name:'H&M',logo:'/assets/logos/hm.png'},
+    {id:'uniqlo',name:'Uniqlo',logo:'/assets/logos/uniqlo.png'},{id:'aritzia',name:'Aritzia',logo:'/assets/logos/aritzia.png'},
+    {id:'nike',name:'Nike',logo:'/assets/logos/nike.png'},{id:'adidas',name:'Adidas',logo:'/assets/logos/adidas.png'},
+    {id:'lululemon',name:'Lululemon',logo:'/assets/logos/lululemon.png'},{id:'shein',name:'SHEIN',logo:'/assets/logos/shein.png'},
+    {id:'abercrombie',name:'Abercrombie',logo:'/assets/logos/abercrombie.png'},{id:'nordstrom',name:'Nordstrom',logo:'/assets/logos/nordstrom.png'},
+    {id:'levis',name:"Levi's",logo:'/assets/logos/levis.png'},{id:'gap',name:'Gap',logo:'/assets/logos/gap.png'},
+  ];
+
   // Pieces array - grows as user adds comparisons
   let columns = $state<(Piece & { searching?: boolean; same_store?: boolean; price_verdict?: string; price_delta?: number | null; _brandId?: string })[]>(data.pieces);
   let addingBrand = $state<string | null>(null);   // chip currently loading
   let addError   = $state('');
+
+  // "No exact match" + similar products fallback
+  let noMatchStore = $state<string | null>(null);
+  let similar      = $state<{ name: string; store: string; price: number | null; url: string; image_url: string }[]>([]);
 
   // Base piece (first column) - used as source for all comparisons
   const basePiece = data.pieces[0];
@@ -30,6 +45,7 @@
 
     addingBrand = brand.id;
     addError = '';
+    noMatchStore = null; similar = [];
 
     // Add a loading placeholder column (tracks the requested brand).
     const placeholder = { ...basePiece, id: 'loading-' + brand.id, store: brand.name, searching: true, _brandId: brand.id };
@@ -41,16 +57,23 @@
           account_id: 'anonymous',
           mood_board_id: basePiece.mood_board_id,
           store: brand.name,
-          products: [{ name: basePiece.name, keywords: basePiece.keywords ?? [], colors: basePiece.colors ?? [], url: basePiece.url ?? undefined, store: basePiece.store ?? undefined, original_price: basePiece.price ?? null }],
+          mode: 'single',
+          products: [{ name: basePiece.name, keywords: basePiece.keywords ?? [], colors: basePiece.colors ?? [], url: basePiece.url ?? undefined, store: basePiece.store ?? undefined, original_price: basePiece.price ?? null, description: basePiece.description ?? undefined }],
         },
       });
 
       if (error) throw error;
 
       const found = result.products?.[0];
-      if (!found) throw new Error('Not found');
+      if (!found) {
+        // No accurate match at this store - drop the column, show similars instead.
+        columns = columns.filter(c => c.id !== placeholder.id);
+        noMatchStore = brand.name;
+        similar = result.similar ?? [];
+        return;
+      }
 
-      // Replace placeholder with real result
+      // Replace placeholder with the accurate match
       columns = columns.map(c =>
         c.id === placeholder.id
           ? { ...basePiece, ...found, id: found.id ?? placeholder.id, slug: found.slug, searching: false, _brandId: brand.id }
@@ -59,12 +82,24 @@
       track(supabase, null, 'comparisons');
       updateUrl(columns);
     } catch {
-      addError = `No match found at ${brand.name}.`;
+      addError = `Could not search ${brand.name}. Please try again.`;
       columns = columns.filter(c => c.id !== placeholder.id);
     } finally {
       addingBrand = null;
     }
   }
+
+  // Auto-run a comparison passed via ?add=<brandId> (from the product page).
+  onMount(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const add = sp.get('add');
+    if (add) {
+      const brand = BRANDS.find(b => b.id === add);
+      // strip the param so a refresh doesn't re-trigger
+      goto(window.location.pathname, { replaceState: true, noScroll: true, keepFocus: true });
+      if (brand) onBrandSelect(brand);
+    }
+  });
 
   function updateUrl(cols: typeof columns) {
     const slugParts = cols.map(c => c.slug).filter(Boolean);
@@ -234,6 +269,34 @@
       {/each}
     </div>
 
+    <!-- NO EXACT MATCH + SIMILAR PRODUCTS -->
+    {#if noMatchStore}
+      <div class="no-match">
+        <i class="fas fa-circle-info"></i>
+        No exact match found at <strong>{noMatchStore}</strong>{#if similar.length}. Here are some similar products you might like:{/if}
+      </div>
+    {/if}
+
+    {#if similar.length}
+      <section class="similar">
+        <h2 class="similar__title">Similar products</h2>
+        <div class="similar__grid">
+          {#each similar as s}
+            <a class="similar__card" href={s.url} target="_blank" rel="noopener sponsored" onclick={() => track(supabase, null, 'buy_clicks')}>
+              <div class="similar__img-wrap">
+                {#if s.image_url}<img src={s.image_url} alt={s.name} loading="lazy" />{:else}<div class="similar__ph"><i class="fas fa-tshirt"></i></div>{/if}
+              </div>
+              <div class="similar__info">
+                <div class="similar__store">{s.store}</div>
+                <div class="similar__name">{s.name}</div>
+                {#if s.price}<div class="similar__price">${s.price.toFixed(2)}</div>{/if}
+              </div>
+            </a>
+          {/each}
+        </div>
+      </section>
+    {/if}
+
     <!-- BACK TO PRODUCT -->
     <div style="margin-top:var(--space-12);text-align:center">
       <a href="/outfit/product/{basePiece.slug}" class="btn btn--ghost">
@@ -246,6 +309,22 @@
 
 <style>
   .compare-page { padding-top: var(--nav-h); padding-bottom: var(--space-20); }
+
+  /* No-match notice + similar products */
+  .no-match { display: flex; align-items: center; gap: 8px; margin-top: var(--space-8); padding: 14px 16px; background: var(--clr-beige); border: 1px solid var(--clr-border); border-radius: 12px; font-size: 14px; color: var(--clr-charcoal); }
+  .no-match i { color: var(--clr-terracotta); }
+  .similar { margin-top: var(--space-8); }
+  .similar__title { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 500; color: var(--clr-charcoal); margin-bottom: var(--space-4); }
+  .similar__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--space-4); }
+  .similar__card { display: block; background: var(--clr-cream); border: 1px solid var(--clr-border); border-radius: var(--radius-lg); overflow: hidden; text-decoration: none; color: inherit; transition: box-shadow var(--dur-base), transform var(--dur-base); }
+  .similar__card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .similar__img-wrap { aspect-ratio: 1; background: #e8e0d8; }
+  .similar__img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .similar__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--clr-taupe); font-size: 26px; }
+  .similar__info { padding: var(--space-3); }
+  .similar__store { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--clr-taupe); margin-bottom: 2px; }
+  .similar__name { font-size: var(--text-xs); font-weight: 500; color: var(--clr-charcoal); line-height: 1.4; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .similar__price { font-size: var(--text-sm); font-weight: 600; color: var(--clr-brown); }
 
   /* ── Brand strip ── */
   .brand-strip {
@@ -286,9 +365,11 @@
   .add-error { font-size: var(--text-sm); color: #a33020; margin-bottom: var(--space-4); display: flex; align-items: center; gap: 6px; }
 
   /* ── Compare grid ── */
+  /* Columns are capped so a single (base) product never blows up to full width. */
   .compare-grid {
     display: grid;
-    grid-template-columns: repeat(var(--cols, 2), 1fr);
+    grid-template-columns: repeat(var(--cols, 2), minmax(0, 200px));
+    justify-content: center;
     gap: var(--space-4);
     align-items: start;
   }

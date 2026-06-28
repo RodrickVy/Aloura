@@ -29,6 +29,12 @@
     { key: 'athleisure',  label: 'Athleisure' },
     { key: 'old-money',   label: 'Old Money' },
     { key: 'date-night',  label: 'Date Night' },
+    { key: 'nike-tech',   label: 'Nike Tech' },
+    { key: 'grunge',      label: 'Grunge' },
+    { key: 'y2k',         label: 'Y2K' },
+    { key: 'techwear',    label: 'Techwear' },
+    { key: 'preppy',      label: 'Preppy' },
+    { key: 'gorpcore',    label: 'Gorpcore' },
   ];
 
   let runStatus = $state<Record<string, 'idle' | 'running' | 'done' | 'error'>>({});
@@ -45,9 +51,9 @@
       if (error) throw error;
       if (!res?.success) throw new Error(res?.error || 'Failed');
       runStatus[key] = 'done';
-      const boards = res.boards ?? [];
-      runMsg[key] = boards.length
-        ? boards.map((b: any) => `${b.title} (${b.pieces})`).join(' · ')
+      const summary = res.summary ?? [];
+      runMsg[key] = summary.length
+        ? summary.map((s: any) => `${s.gender}: ${s.count}`).join(' · ')
         : 'Done';
       return true;
     } catch (e: any) {
@@ -85,7 +91,7 @@
 
   <!-- TREND ORCHESTRATOR RUNNER -->
   <section class="section-block">
-    <h2 class="section-heading">Trend generator <span class="section-sub">runs the orchestrator + builds boards</span></h2>
+    <h2 class="section-heading">Trend generator <span class="section-sub">generates trending products (men's + women's) per category</span></h2>
     <div class="runner">
       <div class="runner__bar">
         <button class="runner__all" onclick={runAll} disabled={runningAll}>

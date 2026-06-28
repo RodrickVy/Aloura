@@ -20,36 +20,12 @@
   let searching = $state(false);
   let searchError = $state('');
 
-  async function onBrandSelect(brand: { id: string; name: string }) {
-    if (selectedBrand === brand.id) { selectedBrand = null; searchError = ''; return; }
-
+  function onBrandSelect(brand: { id: string; name: string }) {
+    // Hand off to the compare page, which runs the accurate match and shows
+    // either the comparison or a "no exact match" + similar products.
     selectedBrand = brand.id;
-    searching = true;
-    searchError = '';
-
-    try {
-      const { data: result, error } = await supabase.functions.invoke('outfit_store_comparer', {
-        body: {
-          account_id: 'anonymous',
-          mood_board_id: originalPiece.mood_board_id,
-          store: brand.name,
-          products: [{ name: originalPiece.name, keywords: originalPiece.keywords ?? [], colors: originalPiece.colors ?? [], url: originalPiece.url ?? undefined, store: originalPiece.store ?? undefined, original_price: originalPiece.price ?? null }],
-        },
-      });
-      if (error) throw error;
-
-      const found = result.products?.[0];
-      if (!found?.slug) throw new Error('No slug returned');
-
-      // Navigate to compare page
-      track(supabase, null, 'comparisons');
-      goto(`/outfit/product/compare/${originalPiece.slug}--vs--${found.slug}`);
-    } catch {
-      searchError = `No match found at ${brand.name}. Try another store.`;
-      selectedBrand = null;
-    } finally {
-      searching = false;
-    }
+    track(supabase, null, 'comparisons');
+    goto(`/outfit/product/compare/${originalPiece.slug}?add=${brand.id}`);
   }
 </script>
 
